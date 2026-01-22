@@ -32,7 +32,7 @@
 			]"
 		>
 			<template v-slot="{ open }">
-				<Button variant="solid">
+				<Button variant="solid" size="lg" class="!bg-primary-500">
 					<template #prefix>
 						<Plus class="h-4 w-4 stroke-1.5" />
 					</template>
@@ -59,33 +59,33 @@
 			<div
 				class="flex flex-col space-y-3 lg:space-y-0 lg:flex-row lg:items-center lg:space-x-4"
 			>
-				<TabButtons :buttons="courseTabs" v-model="currentTab" class="w-fit" />
+				<!-- <TabButtons :buttons="courseTabs" v-model="currentTab" class="w-fit" /> -->
 
-				<div class="grid grid-cols-2 gap-2">
+				<div class="flex flex-row gap-2">
 					<FormControl
 						v-model="title"
-						:placeholder="__('Search by Title')"
+						:placeholder="__('Search in your courses...')"
 						type="text"
-						class="w-full lg:min-w-0 lg:w-32 xl:w-40"
+						class="w-full lg:min-w-0 lg:w-64"
+						variant="outline"
+						size="lg"
 						@input="updateCourses()"
 					/>
 					<div class="w-full lg:min-w-0 lg:w-32 xl:w-40">
 						<Select
-							v-if="categories.length"
-							v-model="currentCategory"
-							:options="categories"
-							:placeholder="__('Category')"
+							v-if="courseTabs.length"
+							v-model="currentTab"
+							:options="courseTabs"
+							:placeholder="__('All')"
 							@change="updateCourses()"
+							variant="outline"
+							size="lg"
 						/>
 					</div>
 				</div>
 
-				<FormControl
-					v-model="certification"
-					:label="__('Certification')"
-					type="checkbox"
-					@change="updateCourses()"
-				/>
+				<!-- <FormControl v-model="certification" :label="__('Certification')" type="checkbox"
+					@change="updateCourses()" /> -->
 			</div>
 		</div>
 		<div
@@ -176,7 +176,7 @@ const courses = createListResource({
 const setCategories = (data) => {
 	let allCategories = data.map((course) => course.category)
 	allCategories = allCategories.filter(
-		(category, index) => allCategories.indexOf(category) === index && category
+		(category, index) => allCategories.indexOf(category) === index && category,
 	)
 	if (categories.value.length <= allCategories.length) {
 		updateCategories(data)

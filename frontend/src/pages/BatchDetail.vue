@@ -1,47 +1,16 @@
 <template>
 	<div v-if="batch.data" class="">
-		<header
-			class="sticky top-0 z-10 border-b bg-surface-white px-3 py-2.5 sm:px-5"
-		>
-			<Breadcrumbs :items="breadcrumbs" />
+		<header class="sticky top-0 z-10 bg-surface-white px-3 py-2.5 sm:px-5">
+			<CustomBreadcrumb :items="breadcrumbs" />
 		</header>
 		<div class="m-5 pb-10">
-			<div class="flex justify-between w-full">
-				<div class="md:w-2/3">
-					<div class="text-3xl font-semibold text-ink-gray-9">
-						{{ batch.data.title }}
-					</div>
-					<div class="my-3 leading-6 text-ink-gray-7">
-						{{ batch.data.description }}
-					</div>
-					<div class="flex avatar-group overlap">
-						<div
-							class="h-6 mr-1"
-							:class="{
-								'avatar-group overlap': batch.data.instructors.length > 1,
-							}"
-						>
-							<UserAvatar
-								v-for="instructor in batch.data.instructors"
-								:user="instructor"
-							/>
-						</div>
-						<CourseInstructors :instructors="batch.data.instructors" />
-					</div>
-					<BatchOverlay :batch="batch" class="md:hidden mt-5" />
-					<div
-						class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal mt-10"
-						v-html="batch.data.batch_details"
-					></div>
-				</div>
-				<div class="hidden md:block">
-					<BatchOverlay :batch="batch" />
-				</div>
+			<div class="w-full">
+				<BatchOverlay :batch="batch" />
 			</div>
 			<div v-if="batch.data.courses.length">
 				<div class="flex items-center mt-10">
-					<div class="text-2xl font-semibold text-ink-gray-9">
-						{{ __('Courses') }}
+					<div class="text-xl font-semibold text-gray-900">
+						{{ __('Related Courses') }}
 					</div>
 				</div>
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-5">
@@ -84,6 +53,7 @@ import BatchOverlay from '@/components/BatchOverlay.vue'
 import DateRange from '../components/Common/DateRange.vue'
 import CourseInstructors from '@/components/CourseInstructors.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
+import CustomBreadcrumb from '@/components/ui/CustomBreadcrumb.vue'
 
 const user = inject('$user')
 const router = useRouter()

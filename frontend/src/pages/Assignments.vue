@@ -6,6 +6,8 @@
 		<Button
 			v-if="!readOnlyMode"
 			variant="solid"
+			size="lg"
+			class=""
 			@click="
 				() => {
 					assignmentID = 'new'
@@ -76,7 +78,6 @@
 <script setup>
 import {
 	Breadcrumbs,
-	Button,
 	call,
 	createListResource,
 	FormControl,
@@ -89,6 +90,7 @@ import { useRouter } from 'vue-router'
 import { sessionStore } from '../stores/session'
 import AssignmentForm from '@/components/Modals/AssignmentForm.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import Button from '@/components/ui/Button.vue'
 
 const user = inject('$user')
 const dayjs = inject('$dayjs')

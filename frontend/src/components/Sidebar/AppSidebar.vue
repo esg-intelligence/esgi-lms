@@ -1,30 +1,39 @@
 <template>
-	<div class="flex h-full flex-col justify-between transition-all duration-300 ease-in-out relative overflow-hidden bg-white sidebar"
-		:class="sidebarStore.isSidebarCollapsed ? 'w-16' : 'w-60'">
-
+	<div
+		class="flex h-full flex-col justify-between transition-all duration-300 ease-in-out relative overflow-hidden bg-white sidebar"
+		:class="sidebarStore.isSidebarCollapsed ? 'w-16' : 'w-60'"
+	>
 		<div
 			class="flex flex-col overflow-hidden relative z-10 h-full"
 			:class="sidebarStore.isSidebarCollapsed ? 'items-center' : ''"
 		>
 			<div
-				class="flex h-16 w-full mb-4 items-center shrink-0 border-b border-gray-300  backdrop-blur-sm"
+				class="flex h-16 w-full mb-4 items-center shrink-0 border-b border-gray-200/50 backdrop-blur-sm"
 				:class="
 					sidebarStore.isSidebarCollapsed
-						? 'justify-center px-0 flex-col h-24'
+						? 'justify-center px-0 flex-col h-36'
 						: 'justify-between px-5'
 				"
 			>
 				<div
-					class="flex items-center overflow-hidden"
-					v-if="!sidebarStore.isSidebarCollapsed"
+					class="flex items-center overflow-hidden gap-x-1 gap-y-2"
+					:class="
+						!sidebarStore.isSidebarCollapsed ? 'flex-row' : 'flex-col mb-2'
+					"
 				>
-					<LMSLogoFull class="h-12 rounded flex-shrink-0" />
+					<UnairLogo :class="sidebarStore.isSidebarCollapsed ? 'h-7' : 'h-7'" />
+					<LMSLogoFull
+						v-if="!sidebarStore.isSidebarCollapsed"
+						class="h-10 flex-shrink-0"
+					/>
+					<LMSLogo v-else class="h-7" />
 				</div>
-				<div v-else class="flex items-center justify-center w-full">
-					<LMSLogo class="h-7" />
-				</div>
-				<button v-if="!sidebarStore.isSidebarCollapsed"
-					class="p-1.5 rounded-md text-gray-600 hover:text-gray-800 transition-colors" @click="toggleSidebar">
+
+				<button
+					v-if="!sidebarStore.isSidebarCollapsed"
+					class="p-1.5 rounded-md text-gray-600 hover:text-gray-800 transition-colors"
+					@click="toggleSidebar"
+				>
 					<SidebarCollapseIcon class="w-5 h-5 stroke-1.5" />
 				</button>
 				<button
@@ -35,11 +44,14 @@
 					<SidebarCollapseIcon class="w-5 h-5 stroke-1.5 rotate-180" />
 				</button>
 			</div>
-			
+
 			<div class="flex flex-col flex-1 overflow-y-auto px-3">
 				<div v-if="sidebarSettings.data">
 					<div v-for="link in sidebarLinks" class="my-0.5">
-						<SidebarLink :link="link" :isCollapsed="sidebarStore.isSidebarCollapsed" />
+						<SidebarLink
+							:link="link"
+							:isCollapsed="sidebarStore.isSidebarCollapsed"
+						/>
 					</div>
 				</div>
 				<!-- HIDE WEB PAGES -->
@@ -97,9 +109,14 @@
 			</div>
 		</div>
 
-		<div class="m-3 flex flex-col gap-1 relative z-10" v-if="!sidebarStore.isSidebarCollapsed">
-			<div v-if="readOnlyMode"
-				class="z-10 mb-2 bg-amber-50 border border-amber-200 py-2.5 px-3 text-xs text-amber-800 leading-5 rounded-md">
+		<div
+			class="m-3 flex flex-col gap-1 relative z-10"
+			v-if="!sidebarStore.isSidebarCollapsed"
+		>
+			<div
+				v-if="readOnlyMode"
+				class="z-10 mb-2 bg-amber-50 border border-amber-200 py-2.5 px-3 text-xs text-amber-800 leading-5 rounded-md"
+			>
 				{{
 					__(
 						'This site is being updated. You will not be able to make any changes. Full access will be restored shortly.',
@@ -119,7 +136,7 @@
 				appName="learning"
 			/> -->
 		</div>
-		
+
 		<!-- HIDE HELP MODAL -->
 		<!-- <HelpModal
 			v-if="showOnboarding && showHelpModal"
@@ -138,8 +155,19 @@
 			v-model="showIntermediateModal"
 			:currentStep="currentStep"
 		/> -->
+
 	</div>
-	<PageModal v-model="showPageModal" v-model:reloadSidebar="sidebarSettings" :page="pageToEdit" />
+	<PageModal
+		v-model="showPageModal"
+		v-model:reloadSidebar="sidebarSettings"
+		:page="pageToEdit"
+	/>
+	<OnboardingOverlay
+		:show="showOverlay"
+        :updateOnboardingStep="onboardingDetails?.updateOnboardingStep"
+		@complete="completeOnboardingOverlay"
+		@exit="dismissOnboardingOverlay"
+	/>
 </template>
 
 <script setup>
@@ -152,6 +180,7 @@ import { useSidebar } from '@/stores/sidebar'
 import { useSettings } from '@/stores/settings'
 import { Button, call, createResource, Tooltip, toast } from 'frappe-ui'
 import PageModal from '@/components/Modals/PageModal.vue'
+import OnboardingOverlay from '@/components/Onboarding/OnboardingOverlay.vue'
 import { capture } from '@/telemetry'
 import LMSLogo from '@/components/Icons/LMSLogo.vue'
 import LMSLogoFull from '@/components/Icons/LMSLogoFull.vue'
@@ -190,6 +219,7 @@ import {
 	minimize,
 	IntermediateStepModal,
 } from 'frappe-ui/frappe'
+import UnairLogo from '@/components/Icons/UnairLogo.vue'
 
 const { user, branding } = sessionStore()
 const { userResource } = usersStore()
@@ -204,6 +234,7 @@ const pageToEdit = ref(null)
 const settingsStore = useSettings()
 const { sidebarSettings } = settingsStore
 const showOnboarding = ref(false)
+const showOverlay = ref(false)
 const showIntermediateModal = ref(false)
 const currentStep = ref({})
 const router = useRouter()
@@ -237,7 +268,6 @@ const setSidebarLinks = () => {
 		},
 	)
 }
-
 
 const addQuizzes = () => {
 	if (!isInstructor.value && !isModerator.value) return
@@ -398,128 +428,42 @@ const getFirstBatch = async () => {
 }
 
 const steps = reactive([
-	{
-		name: 'create_first_course',
-		title: __('Create your first course'),
-		icon: markRaw(h(BookOpen, iconProps)),
-		completed: false,
-		onClick: () => {
-			minimize.value = true
-			router.push({
-				name: 'Courses',
-			})
-		},
-	},
-	{
-		name: 'create_first_chapter',
-		title: __('Add your first chapter'),
-		icon: markRaw(h(FolderTree, iconProps)),
-		completed: false,
-		dependsOn: 'create_first_course',
-		onClick: async () => {
-			minimize.value = true
-			let course = await getFirstCourse()
-			if (course) {
-				router.push({ name: 'CourseForm', params: { courseName: course } })
-			} else {
-				router.push({ name: 'CourseForm' })
-			}
-		},
-	},
-	{
-		name: 'create_first_lesson',
-		title: __('Add your first lesson'),
-		icon: markRaw(h(FileText, iconProps)),
-		completed: false,
-		dependsOn: 'create_first_chapter',
-		onClick: async () => {
-			minimize.value = true
-			let course = await getFirstCourse()
-			if (course) {
-				router.push({
-					name: 'CourseForm',
-					params: { courseName: course },
-				})
-			} else {
-				router.push({ name: 'Courses' })
-			}
-		},
-	},
-	{
-		name: 'create_first_quiz',
-		title: __('Create your first quiz'),
-		icon: markRaw(h(CircleHelp, iconProps)),
-		completed: false,
-		dependsOn: 'create_first_course',
-		onClick: () => {
-			minimize.value = true
-			router.push({ name: 'Quizzes' })
-		},
-	},
-	{
-		name: 'invite_students',
-		title: __('Invite your team and students'),
-		icon: markRaw(h(InviteIcon, iconProps)),
-		completed: false,
-		onClick: () => {
-			minimize.value = true
-			settingsStore.activeTab = 'Members'
-			settingsStore.isSettingsOpen = true
-		},
-	},
-	{
-		name: 'create_first_batch',
-		title: __('Create your first batch'),
-		icon: markRaw(h(Users, iconProps)),
-		completed: false,
-		onClick: () => {
-			minimize.value = true
-			router.push({ name: 'Batches' })
-		},
-	},
-	{
-		name: 'add_batch_student',
-		title: __('Add students to your batch'),
-		icon: markRaw(h(UserPlus, iconProps)),
-		completed: false,
-		dependsOn: 'create_first_batch',
-		onClick: async () => {
-			minimize.value = true
-			let batch = await getFirstBatch()
-			if (batch) {
-				router.push({
-					name: 'Batch',
-					params: {
-						batchName: batch,
-					},
-				})
-			} else {
-				router.push({ name: 'Batch' })
-			}
-		},
-	},
-	{
-		name: 'add_batch_course',
-		title: __('Add courses to your batch'),
-		icon: markRaw(h(BookText, iconProps)),
-		completed: false,
-		dependsOn: 'create_first_batch',
-		onClick: async () => {
-			minimize.value = true
-			let batch = await getFirstBatch()
-			if (batch) {
-				router.push({
-					name: 'Batch',
-					params: {
-						batchName: batch,
-					},
-					hash: '#courses',
-				})
-			} else {
-				router.push({ name: 'Batch' })
-			}
-		},
-	},
+    {
+        name: 'slide_1',
+        title: 'CESGS Learning Management System',
+        icon: markRaw(h(Zap, iconProps)),
+        completed: false,
+        onClick: () => {
+            showOverlay.value = true
+        },
+    },
+    {
+        name: 'slide_2',
+        title: 'Sharpen your skills',
+        icon: markRaw(h(BookOpen, iconProps)),
+        completed: false,
+        onClick: () => {
+            showOverlay.value = true
+        },
+    },
+    {
+        name: 'slide_3',
+        title: 'Learn Efficiently With AI Assistance',
+        icon: markRaw(h(Zap, iconProps)),
+        completed: false,
+        onClick: () => {
+            showOverlay.value = true
+        },
+    },
+    {
+        name: 'slide_4',
+        title: 'Learn without limits',
+        icon: markRaw(h(Check, iconProps)),
+        completed: false,
+        onClick: () => {
+            showOverlay.value = true
+        },
+    },
 ])
 
 const articles = ref([
@@ -589,13 +533,42 @@ const articles = ref([
 	},
 ])
 
+
 const setUpOnboarding = () => {
 	if (userResource.data?.is_system_manager) {
-		onboardingDetails = useOnboarding('learning')
+		// Menggunakan key baru 'lms_onboarding' karena jumlah steps berubah (8 -> 4).
+        // Key lama 'learning' masih menyimpan state 8 steps yang menyebabkan crash.
+		onboardingDetails = useOnboarding('lms_onboarding')
 		onboardingDetails.setUp(steps)
+		// Ensure we are accessing the value correctly if it is a ref
 		isOnboardingStepsCompleted = onboardingDetails.isOnboardingStepsCompleted
 		showOnboarding.value = true
+
+        // Show overlay if onboarding is not fully completed
+        if (!isOnboardingStepsCompleted.value) {
+            showOverlay.value = true
+        }
 	}
+
+}
+
+// Remove the root level console.log that causes confusion
+
+
+const completeOnboardingOverlay = () => {
+    // Tombol "Continue": User ingin memulai onboarding langkah-demi-langkah.
+    // Kita hanya menutup overlay. Banner "Getting Started" akan tetap ada karena langkah belum selesai.
+	showOverlay.value = false
+}
+
+const dismissOnboardingOverlay = () => {
+    // Tombol "Exit": User ingin melewatkan/skip onboarding sepenuhnya.
+    // Berdasarkan source code `onboarding.js`, `skipAll()` akan menandai semua steps menjadi completed (true).
+    // Ini akan mengubah `isOnboardingStepsCompleted` menjadi true, sehingga overlay tidak akan muncul lagi.
+    if (onboardingDetails && onboardingDetails.skipAll) {
+        onboardingDetails.skipAll()
+    }
+    showOverlay.value = false
 }
 
 watch(userResource, () => {
@@ -616,6 +589,4 @@ watch(userResource, () => {
 const redirectToWebsite = () => {
 	window.open('https://frappe.io/learning', '_blank')
 }
-
-
 </script>
