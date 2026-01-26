@@ -4,24 +4,29 @@
 		:options="{
 			title: __('Write a Review'),
 			size: 'xl',
-			actions: [
-				{
-					label: 'Submit',
-					variant: 'solid',
-					onClick: (close) => submitReview(close),
-				},
-			],
 		}"
 	>
 		<template #body-content>
 			<div class="flex flex-col gap-4">
-				<Rating v-model="review.rating" :label="__('Rating')" />
+				<div
+					class="[&_.\!fill-yellow-500]:!fill-warning-500 [&_.\!fill-yellow-200]:!fill-warning-200"
+				>
+					<Rating v-model="review.rating" :label="__('Rating')" />
+				</div>
+
 				<FormControl
 					:label="__('Review')"
 					type="textarea"
 					v-model="review.review"
 					:rows="5"
 				/>
+			</div>
+		</template>
+		<template #actions="{ close }">
+			<div class="flex justify-start flex-row-reverse gap-2">
+				<Button class="w-full" variant="solid" @click="submitReview(close)">
+					Submit
+				</Button>
 			</div>
 		</template>
 	</Dialog>

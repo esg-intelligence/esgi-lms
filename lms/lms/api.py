@@ -30,7 +30,8 @@ from werkzeug.wrappers import Response
 from frappe.utils.response import Response
 
 from lms.lms.doctype.course_lesson.course_lesson import save_progress
-from lms.lms.utils import get_average_rating, get_lesson_count
+from lms.lms.utils import get_average_rating, get_lesson_count, has_moderator_role
+
 
 
 @frappe.whitelist()
@@ -298,24 +299,52 @@ def get_job_opportunities(filters=None, orFilters=None):
 	return jobs
 
 
+def get_growth_details(doctype, filters=None):
+	if not filters:
+		filters = {}
+
+	# Total Count
+	total_count = frappe.db.count(doctype, filters)
+	
+	# Count Today
+	filters_today = filters.copy()
+	filters_today["creation"] = [">=", frappe.utils.today()]
+	count_today = frappe.db.count(doctype, filters_today)
+
+	# Count Yesterday
+	filters_yesterday = filters.copy()
+	filters_yesterday["creation"] = ["between", [frappe.utils.add_days(frappe.utils.today(), -1), frappe.utils.today()]]
+	count_yesterday = frappe.db.count(doctype, filters_yesterday)
+
+	if count_yesterday > 0:
+		growth = ((count_today - count_yesterday) / count_yesterday) * 100
+	else:
+		# If yesterday was 0, and today > 0, 100% growth. Else 0.
+		growth = 100.0 if count_today > 0 else 0.0
+
+	return {
+		"count": total_count,
+		"growth": flt(growth, 1) # Round to 1 decimal place
+	}
+
 @frappe.whitelist(allow_guest=True)
 def get_chart_details():
 	details = frappe._dict()
-	details.enrollments = frappe.db.count("LMS Enrollment")
-	details.courses = frappe.db.count(
+	details.enrollments = get_growth_details("LMS Enrollment")
+	details.courses = get_growth_details(
 		"LMS Course",
 		{
 			"published": 1,
 			"upcoming": 0,
 		},
 	)
-	details.users = frappe.db.count(
+	details.users = get_growth_details(
 		"User", {"enabled": 1, "name": ["not in", ("Administrator", "Guest")]}
 	)
-	details.completions = frappe.db.count(
+	details.completions = get_growth_details(
 		"LMS Enrollment", {"progress": 100}
 	)
-	details.certifications = frappe.db.count("LMS Certificate", {"published": 1})
+	details.certifications = get_growth_details("LMS Certificate", {"published": 1})
 	return details
 
 
@@ -1296,8 +1325,8 @@ def get_notifications(filters):
 	notifications = frappe.get_all(
 		"Notification Log",
 		filters,
-		["subject", "from_user", "link", "read", "name"],
-		order_by="creation desc",
+		["subject", "from_user", "link", "read", "name","creation",'document_type'],
+		order_by="modified asc",
 	)
 
 	for notification in notifications:
@@ -1476,7 +1505,7 @@ def get_meta_info(type, route):
 
 @frappe.whitelist()
 def update_meta_info(meta_type, route, meta_tags):
-	validate_meta_data_permissions()
+	validate_meta_data_permissions('lms')
 	validate_meta_tags(meta_tags)
 
 	parent_name = f"{meta_type}/{route}"
@@ -1785,3 +1814,41 @@ def llm_get_sources(bsid, bcid):
 	}
 	response = requests.post(url=f'{base_url}/general/sources', json=data, headers=headers)
 	return response.json()
+
+
+@frappe.whitelist(allow_guest=True)
+def get_rating_breakdown(course):
+	reviews = frappe.get_all("LMS Course Review", filters={"course": course}, fields=["rating"])
+	total_reviews = len(reviews)
+
+	breakdown = []
+	if total_reviews > 0:
+		counts = {i: 0 for i in range(1, 6)}
+		for r in reviews:
+			# Ratings are stored as 0-1 scale in Frappe Rating fields, usually.
+			# Multiply by 5 to get the star count.
+			rating = round(r.rating * 5)
+			if 1 <= rating <= 5:
+				counts[rating] += 1
+
+
+		for i in range(5, 0, -1):
+			percentage = (counts[i] / total_reviews) * 100
+			breakdown.append({
+				"stars": i,
+				"percentage": round(percentage, 2),
+			})
+	else:
+		for i in range(5, 0, -1):
+			breakdown.append({
+				"stars": i,
+				"percentage": 0,
+			})
+
+	avg_rating = (sum([r.rating for r in reviews]) * 5) / total_reviews if total_reviews > 0 else 0
+
+	return {
+		"breakdown": breakdown,
+		"total_reviews": total_reviews,
+		"avg_rating": round(avg_rating, 1)
+	}

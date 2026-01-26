@@ -1,8 +1,7 @@
 <template>
 	<header
-		class="sticky flex items-center justify-between top-0 z-10 border-b bg-surface-white px-3 py-2.5 sm:px-5"
+		class="sticky flex items-center justify-end top-0 z-10 bg-surface-white px-3 py-2.5 sm:px-5"
 	>
-		<Breadcrumbs :items="breadcrumbs" />
 		<Dropdown
 			v-if="canCreateBatch()"
 			:options="[
@@ -31,7 +30,7 @@
 			<template v-slot="{ open }">
 				<Button variant="solid">
 					<template #prefix>
-						<Plus class="h-4 w-4 stroke-1.5" />
+						<Plus class="h-4 w-4" />
 					</template>
 					{{ __('Create') }}
 					<template #suffix>
@@ -70,42 +69,41 @@
 			<div
 				class="flex flex-col space-y-3 lg:space-y-0 lg:flex-row lg:items-center lg:space-x-4"
 			>
-				<TabButtons
-					v-if="user.data"
-					:buttons="batchTabs"
-					v-model="currentTab"
-					class="w-fit"
-				/>
-				<div class="grid grid-cols-2 gap-2">
+				<!-- <TabButtons v-if="user.data" :buttons="batchTabs" v-model="currentTab" class="w-fit" /> -->
+				<div class="flex flex-row gap-2">
 					<FormControl
 						v-model="title"
-						:placeholder="__('Search by Title')"
+						:placeholder="__('Search in your batches...')"
 						type="text"
-						class="min-w-40 lg:min-w-0 lg:w-32 xl:w-40"
+						class="min-w-40 lg:min-w-0 lg:w-64"
 						@input="updateBatches()"
+						variant="outline"
+						size="lg"
 					/>
 					<div class="min-w-40 lg:min-w-0 lg:w-32 xl:w-40">
 						<Select
-							v-if="categories.length"
-							v-model="currentCategory"
-							:options="categories"
-							:placeholder="__('Category')"
+							v-if="batchTabs.length"
+							v-model="currentTab"
+							:options="batchTabs"
+							:placeholder="__('All')"
 							@change="updateBatches()"
+							variant="outline"
+							size="lg"
 						/>
 					</div>
+					<!-- <div class="min-w-40 lg:min-w-0 lg:w-32 xl:w-40">
+						<Select v-if="categories.length" v-model="currentCategory" :options="categories"
+							:placeholder="__('Category')" @change="updateBatches()" />
+					</div> -->
 				</div>
 
-				<FormControl
-					v-model="certification"
-					:label="__('Certification')"
-					type="checkbox"
-					@change="updateBatches()"
-				/>
+				<!-- <FormControl v-model="certification" :label="__('Certification')" type="checkbox"
+					@change="updateBatches()" /> -->
 			</div>
 		</div>
 		<div
 			v-if="batches.data?.length"
-			class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+			class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
 		>
 			<router-link
 				v-for="batch in batches.data"
@@ -129,7 +127,6 @@
 <script setup>
 import {
 	Breadcrumbs,
-	Button,
 	call,
 	createListResource,
 	Dropdown,
@@ -144,6 +141,7 @@ import { ChevronDown, Plus } from 'lucide-vue-next'
 import { sessionStore } from '@/stores/session'
 import BatchCard from '@/components/BatchCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import Button from '@/components/ui/Button.vue'
 
 const user = inject('$user')
 const dayjs = inject('$dayjs')
@@ -156,7 +154,8 @@ const title = ref('')
 const certification = ref(false)
 const filters = ref({})
 const is_student = computed(() => user.data?.is_student)
-const currentTab = ref(is_student.value ? 'All' : 'Upcoming')
+// const currentTab = ref(is_student.value ? 'All' : 'Upcoming')
+const currentTab = ref('All')
 const orderBy = ref('start_date')
 const readOnlyMode = window.read_only_mode
 const router = useRouter()
@@ -188,7 +187,8 @@ const batches = createListResource({
 	onSuccess(data) {
 		let allCategories = data.map((batch) => batch.category)
 		allCategories = allCategories.filter(
-			(category, index) => allCategories.indexOf(category) === index && category
+			(category, index) =>
+				allCategories.indexOf(category) === index && category,
 		)
 		if (categories.value.length <= allCategories.length) {
 			updateCategories(data)
@@ -292,7 +292,7 @@ const setQueryParams = () => {
 	history.replaceState(
 		{},
 		'',
-		`${location.pathname}${queries.size > 0 ? `?${queries.toString()}` : ''}`
+		`${location.pathname}${queries.size > 0 ? `?${queries.toString()}` : ''}`,
 	)
 }
 

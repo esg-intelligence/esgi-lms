@@ -1,6 +1,6 @@
 <template>
 	<header
-		class="sticky flex items-center justify-between top-0 z-10 border-b bg-surface-white px-3 py-2.5 sm:px-5"
+		class="sticky flex items-center justify-between top-0 z-10 bg-surface-white px-3 py-2.5 sm:px-5"
 	>
 		<Breadcrumbs :items="breadcrumbs" />
 		<router-link :to="{ name: 'Batches', query: { certification: true } }">
@@ -104,7 +104,6 @@
 import {
 	Avatar,
 	Breadcrumbs,
-	Button,
 	call,
 	createListResource,
 	FormControl,
@@ -115,6 +114,7 @@ import { computed, inject, onMounted, ref } from 'vue'
 import { GraduationCap } from 'lucide-vue-next'
 import { sessionStore } from '../stores/session'
 import EmptyState from '@/components/EmptyState.vue'
+import Button from '@/components/ui/Button.vue'
 
 const currentCategory = ref('')
 const filters = ref({})
@@ -197,7 +197,7 @@ const setQueryParams = () => {
 	history.replaceState(
 		{},
 		'',
-		`${location.pathname}${queries.size > 0 ? `?${queries.toString()}` : ''}`
+		`${location.pathname}${queries.size > 0 ? `?${queries.toString()}` : ''}`,
 	)
 }
 

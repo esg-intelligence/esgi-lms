@@ -1,11 +1,11 @@
 <template>
 	<div>
 		<div v-if="myCourses.data?.length" class="mt-10">
-			<div class="flex items-center justify-between mb-3">
+			<div class="flex items-center justify-between mb-8">
 				<span class="font-semibold text-lg text-ink-gray-9">
 					{{
 						myCourses.data[0].membership
-							? __('My Courses')
+							? __('Continue Learning')
 							: __('Our Popular Courses')
 					}}
 				</span>
@@ -14,15 +14,23 @@
 						name: 'Courses',
 					}"
 				>
-					<span class="flex items-center space-x-1 text-ink-gray-5 text-xs">
+					<span
+						class="flex items-center space-x-1 text-base font-medium"
+						:class="
+							myBatches.data?.length
+								? 'text-primary-500 hover:text-primary-600'
+								: 'text-gray-500'
+						"
+					>
 						<span>
-							{{ __('See all') }}
+							{{ __('View all courses') }}
 						</span>
-						<MoveRight class="size-3 stroke-1.5" />
 					</span>
 				</router-link>
 			</div>
-			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+			<div
+				class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+			>
 				<router-link
 					v-for="course in myCourses.data"
 					:to="{ name: 'CourseDetail', params: { courseName: course.name } }"
@@ -46,15 +54,18 @@
 						name: 'Batches',
 					}"
 				>
-					<span class="flex items-center space-x-1 text-ink-gray-5 text-xs">
+					<span
+						class="flex items-center space-x-1 text-primary-500 hover:text-primary-600 text-base font-medium"
+					>
 						<span>
-							{{ __('See all') }}
+							{{ __('View all batch') }}
 						</span>
-						<MoveRight class="size-3 stroke-1.5" />
 					</span>
 				</router-link>
 			</div>
-			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+			<div
+				class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+			>
 				<router-link
 					v-for="batch in myBatches.data"
 					:to="{ name: 'BatchDetail', params: { batchName: batch.name } }"

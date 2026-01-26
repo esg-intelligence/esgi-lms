@@ -1,9 +1,7 @@
 <template>
 	<header
-		class="sticky flex items-center justify-between top-0 z-10 border-b bg-surface-white px-3 py-2.5 sm:px-5"
+		class="sticky flex items-center justify-end top-0 z-10 bg-surface-white px-3 py-2.5 sm:px-5"
 	>
-		<Breadcrumbs :items="breadcrumbs" />
-
 		<Dropdown
 			placement="start"
 			side="bottom"
@@ -34,13 +32,13 @@
 			<template v-slot="{ open }">
 				<Button variant="solid">
 					<template #prefix>
-						<Plus class="h-4 w-4 stroke-1.5" />
+						<Plus class="h-4 w-4" />
 					</template>
 					{{ __('Create') }}
 					<template #suffix>
 						<ChevronDown
 							:class="[
-								'w-4 h-4 stroke-1.5 ml-1 transform transition-transform',
+								'w-4 h-4 ml-1 transform transition-transform',
 								open ? 'rotate-180' : '',
 							]"
 						/>
@@ -59,38 +57,38 @@
 			<div
 				class="flex flex-col space-y-3 lg:space-y-0 lg:flex-row lg:items-center lg:space-x-4"
 			>
-				<TabButtons :buttons="courseTabs" v-model="currentTab" class="w-fit" />
+				<!-- <TabButtons :buttons="courseTabs" v-model="currentTab" class="w-fit" /> -->
 
-				<div class="grid grid-cols-2 gap-2">
+				<div class="flex flex-row gap-2">
 					<FormControl
 						v-model="title"
-						:placeholder="__('Search by Title')"
+						:placeholder="__('Search in your courses...')"
 						type="text"
-						class="w-full lg:min-w-0 lg:w-32 xl:w-40"
+						class="w-full lg:min-w-0 lg:w-64"
+						variant="outline"
+						size="lg"
 						@input="updateCourses()"
 					/>
 					<div class="w-full lg:min-w-0 lg:w-32 xl:w-40">
 						<Select
-							v-if="categories.length"
-							v-model="currentCategory"
-							:options="categories"
-							:placeholder="__('Category')"
+							v-if="courseTabs.length"
+							v-model="currentTab"
+							:options="courseTabs"
+							:placeholder="__('All')"
 							@change="updateCourses()"
+							variant="outline"
+							size="lg"
 						/>
 					</div>
 				</div>
 
-				<FormControl
-					v-model="certification"
-					:label="__('Certification')"
-					type="checkbox"
-					@change="updateCourses()"
-				/>
+				<!-- <FormControl v-model="certification" :label="__('Certification')" type="checkbox"
+					@change="updateCourses()" /> -->
 			</div>
 		</div>
 		<div
 			v-if="courses.data?.length"
-			class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8"
+			class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
 		>
 			<router-link
 				v-for="course in courses.data"
@@ -113,7 +111,6 @@
 <script setup>
 import {
 	Breadcrumbs,
-	Button,
 	call,
 	createListResource,
 	Dropdown,
@@ -129,6 +126,7 @@ import { canCreateCourse } from '@/utils'
 import CourseCard from '@/components/CourseCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import router from '../router'
+import Button from '@/components/ui/Button.vue'
 
 const user = inject('$user')
 const dayjs = inject('$dayjs')
@@ -176,7 +174,7 @@ const courses = createListResource({
 const setCategories = (data) => {
 	let allCategories = data.map((course) => course.category)
 	allCategories = allCategories.filter(
-		(category, index) => allCategories.indexOf(category) === index && category
+		(category, index) => allCategories.indexOf(category) === index && category,
 	)
 	if (categories.value.length <= allCategories.length) {
 		updateCategories(data)

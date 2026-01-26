@@ -1,9 +1,9 @@
 <template>
 	<div v-if="isAdmin || isStudent" class="">
 		<header
-			class="sticky top-0 z-10 flex items-center justify-between border-b bg-surface-white px-3 py-2.5 sm:px-5"
+			class="sticky top-0 z-10 flex items-center justify-between bg-surface-white px-3 py-2.5 sm:px-5"
 		>
-			<Breadcrumbs class="h-7" :items="breadcrumbs" />
+			<CustomBreadcrumb class="h-7" :items="breadcrumbs" />
 			<div class="flex items-center space-x-2">
 				<Button
 					v-if="isAdmin && batch.data?.certification"
@@ -11,7 +11,13 @@
 				>
 					{{ __('Generate Certificates') }}
 				</Button>
-				<Button v-if="canMakeAnnouncement()" @click="openAnnouncementModal()">
+				<Button
+					v-if="canMakeAnnouncement()"
+					@click="openAnnouncementModal()"
+					variant="solid"
+					size="lg"
+					class="!bg-primary-500"
+				>
 					<span>
 						{{ __('Make an Announcement') }}
 					</span>
@@ -21,84 +27,178 @@
 				</Button>
 			</div>
 		</header>
-		<div
-			v-if="batch.data"
-			class="grid grid-cols-1 md:grid-cols-[75%,25%] h-[calc(100vh-3.2rem)]"
-		>
-			<div class="border-r">
-				<Tabs
-					v-model="tabIndex"
-					as="div"
-					:tabs="tabs"
-					tablistClass="overflow-y-hidden bg-surface-white"
-				>
-					<template #tab="{ tab, selected }" class="overflow-x-hidden">
-						<div>
-							<button
-								class="group -mb-px flex items-center gap-1 border-b border-transparent py-2.5 text-base text-ink-gray-5 duration-300 ease-in-out hover:border-outline-gray-3 hover:text-ink-gray-9"
-								:class="{ 'text-ink-gray-9': selected }"
+		<div class="px-5 py-4" v-if="batch.data">
+			<div class="bg-white rounded-xl border mb-6 flex">
+				<div class="flex items-center w-full pr-4">
+					<div class="flex items-start space-x-4 flex-1 pr-4">
+						<div class="w-32 h-32 object-cover rounded-tl-xl rounded-bl-xl">
+							<img
+								v-if="batch.data.meta_image"
+								:src="batch.data.meta_image"
+								class="w-full h-full object-cover rounded-tl-xl rounded-bl-xl"
+							/>
+							<NoImageFallback
+								v-else
+								class="w-full h-full rounded-tl-xl rounded-bl-xl"
+							/>
+						</div>
+
+						<div class="h-32 flex-1 py-2 flex justify-center flex-col">
+							<div class="py-2">
+								<div class="text-lg leading-5 font-semibold mb-2 text-gray-900">
+									{{ batch.data.title }}
+								</div>
+								<div class="short-introduction text-sm text-gray-600 !mb-3">
+									{{ batch.data.description }}
+								</div>
+							</div>
+							<div
+								v-if="batch.data.amount"
+								class="text-lg font-semibold mb-3 text-ink-gray-9"
 							>
-								<component
-									v-if="tab.icon"
-									:is="tab.icon"
-									class="h-4 stroke-1.5"
-								/>
-								{{ __(tab.label) }}
-								<Badge
-									v-if="tab.count"
-									:class="{
-										'text-ink-gray-9 border border-gray-900': selected,
-									}"
-									variant="subtle"
-									theme="gray"
-									size="sm"
-								>
-									{{ tab.count }}
-								</Badge>
-							</button>
-						</div>
-					</template>
-					<template #tab-panel="{ tab }">
-						<div class="pt-5 px-5 pb-10">
-							<div v-if="tab.label == 'Courses'">
-								<BatchCourses :batch="batch.data.name" />
+								{{
+									formatNumberIntoCurrency(
+										batch.data.amount,
+										batch.data.currency,
+									)
+								}}
 							</div>
-							<div v-else-if="tab.label == 'Dashboard' && isStudent">
-								<BatchDashboard :batch="batch" :isStudent="isStudent" />
-							</div>
-							<div v-else-if="tab.label == 'Dashboard'">
-								<AdminBatchDashboard :batch="batch" />
-							</div>
-							<div v-else-if="tab.label == 'Students'">
-								<BatchStudents :batch="batch" />
-							</div>
-							<div v-else-if="tab.label == 'Classes'">
-								<LiveClass
-									:batch="batch.data.name"
-									:zoomAccount="batch.data.zoom_account"
-								/>
-							</div>
-							<div v-else-if="tab.label == 'Assessments'">
-								<Assessments :batch="batch.data.name" />
-							</div>
-							<div v-else-if="tab.label == 'Announcements'">
-								<Announcements :batch="batch.data.name" />
-							</div>
-							<div v-else-if="tab.label == 'Discussions'">
-								<Discussions
-									doctype="LMS Batch"
-									:docname="batch.data.name"
-									:title="__('Discussions')"
-									:key="batch.data.name"
-									:singleThread="true"
-									:scrollToBottom="false"
-								/>
+							<div class="flex text-md space-x-4">
+								<!-- <div v-if="batch.data.courses.length" class="flex items-center mb-3 text-gray-600">
+						<BookOpen class="h-4 w-4 stroke-1.5 mr-2" />
+						<span> {{ batch.data.courses.length }} {{ __('Courses') }} </span>
+					</div> -->
+								<div class="flex items-center space-x-2">
+									<DateRange
+										:startDate="batch.data.start_date"
+										:endDate="batch.data.end_date"
+									/>
+									<span class="text-gray-600" v-if="batch.data.medium"
+										>• {{ batch.data.medium }}</span
+									>
+								</div>
+
+								<div class="flex items-center text-gray-600">
+									<ClockIcon class="h-4 w-4 stroke-1.5 mr-2" />
+									<span>
+										{{ formatTime(batch.data.start_time) }} -
+										{{ formatTime(batch.data.end_time) }}
+									</span>
+								</div>
+								<!-- <div v-if="batch.data.timezone" class="flex items-center text-gray-600">
+						<Globe class="h-4 w-4 stroke-1.5 mr-2" />
+						<span>
+							{{ batch.data.timezone }}
+						</span>
+					</div> -->
 							</div>
 						</div>
-					</template>
-				</Tabs>
+					</div>
+
+					<Button variant="outline">
+						{{ __('Give Feedback') }}
+					</Button>
+				</div>
 			</div>
-			<div class="p-5 border-t md:border-t-0">
+			<div class="grid grid-cols-1 h-[calc(100vh-3.2rem)]">
+				<div class="w-full overflow-x-hidden hover:overflow-x-scroll">
+					<div class="border-b mb-6">
+						<nav
+							class="w-full flex space-x-8 overflow-x-hidden hover:overflow-x-scroll"
+						>
+							<button
+								v-for="tab in tabs"
+								:key="tab.value"
+								@click="currentTab = tab.label"
+								:class="[
+									'pb-2 text-center px-2 border-b-[2px] font-medium transition-colors min-w-40',
+									currentTab === tab.label
+										? 'border-secondary-500 text-gray-900'
+										: 'border-transparent text-ink-gray-5 hover:text-ink-gray-7',
+								]"
+							>
+								{{ tab.label }}
+							</button>
+						</nav>
+					</div>
+					<div class="pt-5 px-5">
+						<div v-if="currentTab == 'Courses'">
+							<BatchCourses :batch="batch.data.name" />
+						</div>
+						<div v-else-if="currentTab == 'Dashboard' && isStudent">
+							<BatchDashboard :batch="batch" :isStudent="isStudent" />
+						</div>
+						<div v-else-if="currentTab == 'Dashboard'">
+							<AdminBatchDashboard :batch="batch" />
+						</div>
+						<div v-else-if="currentTab == 'Students'">
+							<BatchStudents :batch="batch" />
+						</div>
+						<div v-else-if="currentTab == 'Classes'">
+							<LiveClass
+								:batch="batch.data.name"
+								:zoomAccount="batch.data.zoom_account"
+							/>
+						</div>
+						<div v-else-if="currentTab == 'Assessments'">
+							<Assessments :batch="batch.data.name" />
+						</div>
+						<div v-else-if="currentTab == 'Announcements'">
+							<Announcements :batch="batch.data.name" />
+						</div>
+						<div v-else-if="currentTab == 'Discussions'">
+							<Discussions
+								doctype="LMS Batch"
+								:docname="batch.data.name"
+								:title="__('Discussions')"
+								:key="batch.data.name"
+								:singleThread="true"
+								:scrollToBottom="false"
+							/>
+						</div>
+					</div>
+					<!-- <Tabs
+						v-model="tabIndex"
+						as="div"
+						:tabs="tabs"
+						tablistClass="bg-surface-white"
+						:class="[
+							'[&_[data-state=active]]:text-primary-500',
+							'[&>div:first-child>div:first-child>div:first-child]:!bg-primary-500',
+							'[&>div:first-child>div:first-child>div:first-child]:!h-[2px]',
+							'[&_[data-reka-collection-item]]:px-8 [&_[data-reka-collection-item]>svg]:hidden ',
+						]"
+					>
+						<template #tab="{ tab, selected }" class="overflow-x-hidden">
+							<div class="font-medium">
+								<button
+									class="group -mb-px flex items-center gap-1 border-b border-transparent py-2.5 text-base text-ink-gray-5 duration-300 ease-in-out hover:border-outline-gray-3 hover:text-ink-gray-9"
+									:class="{ 'text-ink-gray-9': selected }"
+								>
+									<component
+										v-if="tab.icon"
+										:is="tab.icon"
+										class="h-4 stroke-1.5"
+									/>
+									{{ __(tab.label) }}
+									<Badge
+										v-if="tab.count"
+										:class="{
+											'text-ink-gray-9 border border-gray-900': selected,
+										}"
+										variant="subtle"
+										theme="gray"
+										size="sm"
+									>
+										{{ tab.count }}
+									</Badge>
+								</button>
+							</div>
+						</template>
+						<template #tab-panel="{ tab }"> </template>
+					</Tabs> -->
+				</div>
+				<!-- <div class="p-5 border-t md:border-t-0">
 				<div class="mb-10">
 					<div class="text-ink-gray-7 font-semibold mb-2">
 						{{ __('About this batch') }}
@@ -150,12 +250,13 @@
 					</div>
 					<BatchFeedback :batch="batch.data?.name" />
 				</div>
+			</div> -->
+				<AnnouncementModal
+					v-model="showAnnouncementModal"
+					:batch="batch.data.name"
+					:students="batch.data.students"
+				/>
 			</div>
-			<AnnouncementModal
-				v-model="showAnnouncementModal"
-				:batch="batch.data.name"
-				:students="batch.data.students"
-			/>
 		</div>
 	</div>
 	<div v-else-if="!user.data?.name" class="">
@@ -170,7 +271,7 @@
 				<div v-if="user.data" class="mb-4 leading-6">
 					{{
 						__(
-							'You are not a member of this batch. Please checkout our upcoming batches.'
+							'You are not a member of this batch. Please checkout our upcoming batches.',
 						)
 					}}
 				</div>
@@ -210,14 +311,7 @@
 <script setup>
 import { computed, inject, ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import {
-	Breadcrumbs,
-	Button,
-	createResource,
-	Tabs,
-	Badge,
-	usePageMeta,
-} from 'frappe-ui'
+import { createResource, Tabs, Badge, usePageMeta } from 'frappe-ui'
 import {
 	Clock,
 	LayoutDashboard,
@@ -247,6 +341,8 @@ import DateRange from '@/components/Common/DateRange.vue'
 import BulkCertificates from '@/components/Modals/BulkCertificates.vue'
 import BatchFeedback from '@/components/BatchFeedback.vue'
 import dayjs from 'dayjs/esm'
+import CustomBreadcrumb from '@/components/ui/CustomBreadcrumb.vue'
+import Button from '@/components/ui/Button.vue'
 
 const user = inject('$user')
 const showAnnouncementModal = ref(false)
@@ -254,9 +350,8 @@ const openCertificateDialog = ref(false)
 const route = useRoute()
 const router = useRouter()
 const { brand } = sessionStore()
-const tabIndex = ref(0)
 const readOnlyMode = window.read_only_mode
-
+const currentTab = ref('Dashboard')
 const tabs = computed(() => {
 	let batchTabs = []
 	batchTabs.push({
@@ -312,7 +407,7 @@ onMounted(() => {
 	if (hash) {
 		tabs.value.forEach((tab, index) => {
 			if (tab.label?.toLowerCase() === hash.replace('#', '')) {
-				tabIndex.value = index
+				currentTab.value = tab.label
 			}
 		})
 	}
@@ -363,10 +458,9 @@ const openAnnouncementModal = () => {
 	showAnnouncementModal.value = true
 }
 
-watch(tabIndex, () => {
-	const tab = tabs.value[tabIndex.value]
-	if (tab.label != route.hash.replace('#', '')) {
-		router.push({ ...route, hash: `#${tab.label.toLowerCase()}` })
+watch(currentTab, () => {
+	if (currentTab.value != route.hash.replace('#', '')) {
+		router.push({ ...route, hash: `#${currentTab.value.toLowerCase()}` })
 	}
 })
 
