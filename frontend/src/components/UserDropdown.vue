@@ -1,54 +1,36 @@
 <template>
-	<header
-		class="flex h-16 w-full items-center justify-between border-b bg-surface-white px-5"
-	>
-		<div class="flex items-center"></div>
-		<div
-			class="flex items-center gap-4"
-			v-if="profile.data || userResource.data"
+	<div class="flex items-center gap-4">
+		<Dropdown
+			:options="userDropdownOptions"
+			placement="right"
+			side="bottom"
+			class="border"
+			offset="1"
 		>
-			<NotificationPopover placement="bottom-end" />
-			<Dropdown
-				:options="userDropdownOptions"
-				placement="right"
-				side="bottom"
-				class="border"
-				offset="1"
-			>
-				<template v-slot="{ open }">
-					<button
-						class="flex items-center gap-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary-500"
-					>
-						<UserAvatar :user="profile.data || userResource.data" size="2xl" />
-					</button>
-				</template>
-			</Dropdown>
-		</div>
-	</header>
-	<SettingsModal
-		v-if="userResource.data?.is_moderator"
-		v-model="showSettingsModal"
-	/>
+			<template v-slot="{ open }">
+				<button
+					class="flex items-center gap-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary-500"
+				>
+					<UserAvatar :user="profile.data || userResource.data" size="2xl" />
+				</button>
+			</template>
+		</Dropdown>
+		<SettingsModal
+			v-if="userResource.data?.is_moderator"
+			v-model="showSettingsModal"
+		/>
+	</div>
 </template>
 
 <script setup>
-import {
-	computed,
-	ref,
-	onMounted,
-	onUnmounted,
-	markRaw,
-	watch,
-	inject,
-} from 'vue'
+import { computed, ref, onMounted, markRaw, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/user'
 import { useSettings } from '@/stores/settings'
-import { createResource, Button, Dropdown } from 'frappe-ui'
+import { createResource, Dropdown } from 'frappe-ui'
 import { createDialog } from '@/utils/dialogs'
 import UserAvatar from '@/components/UserAvatar.vue'
-import NotificationPopover from '@/components/NotificationPopover.vue'
 import SettingsModal from '@/components/Settings/Settings.vue'
 import Apps from '@/components/Sidebar/Apps.vue'
 import Configuration from '@/components/Sidebar/Configuration.vue'
@@ -56,19 +38,11 @@ import FrappeCloudIcon from '@/components/Icons/FrappeCloudIcon.vue'
 import CircleProfileIcon from '@/components/Icons/CircleProfileIcon.vue'
 import LogoutIcon from '@/components/Icons/LogoutIcon.vue'
 
-import {
-	User,
-	Moon,
-	Sun,
-	Settings,
-	Wrench,
-	LogOut,
-	LogIn,
-} from 'lucide-vue-next'
+import { Moon, Sun, Settings, Wrench, LogOut, LogIn } from 'lucide-vue-next'
 import { h } from 'vue'
 
 const router = useRouter()
-const { user, isLoggedIn, logout } = sessionStore()
+const { isLoggedIn, logout } = sessionStore()
 const { userResource } = usersStore()
 const profile = createResource({
 	url: 'lms.lms.api.get_profile_details',
@@ -79,7 +53,6 @@ const profile = createResource({
 	},
 })
 const settingsStore = useSettings()
-const socket = inject('$socket')
 
 const showSettingsModal = ref(false)
 const theme = ref('light')
@@ -101,12 +74,6 @@ onMounted(() => {
 		},
 		{ immediate: true },
 	)
-
-	socket.on('publish_lms_notifications', (data) => {})
-})
-
-onUnmounted(() => {
-	socket.off('publish_lms_notifications')
 })
 
 const toggleTheme = () => {
