@@ -4,7 +4,12 @@
 			<div class="text-ink-gray-9 font-medium">
 				{{ students.data?.length }} {{ __('Students') }}
 			</div>
-			<Button v-if="!readOnlyMode" @click="openStudentModal()" variant="solid" size="lg" class="!bg-primary-500">
+			<Button
+				v-if="!readOnlyMode"
+				@click="openStudentModal()"
+				variant="solid"
+				class="!bg-primary-500"
+			>
 				<template #prefix>
 					<Plus class="h-4 w-4" />
 				</template>
@@ -109,7 +114,6 @@
 <script setup>
 import {
 	Avatar,
-	Button,
 	createResource,
 	FeatherIcon,
 	ListHeader,
@@ -126,7 +130,7 @@ import { ref } from 'vue'
 import StudentModal from '@/components/Modals/StudentModal.vue'
 import ProgressBar from '@/components/ProgressBar.vue'
 import BatchStudentProgress from '@/components/Modals/BatchStudentProgress.vue'
-
+import Button from './ui/Button.vue'
 const showStudentModal = ref(false)
 const showStudentProgressModal = ref(false)
 const selectedStudent = ref(null)
@@ -204,7 +208,7 @@ const removeStudents = (selections, unselectAll) => {
 				toast.success(__('Students deleted successfully'))
 				unselectAll()
 			},
-		}
+		},
 	)
 }
 </script>

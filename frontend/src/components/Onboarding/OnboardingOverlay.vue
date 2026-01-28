@@ -132,21 +132,21 @@ const slides = [
 		title: 'Sharpen your skills',
 		description:
 			'Enhance your abilities with guided learning and practical, focused improvements',
-		imageUrl: '/images/undraw_working-together_r43a.png',
+		imageUrl: '/assets/lms/images/undraw_working-together_r43a.png',
 		type: 'image',
 	},
 	{
 		title: 'Learn Efficiently With AI Assistance',
 		description:
 			'Get instant support from AI tutors, quick explanations, and smart suggestions to master any topic efficiently',
-		imageUrl: '/images/undraw_online-stats_d57c 1.png',
+		imageUrl: '/assets/lms/images/undraw_online-stats_d57c 1.png',
 		type: 'image',
 	},
 	{
 		title: 'Learn without limits',
 		description:
 			'Explore new knowledge at your own pace and unlock your full potential',
-		imageUrl: '/images/undraw_happy-announcement_23nf 1.png',
+		imageUrl: '/assets/lms/images/undraw_happy-announcement_23nf 1.png',
 		type: 'image',
 	},
 ]

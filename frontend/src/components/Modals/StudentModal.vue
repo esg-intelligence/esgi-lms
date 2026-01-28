@@ -4,29 +4,29 @@
 		:options="{
 			title: __('Add a Student'),
 			size: 'sm',
-			actions: [
-				{
-					label: 'Submit',
-					variant: 'solid',
-					onClick: (close) => addStudent(close),
-				},
-			],
 		}"
 	>
 		<template #body-content>
 			<div class="flex flex-col gap-4">
-				<Link
-					doctype="User"
-					v-model="student"
-					:filters="{ ignore_user_type: 1 }"
-					:onCreate="
-						(value, close) => {
-							openSettings('Members', close)
-							show = false
-						}
-					"
-				/>
+				<FormWrapper type="combobox">
+					<Link
+						doctype="User"
+						v-model="student"
+						:filters="{ ignore_user_type: 1 }"
+						:onCreate="
+							(value, close) => {
+								openSettings('Members', close)
+								show = false
+							}
+						"
+					/>
+				</FormWrapper>
 			</div>
+		</template>
+		<template #actions="{ close }">
+			<Button class="w-full" variant="solid" @click="addStudent(close)">
+				Submit
+			</Button>
 		</template>
 	</Dialog>
 </template>
@@ -36,6 +36,8 @@ import { ref, inject } from 'vue'
 import Link from '@/components/Controls/Link.vue'
 import { useOnboarding } from 'frappe-ui/frappe'
 import { openSettings } from '@/utils'
+import Button from '../ui/Button.vue'
+import FormWrapper from '../ui/FormWrapper.vue'
 
 const students = defineModel('reloadStudents')
 const batchModal = defineModel('batchModal')
@@ -80,7 +82,7 @@ const addStudent = (close) => {
 			onError(err) {
 				toast.error(err.messages?.[0] || err)
 			},
-		}
+		},
 	)
 }
 </script>

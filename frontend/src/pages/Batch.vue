@@ -15,7 +15,6 @@
 					v-if="canMakeAnnouncement()"
 					@click="openAnnouncementModal()"
 					variant="solid"
-					size="lg"
 					class="!bg-primary-500"
 				>
 					<span>
