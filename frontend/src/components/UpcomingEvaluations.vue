@@ -1,14 +1,17 @@
 <template>
 	<div v-if="!forHome || (forHome && upcoming_evals.data?.length)">
 		<div class="flex items-center justify-between mb-4">
-			<div class="text-lg text-ink-gray-9 font-semibold">
+			<div class="text-xl text-ink-gray-9 font-semibold">
 				{{ __('Upcoming Evaluations') }}
 			</div>
 			<Button
 				v-if="
-					upcoming_evals.data?.length != evaluationCourses.length && !forHome
+					upcoming_evals.data?.length != evaluationCourses.length &&
+					!forHome &&
+					upcoming_evals.data?.length
 				"
 				@click="openEvalModal"
+				variant="solid"
 			>
 				{{ __('Schedule Evaluation') }}
 			</Button>
@@ -99,8 +102,21 @@
 				</div>
 			</div>
 		</div>
-		<div v-else class="text-ink-gray-5">
-			{{ __('Schedule an evaluation to get certified.') }}
+		<div v-else class="flex flex-col items-center justify-center gap-y-2">
+			<EmptyIcon class="size-24 mb-6" />
+			<h3 class="text-lg font-bold text-gray-900">Nothing to see here yet</h3>
+			<p class="text-gray-500 text-ms font-medium">
+				{{ __('Schedule an evaluation to get certified.') }}
+			</p>
+			<Button
+				v-if="
+					upcoming_evals.data?.length != evaluationCourses.length && !forHome
+				"
+				@click="openEvalModal"
+				variant="solid"
+			>
+				{{ __('Schedule Evaluation') }}
+			</Button>
 		</div>
 	</div>
 	<EvaluationModal
@@ -122,9 +138,10 @@ import {
 } from 'lucide-vue-next'
 import { inject, ref, getCurrentInstance, computed } from 'vue'
 import { formatTime } from '@/utils'
-import { Button, createResource, call } from 'frappe-ui'
+import { createResource, call } from 'frappe-ui'
 import EvaluationModal from '@/components/Modals/EvaluationModal.vue'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
+import Button from './ui/Button.vue'
 
 const dayjs = inject('$dayjs')
 const showEvalModal = ref(false)
@@ -177,7 +194,7 @@ const cancelEvaluation = (evl) => {
 	$dialog({
 		title: __('Cancel this evaluation?'),
 		message: __(
-			'Are you sure you want to cancel this evaluation? This action cannot be undone.'
+			'Are you sure you want to cancel this evaluation? This action cannot be undone.',
 		),
 		actions: [
 			{
@@ -188,7 +205,7 @@ const cancelEvaluation = (evl) => {
 					call('lms.lms.api.cancel_evaluation', { evaluation: evl }).then(
 						() => {
 							upcoming_evals.reload()
-						}
+						},
 					)
 					close()
 				},

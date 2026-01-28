@@ -89,20 +89,18 @@
 				{{ course.short_introduction }}
 			</div> -->
 
-			<div class="flex items-center justify-between mb-4">
-				<div class="flex avatar-group overlap">
-					<div
-						class="h-fit mr-1"
-						:class="{ 'avatar-group overlap': course.instructors.length > 1 }"
-					>
-						<UserAvatar
-							v-for="instructor in course.instructors"
-							:user="instructor"
-							size="xl"
-						/>
-					</div>
-					<CourseInstructors :instructors="course.instructors" />
+			<div class="flex avatar-group overlap mb-4">
+				<div
+					class="h-fit mr-1"
+					:class="{ 'avatar-group overlap': course.instructors.length > 1 }"
+				>
+					<UserAvatar
+						v-for="instructor in course.instructors"
+						:user="instructor"
+						size="xl"
+					/>
 				</div>
+				<CourseInstructors :instructors="course.instructors" />
 			</div>
 
 			<!-- <div class="flex items-center space-x-2">

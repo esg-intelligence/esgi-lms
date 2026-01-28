@@ -10,7 +10,7 @@
 	</div>
 
 	<div class="flex items-center justify-between">
-		<div class="text-lg font-semibold text-ink-gray-9">
+		<div class="text-xl font-semibold text-ink-gray-9">
 			{{ __('Live Class') }}
 		</div>
 		<Button v-if="canCreateClass()" @click="openLiveClassModal">
@@ -96,8 +96,14 @@
 			</div>
 		</div>
 	</div>
-	<div v-else class="text-sm italic text-ink-gray-5 mt-2">
-		{{ __('No live classes scheduled') }}
+	<div v-else class="flex flex-col items-center justify-center">
+		<EmptyIcon class="size-24 mb-6" />
+		<h3 class="text-lg font-bold text-gray-900 mb-2">
+			Nothing to see here yet
+		</h3>
+		<p class="text-gray-500 text-ms font-medium">
+			{{ __('No live classes scheduled') }}
+		</p>
 	</div>
 
 	<LiveClassModal
