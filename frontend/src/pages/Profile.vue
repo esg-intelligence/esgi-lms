@@ -1,16 +1,15 @@
 <template>
 	<NoPermission v-if="!$user.data" />
 	<div v-else-if="profile.data" class="min-h-screen bg-gray-50 pb-12">
-		<div class="group relative h-48 w-full bg-gradient-to-r from-[#125CA2] to-[#51E3B2]">
+		<div
+			class="group relative h-48 w-full bg-gradient-to-r from-[#125CA2] to-[#51E3B2]"
+		>
 			<img
 				v-if="profile.data.cover_image"
 				:src="profile.data.cover_image"
 				class="h-full w-full object-cover object-center"
 			/>
-			<div
-				class="absolute top-4 right-4"
-				v-if="isSessionUser()"
-			>
+			<div class="absolute top-4 right-4" v-if="isSessionUser()">
 				<EditCoverImage
 					@select="(imageUrl) => coverImage.submit({ url: imageUrl })"
 				>
@@ -33,22 +32,16 @@
 				class="relative -mt-12 rounded-xl bg-white p-6 border border-gray-100 sm:p-8"
 			>
 				<div
-					class="flex flex-col items-center sm:flex-row sm:items-start sm:space-x-8"
+					class="flex flex-col items-center sm:flex-row sm:justify-center gap-4"
 				>
-					<div class="relative">
-						<img
-							v-if="profile.data.user_image"
-							:src="profile.data.user_image"
-							class="h-24 w-24 rounded-full border-4 border-white object-cover shadow-sm bg-gray-100"
-						/>
-						<UserAvatar
-							v-else
-							:user="profile.data"
-							class="h-24 w-24 rounded-full border-4 border-white object-cover shadow-sm"
-						/>
-					</div>
+					<Avatar
+						class="avatar border border-outline-gray-2 cursor-auto rounded-full object-cover shadow-sm h-[58px] w-[56px] sm:h-[80px] sm:w-[80px]"
+						:label="profile.data.first_name"
+						:image="profile.data.image?.file_url"
+						size="lg"
+					/>
 
-					<div class="mt-4 text-center sm:mt-8 sm:text-left flex-1">
+					<div class="text-center sm:text-left flex-1">
 						<div
 							class="flex flex-col sm:flex-row sm:items-center sm:justify-between"
 						>
@@ -121,10 +114,7 @@
 						</div>
 
 						<div v-else class="p-6 lg:p-8">
-							<router-view
-								:profile="profile"
-								:key="profile.data?.name"
-							/>
+							<router-view :profile="profile" :key="profile.data?.name" />
 						</div>
 					</div>
 				</div>
@@ -140,12 +130,7 @@
 </template>
 
 <script setup>
-import {
-	Button,
-	call,
-	createResource,
-	usePageMeta,
-} from 'frappe-ui'
+import { Button, call, createResource, usePageMeta, Avatar } from 'frappe-ui'
 import { inject, watch, ref, onMounted, watchEffect } from 'vue'
 import { sessionStore } from '@/stores/session'
 import { Edit } from 'lucide-vue-next'
@@ -229,7 +214,7 @@ watch(
 	() => props.username,
 	() => {
 		profile.reload()
-	}
+	},
 )
 
 const editProfile = () => {
