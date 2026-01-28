@@ -1,35 +1,20 @@
 <template>
 	<div class="mt-7 mb-20">
 		<div class="flex h-screen flex-col overflow-hidden">
-			<Calendar
-				v-if="evaluations.data?.length"
-				:config="{
-					defaultMode: 'Week',
-					disableModes: ['Day', 'Week'],
-					redundantCellHeight: 100,
-					enableShortcuts: false,
-				}"
-				:events="evaluations.data"
-				@click="(event) => openEvent(event)"
-			>
+			<Calendar v-if="evaluations.data?.length" :config="{
+				defaultMode: 'Week',
+				disableModes: ['Day', 'Week'],
+				redundantCellHeight: 100,
+				enableShortcuts: false,
+			}" :events="evaluations.data" @click="(event) => openEvent(event)">
 				<template #header="{ currentMonthYear, decrement, increment }">
 					<div class="mb-2 flex justify-between">
 						<span class="text-lg text-ink-gray-9 font-semibold">
 							{{ currentMonthYear }}
 						</span>
 						<div class="flex gap-x-1">
-							<Button
-								@click="decrement()"
-								variant="ghost"
-								class="h-4 w-4"
-								icon="chevron-left"
-							/>
-							<Button
-								@click="increment()"
-								variant="ghost"
-								class="h-4 w-4"
-								icon="chevron-right"
-							/>
+							<Button @click="decrement()" variant="ghost" class="h-4 w-4" icon="chevron-left" />
+							<Button @click="increment()" variant="ghost" class="h-4 w-4" icon="chevron-right" />
 						</div>
 					</div>
 				</template>

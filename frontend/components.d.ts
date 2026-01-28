@@ -151,6 +151,7 @@ declare module 'vue' {
     TransactionDetails: typeof import('./src/components/Settings/Transactions/TransactionDetails.vue')['default']
     TransactionList: typeof import('./src/components/Settings/Transactions/TransactionList.vue')['default']
     Transactions: typeof import('./src/components/Settings/Transactions/Transactions.vue')['default']
+    TrashIcon: typeof import('./src/components/Icons/TrashIcon.vue')['default']
     UnairLogo: typeof import('./src/components/Icons/UnairLogo.vue')['default']
     UnsplashImageBrowser: typeof import('./src/components/UnsplashImageBrowser.vue')['default']
     UpcomingEvaluations: typeof import('./src/components/UpcomingEvaluations.vue')['default']

@@ -1,36 +1,19 @@
 <template>
-	<div
-		class="bg-white rounded-xl w-full border border-gray-100 shadow-xl shadow-gray-100 p-5 lg:sticky lg:top-14"
-	>
+	<div class="bg-white rounded-xl w-full border border-gray-100 shadow-xl shadow-gray-100 p-5 lg:sticky lg:top-14">
 		<div class="rounded-lg aspect-video w-full relative overflow-hidden">
-			<iframe
-				v-if="course.data.video_link"
-				:src="video_link"
-				class="w-full h-full"
-			/>
-			<div
-				v-else
-				class="bg-cover bg-center rounded-md w-full h-full"
-				:class="{ 'default-image': !course.data.image }"
-				:style="{
+			<iframe v-if="course.data.video_link" :src="video_link" class="w-full h-full" />
+			<div v-else class="bg-cover bg-center rounded-md w-full h-full"
+				:class="{ 'default-image': !course.data.image }" :style="{
 					backgroundImage: 'url(\'' + encodeURI(course.data.image) + '\')',
-				}"
-			></div>
-			<Badge
-				v-if="course.data.enable_certification"
-				theme="green"
-				size="lg"
-				class="absolute !rounded top-3 left-3 bg-white text-primary-500 font-medium text-xs p-2"
-			>
+				}"></div>
+			<Badge v-if="course.data.enable_certification" theme="green" size="lg"
+				class="absolute !rounded top-3 left-3 bg-white text-primary-500 font-medium text-xs p-2">
 				{{ __('Certification') }}
 			</Badge>
 		</div>
 
 		<div class="py-4 space-y-4">
-			<div
-				v-if="!course.data.paid_course"
-				class="text-xl font-semibold mb-3 text-left"
-			>
+			<div v-if="!course.data.paid_course" class="text-xl font-semibold mb-3 text-left">
 				{{ course.data.price }}
 			</div>
 			<h1 class="text-lg font-semibold text-ink-gray-9 leading-tight">
@@ -55,9 +38,7 @@
 					}}</span>
 				</div>
 				<div class="flex items-center text-ink-gray-9">
-					<Star
-						class="size-5 mr-2 stroke-1 fill-warning-500 text-warning-500"
-					/>
+					<Star class="size-5 mr-2 stroke-1 fill-warning-500 text-warning-500" />
 					<span class="font-medium text-base">
 						{{
 							course.data.rating
@@ -65,24 +46,16 @@
 								: '0.0'
 						}}
 					</span>
-					<span class="text-ink-gray-5 ml-1"
-						>({{ course.data.review_total || 0 }} reviews)</span
-					>
+					<span class="text-ink-gray-5 ml-1">({{ course.data.review_total || 0 }} reviews)</span>
 				</div>
 
-				<div
-					v-if="course.data.enable_certification"
-					class="flex items-center font-medium text-ink-gray-9"
-				>
+				<div v-if="course.data.enable_certification" class="flex items-center font-medium text-ink-gray-9">
 					<GraduationCap class="size-5 mr-2 stroke-1.5" />
 					<span class="text-ink-gray-7 ml-1">
 						{{ __('Certificate of Completion') }}
 					</span>
 				</div>
-				<div
-					v-if="course.data.paid_certificate"
-					class="flex items-center font-medium text-ink-gray-9"
-				>
+				<div v-if="course.data.paid_certificate" class="flex items-center font-medium text-ink-gray-9">
 					<GraduationCap class="size-5 mr-2 stroke-1.5" />
 					<span class="text-ink-gray-7 ml-1">
 						{{ __('Paid Certificate after Evaluation') }}
@@ -91,17 +64,10 @@
 			</div>
 			<div class="space-y-3 mt-2">
 				<div class="flex items-start">
-					<span
-						class="h-6 mr-1"
-						:class="{
-							'avatar-group overlap': course.data.instructors.length > 1,
-						}"
-					>
-						<UserAvatar
-							v-for="instructor in course.data.instructors"
-							:user="instructor"
-							size="xl"
-						/>
+					<span class="h-6 mr-1" :class="{
+						'avatar-group overlap': course.data.instructors.length > 1,
+					}">
+						<UserAvatar v-for="instructor in course.data.instructors" :user="instructor" size="xl" />
 					</span>
 					<div class="flex flex-col">
 						<p class="text-gray-500 tracking-wider text-xs font-medium -mb-1">
@@ -114,9 +80,7 @@
 				<div v-if="user && course.data.membership">
 					<div class="flex items-center justify-between text-sm mb-1">
 						<span class="text-md text-gray-600">Course progress</span>
-						<span class="text-md text-gray-600"
-							>{{ Math.ceil(course.data.membership.progress) }}%</span
-						>
+						<span class="text-md text-gray-600">{{ Math.ceil(course.data.membership.progress) }}%</span>
 					</div>
 
 					<ProgressBar :progress="course.data.membership.progress" />
@@ -124,32 +88,25 @@
 			</div>
 
 			<div v-if="!readOnlyMode" class="space-y-2 !mt-20">
-				<Button
-					v-if="user.data?.is_moderator || is_instructor()"
-					class="w-full"
-					variant="subtle"
-					size="md"
-					@click="showProgressSummary"
-				>
+				<Button v-if="user.data?.is_moderator || is_instructor()" class="w-full" variant="subtle" size="md"
+					@click="showProgressSummary">
 					<span>
 						{{ __('Progress Summary') }}
 					</span>
 				</Button>
 				<div v-if="course.data.membership" class="space-y-2">
-					<router-link
-						:to="{
-							name: 'Lesson',
-							params: {
-								courseName: course.name,
-								chapterNumber: course.data.current_lesson
-									? course.data.current_lesson.split('-')[0]
-									: 1,
-								lessonNumber: course.data.current_lesson
-									? course.data.current_lesson.split('-')[1]
-									: 1,
-							},
-						}"
-					>
+					<router-link :to="{
+						name: 'Lesson',
+						params: {
+							courseName: course.name,
+							chapterNumber: course.data.current_lesson
+								? course.data.current_lesson.split('-')[0]
+								: 1,
+							lessonNumber: course.data.current_lesson
+								? course.data.current_lesson.split('-')[1]
+								: 1,
+						},
+					}">
 						<Button variant="solid" size="md" class="w-full">
 							<span>
 								{{ __('Continue Learning') }}
@@ -158,16 +115,13 @@
 					</router-link>
 					<CertificationLinks :courseName="course.data.name" class="w-full" />
 				</div>
-				<router-link
-					v-else-if="course.data.paid_course"
-					:to="{
-						name: 'Billing',
-						params: {
-							type: 'course',
-							name: course.data.name,
-						},
-					}"
-				>
+				<router-link v-else-if="course.data.paid_course" :to="{
+					name: 'Billing',
+					params: {
+						type: 'course',
+						name: course.data.name,
+					},
+				}">
 					<Button variant="solid" size="md" class="w-full">
 						<template #prefix>
 							<CreditCard class="size-4 stroke-1.5" />
@@ -177,44 +131,27 @@
 						</span>
 					</Button>
 				</router-link>
-				<Badge
-					v-else-if="course.data.disable_self_learning"
-					theme="blue"
-					size="lg"
-				>
+				<Badge v-else-if="course.data.disable_self_learning" theme="blue" size="lg">
 					{{ __('Contact the Administrator to enroll for this course.') }}
 				</Badge>
 
-				<Button
-					v-else-if="!user.data?.is_moderator && !is_instructor()"
-					@click="enrollStudent()"
-					variant="solid"
-					class="w-full"
-					size="md"
-				>
+				<Button v-else-if="!user.data?.is_moderator && !is_instructor()" @click="enrollStudent()"
+					variant="solid" class="w-full" size="md">
 					<span>
 						{{ __('Start Learning') }}
 					</span>
 				</Button>
-				<Button
-					v-if="canGetCertificate"
-					@click="fetchCertificate()"
-					variant="outline"
-					class="w-full mt-2"
-					size="md"
-				>
+				<Button v-if="canGetCertificate" @click="fetchCertificate()" variant="outline" class="w-full mt-2"
+					size="md">
 					{{ __('View Certificate') }}
 				</Button>
 
-				<router-link
-					v-if="user?.data?.is_moderator || is_instructor()"
-					:to="{
-						name: 'CourseForm',
-						params: {
-							courseName: course.data.name,
-						},
-					}"
-				>
+				<router-link v-if="user?.data?.is_moderator || is_instructor()" :to="{
+					name: 'CourseForm',
+					params: {
+						courseName: course.data.name,
+					},
+				}">
 					<Button variant="outline" class="w-full mt-2" size="md">
 						<span>
 							{{ __('Edit') }}
@@ -224,12 +161,8 @@
 			</div>
 		</div>
 	</div>
-	<CourseProgressSummary
-		v-if="user.data?.is_moderator || is_instructor()"
-		v-model="showProgressModal"
-		:courseName="course.data.name"
-		:enrollments="course.data.enrollments"
-	/>
+	<CourseProgressSummary v-if="user.data?.is_moderator || is_instructor()" v-model="showProgressModal"
+		:courseName="course.data.name" :enrollments="course.data.enrollments" />
 </template>
 <script setup>
 import {
@@ -333,8 +266,7 @@ const certificate = createResource({
 	},
 	onSuccess(data) {
 		window.open(
-			`/api/method/frappe.utils.print_format.download_pdf?doctype=LMS+Certificate&name=${
-				data.name
+			`/api/method/frappe.utils.print_format.download_pdf?doctype=LMS+Certificate&name=${data.name
 			}&format=${encodeURIComponent(data.template)}`,
 			'_blank',
 		)
