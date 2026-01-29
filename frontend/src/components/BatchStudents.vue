@@ -95,7 +95,7 @@
 				</ListSelectBanner>
 			</ListView>
 		</div>
-		<div v-else class="flex flex-col items-center justify-center">
+		<div v-else class="flex flex-col items-center justify-center mt-6">
 			<EmptyIcon class="size-24 mb-6" />
 			<h3 class="text-lg font-bold text-gray-900 mb-2">
 				Nothing to see here yet

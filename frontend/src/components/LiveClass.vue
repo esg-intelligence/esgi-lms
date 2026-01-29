@@ -22,13 +22,10 @@
 			</span>
 		</Button>
 	</div>
-	<div
-		v-if="liveClasses.data?.length"
-		class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-5"
-	>
+	<div v-if="liveClasses.data?.length" class="grid grid-cols-1 gap-5 mt-5">
 		<div
 			v-for="cls in liveClasses.data"
-			class="flex flex-col border rounded-md h-full text-ink-gray-7 hover:border-outline-gray-3 p-3"
+			class="flex flex-col border border-gray-100 rounded-md h-full text-ink-gray-7 hover:border-outline-gray-3 p-3"
 			:class="{
 				'cursor-pointer': hasPermission() && cls.attendees > 0,
 			}"
@@ -38,65 +35,60 @@
 				}
 			"
 		>
-			<div class="font-semibold text-ink-gray-9 text-lg mb-1">
-				{{ cls.title }}
-			</div>
-			<div class="short-introduction">
-				{{ cls.description }}
-			</div>
-			<div class="mt-auto space-y-3">
-				<div class="flex items-center space-x-2">
-					<Calendar class="w-4 h-4 stroke-1.5" />
-					<span>
-						{{ dayjs(cls.date).format('DD MMMM YYYY') }}
-					</span>
-				</div>
-				<div class="flex items-center space-x-2">
-					<Clock class="w-4 h-4 stroke-1.5" />
-					<span>
-						{{ dayjs(getClassStart(cls)).format('hh:mm A') }} -
-						{{ dayjs(getClassEnd(cls)).format('hh:mm A') }}
-					</span>
+			<div class="flex items-center gap-2 mb-1">
+				<div class="font-semibold text-ink-gray-9 text-base">
+					{{ cls.title }}
 				</div>
 				<div
-					v-if="canAccessClass(cls)"
-					class="flex items-center space-x-2 text-ink-gray-9 mt-auto"
+					v-if="canAccessClass(cls) && !hasClassEnded(cls)"
+					class="flex items-center space-x-1 px-2 py-0.5 bg-red-100 text-red-600 rounded-sm text-[10px] font-bold uppercase tracking-wider animate-pulse"
 				>
-					<a
-						v-if="user.data?.is_moderator || user.data?.is_evaluator"
-						:href="cls.start_url"
-						target="_blank"
-						class="cursor-pointer inline-flex items-center justify-center gap-2 transition-colors focus:outline-none text-ink-gray-8 bg-surface-gray-2 hover:bg-surface-gray-3 active:bg-surface-gray-4 focus-visible:ring focus-visible:ring-outline-gray-3 h-7 text-base px-2 rounded"
-						:class="cls.join_url ? 'w-full' : 'w-1/2'"
-					>
-						<Monitor class="h-4 w-4 stroke-1.5" />
-						{{ __('Start') }}
-					</a>
-					<a
-						:href="cls.join_url"
-						target="_blank"
-						class="w-full cursor-pointer inline-flex items-center justify-center gap-2 transition-colors focus:outline-none text-ink-gray-8 bg-surface-gray-2 hover:bg-surface-gray-3 active:bg-surface-gray-4 focus-visible:ring focus-visible:ring-outline-gray-3 h-7 text-base px-2 rounded"
-					>
-						<Video class="h-4 w-4 stroke-1.5" />
-						{{ __('Join') }}
-					</a>
+					<span class="size-1 bg-red-600 rounded-full"></span>
+					<span>Live</span>
 				</div>
 				<Tooltip
 					v-else-if="hasClassEnded(cls)"
 					:text="__('This class has ended')"
-					placement="right"
+					placement="top"
 				>
-					<div class="flex items-center space-x-2 text-ink-amber-3 w-fit">
-						<Info class="w-4 h-4 stroke-1.5" />
-						<span>
-							{{ __('Ended') }}
-						</span>
+					<div
+						class="flex items-center px-2 py-0.5 bg-surface-amber-1 text-ink-amber-3 rounded-sm text-[10px] font-bold uppercase tracking-wider"
+					>
+						<span>Ended</span>
 					</div>
 				</Tooltip>
 			</div>
+			<div class="mt-auto space-y-2 text-sm">
+				<div class="flex items-center space-x-2">
+					<Calendar2Icon class="w-4 h-4 stroke-1.5" />
+					<span class="text-gray-600">
+						{{ dayjs(cls.date).format('DD MMM YYYY') }} • {{ __('Online') }}
+					</span>
+				</div>
+				<div class="flex items-center space-x-2">
+					<ClockIcon class="w-4 h-4 stroke-1.5" />
+					<span class="text-gray-600">
+						{{ dayjs(getClassStart(cls)).format('hh:mm A') }} -
+						{{ dayjs(getClassEnd(cls)).format('hh:mm A') }}
+					</span>
+				</div>
+				<div v-if="cls.join_url" class="flex items-center space-x-2 group/link">
+					<Link2Icon class="w-4 h-4 stroke-1.5 text-gray-500" />
+					<span class="text-gray-500 truncate max-w-[200px] md:max-w-xs">
+						{{ cls.join_url }}
+					</span>
+					<button
+						@click.stop="copyToClipboard(cls.join_url)"
+						class="p-1 hover:bg-gray-100 rounded transition-colors text-primary-500"
+						:title="__('Copy Link')"
+					>
+						<Copy class="size-3.5" />
+					</button>
+				</div>
+			</div>
 		</div>
 	</div>
-	<div v-else class="flex flex-col items-center justify-center">
+	<div v-else class="flex flex-col items-center justify-center mt-6">
 		<EmptyIcon class="size-24 mb-6" />
 		<h3 class="text-lg font-bold text-gray-900 mb-2">
 			Nothing to see here yet
@@ -116,7 +108,7 @@
 	<LiveClassAttendance v-model="showAttendance" :live_class="attendanceFor" />
 </template>
 <script setup>
-import { createListResource, Button, Tooltip } from 'frappe-ui'
+import { createListResource, Button, Tooltip, toast } from 'frappe-ui'
 import {
 	Plus,
 	Clock,
@@ -125,11 +117,14 @@ import {
 	Monitor,
 	Info,
 	AlertCircle,
+	Link2 as Link2Icon,
+	Copy,
 } from 'lucide-vue-next'
 import { inject, ref } from 'vue'
-import { formatTime } from '@/utils/'
 import LiveClassModal from '@/components/Modals/LiveClassModal.vue'
 import LiveClassAttendance from '@/components/Modals/LiveClassAttendance.vue'
+import Calendar2Icon from './Icons/Calendar2Icon.vue'
+import ClockIcon from './Icons/ClockIcon.vue'
 
 const user = inject('$user')
 const showLiveClassModal = ref(false)
@@ -207,6 +202,12 @@ const openAttendanceModal = (cls) => {
 	if (cls.attendees <= 0) return
 	showAttendance.value = true
 	attendanceFor.value = cls
+}
+
+const copyToClipboard = (text) => {
+	navigator.clipboard.writeText(text).then(() => {
+		toast.success(__('Link copied to clipboard'))
+	})
 }
 </script>
 <style>

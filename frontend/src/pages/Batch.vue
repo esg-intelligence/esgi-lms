@@ -101,16 +101,20 @@
 						</div>
 					</div>
 
-					<Button variant="outline">
+					<Button
+						v-if="isStudent"
+						variant="outline"
+						@click="showFeedbackModal = true"
+					>
 						{{ __('Give Feedback') }}
 					</Button>
 				</div>
 			</div>
-			<div class="grid grid-cols-1 h-[calc(100vh-3.2rem)]">
+			<div class="grid grid-cols-1 min-h-[calc(100vh-3.2rem)]">
 				<div class="w-full overflow-x-hidden">
 					<div class="border-b mb-6">
 						<nav
-							class="w-full flex space-x-8 overflow-x-hidden hover:overflow-x-scroll mininal-scrollbar"
+							class="w-full flex space-x-8 overflow-x-hidden hover:overflow-x-auto mininal-scrollbar"
 						>
 							<button
 								v-for="tab in tabs"
@@ -161,6 +165,9 @@
 								:singleThread="true"
 								:scrollToBottom="false"
 							/>
+						</div>
+						<div v-else-if="currentTab == 'Feedback'">
+							<BatchFeedbackNew :batch="batch.data.name" />
 						</div>
 					</div>
 					<!-- <Tabs
@@ -313,6 +320,11 @@
 		v-model="openCertificateDialog"
 		:batch="batch.data"
 	/>
+	<FeedbackSubmissionModal
+		v-if="batch.data"
+		v-model="showFeedbackModal"
+		:batch="batch.data.name"
+	/>
 </template>
 <script setup>
 import { computed, inject, ref, onMounted, watch } from 'vue'
@@ -329,6 +341,7 @@ import {
 	MessageCircle,
 	Globe,
 	ClipboardPen,
+	MessageSquareText,
 } from 'lucide-vue-next'
 import { formatTime } from '@/utils'
 import { sessionStore } from '@/stores/session'
@@ -345,7 +358,8 @@ import AnnouncementModal from '@/components/Modals/AnnouncementModal.vue'
 import Discussions from '@/components/Discussions.vue'
 import DateRange from '@/components/Common/DateRange.vue'
 import BulkCertificates from '@/components/Modals/BulkCertificates.vue'
-import BatchFeedback from '@/components/BatchFeedback.vue'
+import BatchFeedbackNew from '@/components/BatchFeedbackNew.vue'
+import FeedbackSubmissionModal from '@/components/Modals/FeedbackSubmissionModal.vue'
 import dayjs from 'dayjs/esm'
 import CustomBreadcrumb from '@/components/ui/CustomBreadcrumb.vue'
 import Button from '@/components/ui/Button.vue'
@@ -353,6 +367,7 @@ import ClockIcon from '@/components/Icons/ClockIcon.vue'
 
 const user = inject('$user')
 const showAnnouncementModal = ref(false)
+const showFeedbackModal = ref(false)
 const openCertificateDialog = ref(false)
 const route = useRoute()
 const router = useRouter()
@@ -399,6 +414,14 @@ const tabs = computed(() => {
 		label: 'Discussions',
 		icon: MessageCircle,
 	})
+
+	if (isAdmin.value) {
+		batchTabs.push({
+			label: 'Feedback',
+			icon: MessageSquareText,
+		})
+	}
+
 	return batchTabs
 })
 
