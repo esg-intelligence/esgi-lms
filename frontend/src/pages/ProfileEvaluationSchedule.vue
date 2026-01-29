@@ -1,35 +1,26 @@
 <template>
-	<div class="mt-7 mb-20">
+	<div class="mt-2 mb-20">
 		<div class="flex h-screen flex-col overflow-hidden">
-			<Calendar
-				v-if="evaluations.data?.length"
-				:config="{
-					defaultMode: 'Week',
-					disableModes: ['Day', 'Week'],
-					redundantCellHeight: 100,
-					enableShortcuts: false,
-				}"
-				:events="evaluations.data"
-				@click="(event) => openEvent(event)"
-			>
+			<Calendar v-if="evaluations.data?.length" :config="{
+				defaultMode: 'Week',
+				disableModes: ['Day', 'Week'],
+				redundantCellHeight: 100,
+				enableShortcuts: false,
+			}" :events="evaluations.data" @click="(event) => openEvent(event)"
+				class="[&>div>.flex:nth-child(1)]:!border-t [&>div>.flex:nth-child(1)]:!border-l [&>div>.flex:nth-child(1)]:!border-r [&>div>.flex:nth-child(1)]:!rounded-t-lg 
+				[&>div>div>div>span]:!border-l [&>div>.border-t-0]:!hidden [&>div>.flex:nth-child(3)::-webkit-scrollbar]:hidden
+    [&>div>.flex:nth-child(3)]:[-ms-overflow-style:none]
+    [&>div>.flex:nth-child(3)]:[scrollbar-width:none] [&>div>div>div>div>div>div>.event]:!bg-primary-100 [&>div>div>div>div>div>div>.event]:!border [&>div>div>div>div>div>div>.event]:!border-primary-500">
 				<template #header="{ currentMonthYear, decrement, increment }">
 					<div class="mb-2 flex justify-between">
 						<span class="text-lg text-ink-gray-9 font-semibold">
 							{{ currentMonthYear }}
 						</span>
 						<div class="flex gap-x-1">
-							<Button
-								@click="decrement()"
-								variant="ghost"
-								class="h-4 w-4"
-								icon="chevron-left"
-							/>
-							<Button
-								@click="increment()"
-								variant="ghost"
-								class="h-4 w-4"
-								icon="chevron-right"
-							/>
+							<div class="text-sm text-primary-500 border-primary-500 border rounded-sm px-3 py-0.5">Today
+							</div>
+							<Button @click="decrement()" variant="ghost" class="h-4 w-4" icon="chevron-left" />
+							<Button @click="increment()" variant="ghost" class="h-4 w-4" icon="chevron-right" />
 						</div>
 					</div>
 				</template>
