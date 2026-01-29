@@ -38,7 +38,7 @@
 		<div class="grid md:grid-cols-[40%,60%] h-screen">
 			<div class="px-5 py-3">
 				<div
-					class="bg-white space-y-3 rounded-xl w-full border border-gray-100 shadow-xl shadow-gray-100 p-5"
+					class="md:sticky md:top-14 bg-white space-y-3 rounded-xl w-full border border-gray-100 shadow-xl shadow-gray-100 p-5"
 				>
 					<h1 class="text-lg font-semibold text-ink-gray-9 mb-2">
 						{{ lesson.data.course_title }}
@@ -92,7 +92,7 @@
 					</div>
 
 					<div class="space-y-2 !mt-10">
-						<div class="flex items-center">
+						<div class="flex items-center gap-x-2 justify-between">
 							<Button
 								v-if="lesson.data.prev"
 								@click="switchLesson('prev')"
@@ -109,8 +109,8 @@
 							<Button
 								v-if="lesson.data.next"
 								@click="switchLesson('next')"
-								class="ml-auto"
 								variant="solid"
+								class="ml-auto"
 							>
 								<template #suffix>
 									<ChevronRight class="w-4 h-4 stroke-1" />
@@ -126,6 +126,7 @@
 									name: 'CourseDetail',
 									params: { courseName: courseName },
 								}"
+								class="ml-auto"
 							>
 								<Button variant="solid" class="ml-auto">
 									{{ __('Back to Course') }}
@@ -290,20 +291,20 @@
 						</div>
 						<div
 							v-else-if="lesson.data.instructor_notes"
-							class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal mt-8"
+							class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal mt-3"
 						>
 							<LessonContent :content="lesson.data.instructor_notes" />
 						</div>
 						<div
 							v-if="lesson.data.content"
 							@mouseup="toggleInlineMenu"
-							class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal mt-8"
+							class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal mt-3"
 						>
 							<div id="editor"></div>
 						</div>
 						<div
 							v-else
-							class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal mt-8"
+							class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal mt-3"
 						>
 							<LessonContent
 								v-if="lesson.data?.body"
