@@ -1682,7 +1682,7 @@ def calculate_course_progress(batch_courses, details):
 		course_progress.append(progress)
 
 	details.average_course_progress = (
-		flt(sum(course_progress) / len(batch_courses), 2) if len(batch_courses) else 0
+		flt(sum([x or 0 for x in course_progress]) / len(batch_courses), 2) if len(batch_courses) else 0
 	)
 
 

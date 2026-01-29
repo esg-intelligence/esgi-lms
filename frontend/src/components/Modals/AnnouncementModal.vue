@@ -4,13 +4,6 @@
 		:options="{
 			title: __('Make an Announcement'),
 			size: 'xl',
-			actions: [
-				{
-					label: 'Submit',
-					variant: 'solid',
-					onClick: (close) => makeAnnouncement(close),
-				},
-			],
 		}"
 	>
 		<template #body-content>
@@ -20,33 +13,44 @@
 						{{ __('Subject') }}
 						<span class="text-ink-red-3">*</span>
 					</div>
-					<Input type="text" v-model="announcement.subject" />
+					<FormWrapper>
+						<Input type="text" v-model="announcement.subject" />
+					</FormWrapper>
 				</div>
 				<div class="">
 					<div class="mb-1.5 text-sm text-ink-gray-5">
 						{{ __('Reply To') }}
 						<span class="text-ink-red-3">*</span>
 					</div>
-					<Input type="text" v-model="announcement.replyTo" />
+					<FormWrapper>
+						<Input type="text" v-model="announcement.replyTo" />
+					</FormWrapper>
 				</div>
-				<div class="mb-4">
+				<div class="">
 					<div class="mb-1.5 text-sm text-ink-gray-5">
 						{{ __('Announcement') }}
 						<span class="text-ink-red-3">*</span>
 					</div>
-					<TextEditor
-						:fixedMenu="true"
-						@change="(val) => (announcement.announcement = val)"
-						editorClass="prose-sm py-2 px-2 min-h-[200px] border-outline-gray-2 hover:border-outline-gray-3 rounded-b-md bg-surface-gray-3"
-					/>
+					<FormWrapper type="editor" class="">
+						<TextEditor
+							:fixedMenu="true"
+							@change="(val) => (announcement.announcement = val)"
+							editorClass="prose-sm px-2 min-h-[200px] border-outline-gray-2 border hover:border-outline-gray-3 rounded-b-md bg-surface-gray-3"
+					/></FormWrapper>
 				</div>
 			</div>
+		</template>
+		<template #actions="{ close }">
+			<Button class="w-full" variant="solid" @click="makeAnnouncement(close)">
+				Submit
+			</Button>
 		</template>
 	</Dialog>
 </template>
 <script setup>
 import { Dialog, Input, TextEditor, createResource, toast } from 'frappe-ui'
 import { reactive } from 'vue'
+import FormWrapper from '../ui/FormWrapper.vue'
 
 const show = defineModel()
 
@@ -107,7 +111,7 @@ const makeAnnouncement = (close) => {
 			onError(err) {
 				toast.error(__(err.messages?.[0] || err))
 			},
-		}
+		},
 	)
 }
 </script>

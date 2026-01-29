@@ -15,7 +15,6 @@
 					v-if="canMakeAnnouncement()"
 					@click="openAnnouncementModal()"
 					variant="solid"
-					size="lg"
 					class="!bg-primary-500"
 				>
 					<span>
@@ -28,29 +27,35 @@
 			</div>
 		</header>
 		<div class="px-5 py-4" v-if="batch.data">
-			<div class="bg-white rounded-xl border mb-6 flex">
+			<div class="bg-white rounded-xl border mb-6 p-4 flex">
 				<div class="flex items-center w-full pr-4">
-					<div class="flex items-start space-x-4 flex-1 pr-4">
-						<div class="w-32 h-32 object-cover rounded-tl-xl rounded-bl-xl">
-							<img
-								v-if="batch.data.meta_image"
-								:src="batch.data.meta_image"
-								class="w-full h-full object-cover rounded-tl-xl rounded-bl-xl"
-							/>
-							<NoImageFallback
-								v-else
-								class="w-full h-full rounded-tl-xl rounded-bl-xl"
-							/>
+					<div class="flex-1 px-3 py-3 flex flex-col gap-y-2 justify-center">
+						<div class="h-fit">
+							<h1 class="text-lg leading-5 font-semibold mb-1 text-gray-900">
+								{{ batch.data.title }}
+							</h1>
+							<p class="short-introduction text-sm text-gray-600 !mb-0">
+								{{ batch.data.description }}
+							</p>
 						</div>
-
-						<div class="h-32 flex-1 py-2 flex justify-center flex-col">
-							<div class="py-2">
-								<div class="text-lg leading-5 font-semibold mb-2 text-gray-900">
-									{{ batch.data.title }}
-								</div>
-								<div class="short-introduction text-sm text-gray-600 !mb-3">
-									{{ batch.data.description }}
-								</div>
+						<div class="w-full flex gap-x-0">
+							<div
+								v-if="batch.data.seat_count && seats_left > 0"
+								class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-md"
+							>
+								{{ seats_left }}
+								<span v-if="seats_left > 1">
+									{{ __('Seats Left') }}
+								</span>
+								<span v-else-if="seats_left == 1">
+									{{ __('Seat Left') }}
+								</span>
+							</div>
+							<div
+								v-else-if="batch.data.seat_count && seats_left <= 0"
+								class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-md"
+							>
+								{{ __('Sold Out') }}
 							</div>
 							<div
 								v-if="batch.data.amount"
@@ -63,48 +68,53 @@
 									)
 								}}
 							</div>
-							<div class="flex text-md space-x-4">
-								<!-- <div v-if="batch.data.courses.length" class="flex items-center mb-3 text-gray-600">
-						<BookOpen class="h-4 w-4 stroke-1.5 mr-2" />
-						<span> {{ batch.data.courses.length }} {{ __('Courses') }} </span>
-					</div> -->
-								<div class="flex items-center space-x-2">
-									<DateRange
-										:startDate="batch.data.start_date"
-										:endDate="batch.data.end_date"
-									/>
-									<span class="text-gray-600" v-if="batch.data.medium"
-										>• {{ batch.data.medium }}</span
-									>
-								</div>
+						</div>
 
-								<div class="flex items-center text-gray-600">
-									<ClockIcon class="h-4 w-4 stroke-1.5 mr-2" />
+						<div
+							class="w-full flex flex-col md:flex-row md:items-center gap-x-2 text-sm flex-wrap"
+						>
+							<div class="flex-1 flex items-center space-x-2 md:flex-nowrap">
+								<DateRange
+									:startDate="batch.data.start_date"
+									:endDate="batch.data.end_date"
+									class="whitespace-nowrap"
+								/>
+								<span
+									class="text-gray-600 whitespace-nowrap"
+									v-if="batch.data.medium"
+									>{{ `• ${batch.data.medium}` }}</span
+								>
+							</div>
+							<div class="flex-1 flex items-center text-gray-600">
+								<ClockIcon class="h-4 w-4 stroke-1.5 mr-2 !text-gray-900" />
+								<span class="text-gray-600 whitespace-nowrap">
+									{{ formatTime(batch.data.start_time) }} -
+									{{ formatTime(batch.data.end_time) }}
+								</span>
+								<div v-if="batch.data.timezone" class="flex items-center">
+									<Globe class="h-4 w-4 stroke-1.5 mx-2 text-gray-900" />
 									<span>
-										{{ formatTime(batch.data.start_time) }} -
-										{{ formatTime(batch.data.end_time) }}
+										{{ batch.data.timezone }}
 									</span>
 								</div>
-								<!-- <div v-if="batch.data.timezone" class="flex items-center text-gray-600">
-						<Globe class="h-4 w-4 stroke-1.5 mr-2" />
-						<span>
-							{{ batch.data.timezone }}
-						</span>
-					</div> -->
 							</div>
 						</div>
 					</div>
 
-					<Button variant="outline">
+					<Button
+						v-if="isStudent"
+						variant="outline"
+						@click="showFeedbackModal = true"
+					>
 						{{ __('Give Feedback') }}
 					</Button>
 				</div>
 			</div>
-			<div class="grid grid-cols-1 h-[calc(100vh-3.2rem)]">
-				<div class="w-full overflow-x-hidden hover:overflow-x-scroll">
+			<div class="grid grid-cols-1 min-h-[calc(100vh-3.2rem)]">
+				<div class="w-full overflow-x-hidden">
 					<div class="border-b mb-6">
 						<nav
-							class="w-full flex space-x-8 overflow-x-hidden hover:overflow-x-scroll"
+							class="w-full flex space-x-8 overflow-x-hidden hover:overflow-x-auto mininal-scrollbar"
 						>
 							<button
 								v-for="tab in tabs"
@@ -155,6 +165,9 @@
 								:singleThread="true"
 								:scrollToBottom="false"
 							/>
+						</div>
+						<div v-else-if="currentTab == 'Feedback'">
+							<BatchFeedbackNew :batch="batch.data.name" />
 						</div>
 					</div>
 					<!-- <Tabs
@@ -307,6 +320,11 @@
 		v-model="openCertificateDialog"
 		:batch="batch.data"
 	/>
+	<FeedbackSubmissionModal
+		v-if="batch.data"
+		v-model="showFeedbackModal"
+		:batch="batch.data.name"
+	/>
 </template>
 <script setup>
 import { computed, inject, ref, onMounted, watch } from 'vue'
@@ -323,6 +341,7 @@ import {
 	MessageCircle,
 	Globe,
 	ClipboardPen,
+	MessageSquareText,
 } from 'lucide-vue-next'
 import { formatTime } from '@/utils'
 import { sessionStore } from '@/stores/session'
@@ -339,13 +358,16 @@ import AnnouncementModal from '@/components/Modals/AnnouncementModal.vue'
 import Discussions from '@/components/Discussions.vue'
 import DateRange from '@/components/Common/DateRange.vue'
 import BulkCertificates from '@/components/Modals/BulkCertificates.vue'
-import BatchFeedback from '@/components/BatchFeedback.vue'
+import BatchFeedbackNew from '@/components/BatchFeedbackNew.vue'
+import FeedbackSubmissionModal from '@/components/Modals/FeedbackSubmissionModal.vue'
 import dayjs from 'dayjs/esm'
 import CustomBreadcrumb from '@/components/ui/CustomBreadcrumb.vue'
 import Button from '@/components/ui/Button.vue'
+import ClockIcon from '@/components/Icons/ClockIcon.vue'
 
 const user = inject('$user')
 const showAnnouncementModal = ref(false)
+const showFeedbackModal = ref(false)
 const openCertificateDialog = ref(false)
 const route = useRoute()
 const router = useRouter()
@@ -392,6 +414,14 @@ const tabs = computed(() => {
 		label: 'Discussions',
 		icon: MessageCircle,
 	})
+
+	if (isAdmin.value) {
+		batchTabs.push({
+			label: 'Feedback',
+			icon: MessageSquareText,
+		})
+	}
+
 	return batchTabs
 })
 

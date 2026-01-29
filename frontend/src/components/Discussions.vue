@@ -1,5 +1,5 @@
 <template>
-	<div v-if="!title" class="text-xl font-semibold text-ink-gray-9">
+	<div v-if="title" class="text-xl font-semibold text-ink-gray-9">
 		{{ __(title) }}
 	</div>
 
@@ -40,7 +40,7 @@
 		v-else
 		class="flex flex-col items-center justify-center border-2 border-dashed mt-5 py-8 rounded-md"
 	>
-		<MessageSquareText class="w-7 h-7 text-ink-gray-4 stroke-1.5 mr-2" />
+		<Message2Icon class="w-7 h-7 text-ink-gray-4 stroke-1.5 mr-2" />
 		<div class="mt-2">
 			<div v-if="emptyStateTitle" class="font-medium mb-2">
 				{{ __(emptyStateTitle) }}
@@ -69,7 +69,7 @@
 	/>
 </template>
 <script setup>
-import { createResource, Button } from 'frappe-ui'
+import { createResource } from 'frappe-ui'
 import UserAvatar from '@/components/UserAvatar.vue'
 import { singularize, timeAgo } from '@/utils'
 import { ref, onMounted, inject, onUnmounted } from 'vue'
@@ -77,7 +77,8 @@ import DiscussionReplies from '@/components/DiscussionReplies.vue'
 import DiscussionModal from '@/components/Modals/DiscussionModal.vue'
 import { MessageSquareText, Plus } from 'lucide-vue-next'
 import { getScrollContainer } from '@/utils/scrollContainer'
-
+import Button from './ui/Button.vue'
+import Message2Icon from './Icons/Message2Icon.vue'
 const showTopics = ref(true)
 const currentTopic = ref(null)
 const socket = inject('$socket')

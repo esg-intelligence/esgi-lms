@@ -20,6 +20,7 @@ type FormWrapperType =
 	| 'combobox'
 	| 'checkbox'
 	| 'editorBottomMenu'
+	| 'switch'
 
 const typeClasses: Record<FormWrapperType, string> = {
 	input:
@@ -34,6 +35,7 @@ const typeClasses: Record<FormWrapperType, string> = {
 		'[&_button]:!rounded [&_button]:!py-3 [&_button]:!px-4 [&_button]:!border-[1.5px] [&_button]:!border-gray-100 [&_button]:!bg-white [&_button]:!h-10',
 	checkbox:
 		'[&_label]:-mt-[0.8px] [&_label]:font-medium [&_label]:!tracking-normal [&_label]:!text-sm [&_label]:md:!text-sm [&_label]:!text-gray-800 [&_input]:!text-primary-500 [&_input[type=checkbox]]:!w-4 [&_input[type=checkbox]]:!h-4',
+	switch: '[&_button[aria-checked=true]]:!bg-primary-500',
 }
 
 const props = withDefaults(

@@ -2,24 +2,14 @@
 	<NoPermission v-if="!$user.data" />
 	<div v-else-if="profile.data" class="min-h-screen bg-gray-50 pb-12">
 		<div class="group relative h-48 w-full bg-gradient-to-r from-[#125CA2] to-[#51E3B2]">
-			<img
-				v-if="profile.data.cover_image"
-				:src="profile.data.cover_image"
-				class="h-full w-full object-cover object-center"
-			/>
-			<div
-				class="absolute top-4 right-4"
-				v-if="isSessionUser()"
-			>
-				<EditCoverImage
-					@select="(imageUrl) => coverImage.submit({ url: imageUrl })"
-				>
+			<img v-if="profile.data.cover_image" :src="profile.data.cover_image"
+				class="h-full w-full object-cover object-center" />
+			<div class="absolute top-4 right-4" v-if="isSessionUser()">
+				<EditCoverImage @select="(imageUrl) => coverImage.submit({ url: imageUrl })">
 					<template v-slot="{ togglePopover }">
-						<button
-							v-if="!readOnlyMode"
+						<button v-if="!readOnlyMode"
 							class="flex items-center space-x-2 rounded bg-white/20 px-3 py-1.5 text-sm font-medium text-white backdrop-blur-sm hover:bg-white/30 transition-colors"
-							@click="togglePopover()"
-						>
+							@click="togglePopover()">
 							<Edit class="h-4 w-4" />
 							<span>{{ __('Change image') }}</span>
 						</button>
@@ -29,39 +19,20 @@
 		</div>
 
 		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-			<div
-				class="relative -mt-12 rounded-xl bg-white p-6 border border-gray-100 sm:p-8"
-			>
-				<div
-					class="flex flex-col items-center sm:flex-row sm:items-start sm:space-x-8"
-				>
-					<div class="relative">
-						<img
-							v-if="profile.data.user_image"
-							:src="profile.data.user_image"
-							class="h-24 w-24 rounded-full border-4 border-white object-cover shadow-sm bg-gray-100"
-						/>
-						<UserAvatar
-							v-else
-							:user="profile.data"
-							class="h-24 w-24 rounded-full border-4 border-white object-cover shadow-sm"
-						/>
-					</div>
+			<div class="relative -mt-12 rounded-xl bg-white p-6 border border-gray-100 sm:p-8">
+				<div class="flex flex-col items-center sm:flex-row sm:justify-center gap-4">
+					<Avatar
+						class="avatar border border-outline-gray-2 cursor-auto rounded-full object-cover shadow-sm h-[58px] w-[56px] sm:h-[80px] sm:w-[80px]"
+						:label="profile.data.first_name" :image="profile.data.image?.file_url" size="lg" />
 
-					<div class="mt-4 text-center sm:mt-8 sm:text-left flex-1">
-						<div
-							class="flex flex-col sm:flex-row sm:items-center sm:justify-between"
-						>
+					<div class="text-center sm:text-left flex-1">
+						<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
 							<div>
 								<h1
-									class="flex items-center justify-center gap-2 text-2xl font-bold text-gray-900 sm:justify-start"
-								>
+									class="flex items-center justify-center gap-2 text-2xl font-bold text-gray-900 sm:justify-start">
 									{{ profile.data.full_name }}
-									<button
-										v-if="isSessionUser() && !readOnlyMode"
-										@click="editProfile()"
-										class="text-[#00C49F] hover:text-[#00a082]"
-									>
+									<button v-if="isSessionUser() && !readOnlyMode" @click="editProfile()"
+										class="text-[#00C49F] hover:text-[#00a082]">
 										<Edit class="h-5 w-5" />
 									</button>
 								</h1>
@@ -75,21 +46,15 @@
 			</div>
 
 			<div
-				class="mt-8 flex flex-col overflow-hidden rounded-xl bg-white border border-gray-100 lg:flex-row min-h-[300px]"
-			>
+				class="mt-8 flex flex-col overflow-hidden rounded-xl bg-white border border-gray-100 lg:flex-row min-h-[300px]">
 				<div class="w-full border-r border-gray-100 lg:w-64 flex-shrink-0">
 					<nav class="flex flex-col">
-						<div
-							v-for="tab in getTabButtons()"
-							:key="tab.label"
-							@click="activeTab = tab.label"
-							:class="[
-								activeTab === tab.label
-									? 'bg-[#E6FFFA] text-[#00C49F]'
-									: 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-								'group flex items-center px-6 py-4 text-sm font-medium cursor-pointer transition-colors !border-b border-gray-100 lg:border-b-0',
-							]"
-						>
+						<div v-for="tab in getTabButtons()" :key="tab.label" @click="activeTab = tab.label" :class="[
+							activeTab === tab.label
+								? 'bg-[#E6FFFA] text-[#00C49F]'
+								: 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+							'group flex items-center px-6 py-4 text-sm font-medium cursor-pointer transition-colors !border-b border-gray-100 lg:border-b-0',
+						]">
 							<span class="truncate">{{ tab.label }}</span>
 						</div>
 					</nav>
@@ -97,34 +62,27 @@
 
 				<div class="flex-1 min-h-[400px]">
 					<div class="h-full">
-						<div
-							v-if="activeTab === 'About' && !profile.data.bio"
-							class="flex h-full flex-col items-center justify-center text-center p-8"
-						>
-							<EmptyIcon class="mb-4 text-gray-300" />
-							<h3 class="mt-2 text-lg font-semibold text-gray-900">
-								Nothing to see here yet
+
+						<div v-if="activeTab === 'About' && !profile.data.bio"
+							class="flex flex-col items-center justify-center py-20 text-center">
+							<EmptyIcon class="size-32 mb-6" />
+							<h3 class="text-xl font-bold text-gray-900 mb-2">
+								Tell us who you are
 							</h3>
-							<p class="mt-1 max-w-sm text-sm text-gray-500">
-								Your learning updates will show up here soon
+							<p class="text-gray-500 font-medium">
+								Add a short introduction so others can get to know you better.
 							</p>
 							<div class="mt-6">
-								<Button
-									v-if="isSessionUser() && !readOnlyMode"
-									variant="solid"
-									class="!bg-[#00C49F] hover:!bg-[#00a082] text-white"
-									@click="editProfile()"
-								>
+								<Button v-if="isSessionUser() && !readOnlyMode" variant="solid"
+									class="!bg-[#00C49F] hover:!bg-[#00a082] text-white !py-6 !px-6"
+									@click="editProfile()">
 									{{ __('Add Bio') }}
 								</Button>
 							</div>
 						</div>
 
 						<div v-else class="p-6 lg:p-8">
-							<router-view
-								:profile="profile"
-								:key="profile.data?.name"
-							/>
+							<router-view :profile="profile" :key="profile.data?.name" />
 						</div>
 					</div>
 				</div>
@@ -132,20 +90,11 @@
 		</div>
 	</div>
 
-	<EditProfile
-		v-model="showProfileModal"
-		v-model:reloadProfile="profile"
-		:profile="profile"
-	/>
+	<EditProfile v-model="showProfileModal" v-model:reloadProfile="profile" :profile="profile" />
 </template>
 
 <script setup>
-import {
-	Button,
-	call,
-	createResource,
-	usePageMeta,
-} from 'frappe-ui'
+import { Button, call, createResource, usePageMeta, Avatar } from 'frappe-ui'
 import { inject, watch, ref, onMounted, watchEffect } from 'vue'
 import { sessionStore } from '@/stores/session'
 import { Edit } from 'lucide-vue-next'
@@ -229,7 +178,7 @@ watch(
 	() => props.username,
 	() => {
 		profile.reload()
-	}
+	},
 )
 
 const editProfile = () => {

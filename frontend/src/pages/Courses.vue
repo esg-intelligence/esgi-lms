@@ -337,12 +337,15 @@ const courseTabs = computed(() => {
 	let tabs = [
 		{
 			label: __('Live'),
+			value: __('Live'),
 		},
 		{
 			label: __('New'),
+			value: __('New'),
 		},
 		{
 			label: __('Upcoming'),
+			value: __('Upcoming'),
 		},
 	]
 	if (
@@ -350,10 +353,10 @@ const courseTabs = computed(() => {
 		user.data?.is_instructor ||
 		user.data?.is_evaluator
 	) {
-		tabs.push({ label: __('Created') })
-		tabs.push({ label: __('Unpublished') })
+		tabs.push({ label: __('Created'), value: __('Created') })
+		tabs.push({ label: __('Unpublished'), value: __('Unpublished') })
 	} else if (user.data) {
-		tabs.push({ label: __('Enrolled') })
+		tabs.push({ label: __('Enrolled'), value: __('Enrolled') })
 	}
 	return tabs
 })
