@@ -4,7 +4,7 @@
 		<div>
 			{{ __('Please login to access the quiz.') }}
 		</div>
-		<Button @click="redirectToLogin()" class="mt-2">
+		<Button variant="solid" @click="redirectToLogin()" class="mt-2">
 			<span>
 				{{ __('Login') }}
 			</span>
@@ -13,8 +13,8 @@
 </template>
 <script setup>
 import { inject } from 'vue'
-import { Button } from 'frappe-ui'
 import Quiz from '@/components/Quiz.vue'
+import Button from './ui/Button.vue'
 
 const user = inject('$user')
 const props = defineProps({

@@ -1,70 +1,82 @@
 <template>
-	<div v-if="quiz.data">
-		<div
-			class="bg-surface-blue-2 space-y-2 py-2 px-3 mb-4 rounded-md text-sm text-ink-blue-2 leading-5"
-		>
-			<div v-if="inVideo">
+	<div v-if="quiz.data" class="border border-gray-100 rounded-xl py-5 mb-6">
+		<div class="mb-6 border-b border-gray-100 pb-6 px-5">
+			<div class="flex items-start justify-between mb-4">
+				<div>
+					<h1 class="text-2xl font-bold text-ink-gray-9 mb-1">
+						{{ quiz.data.title }}
+					</h1>
+					<div class="flex items-center text-sm text-ink-gray-7 gap-1">
+						<span>
+							<span class="font-semibold">{{ questions.length }}</span>
+							{{ questions.length == 1 ? __('Question') : __('Questions') }}
+						</span>
+						<span v-if="quiz.data.passing_percentage">
+							• {{ __('Passing score') }}
+							<span class="font-semibold"
+								>{{ quiz.data.passing_percentage }}%</span
+							>
+						</span>
+					</div>
+				</div>
+				<div class="flex flex-col items-end gap-2">
+					<div
+						v-if="quiz.data.duration"
+						class="bg-gray-50 px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium text-ink-gray-9"
+					>
+						<Clock class="size-4 text-gray-600" />
+						{{ formatTimer(timer) }}
+					</div>
+					<div v-if="quiz.data.max_attempts" class="text-sm text-ink-gray-7">
+						{{ __('Attempts') }}
+						<span class="font-bold text-ink-gray-9">
+							{{ (attempts.data?.length || 0) + (activeQuestion > 0 ? 1 : 0) }}
+							{{ __('of') }} {{ quiz.data.max_attempts }}
+						</span>
+					</div>
+				</div>
+			</div>
+
+			<div
+				v-if="inVideo"
+				class="mt-4 text-sm text-ink-blue-2 bg-surface-blue-2 p-2 rounded"
+			>
 				{{ __('You will have to complete the quiz to continue the video') }}
 			</div>
-			<div class="leading-5">
-				{{
-					__('This quiz consists of {0} questions.').format(questions.length)
-				}}
-			</div>
-			<div v-if="quiz.data?.duration" class="leading-5">
-				{{
-					__(
-						'Please ensure that you complete all the questions in {0} minutes.'
-					).format(quiz.data.duration)
-				}}
-			</div>
-			<div v-if="quiz.data?.duration" class="leading-5">
+
+			<div
+				v-if="quiz.data.enable_negative_marking"
+				class="mt-2 text-xs text-ink-red-3 bg-surface-red-2 p-2 rounded"
+			>
 				{{
 					__(
-						'If you fail to do so, the quiz will be automatically submitted when the timer ends.'
-					)
-				}}
-			</div>
-			<div v-if="quiz.data.passing_percentage" class="leading-relaxed">
-				{{
-					__(
-						'You will have to get {0}% correct answers in order to pass the quiz.'
-					).format(quiz.data.passing_percentage)
-				}}
-			</div>
-			<div v-if="quiz.data.max_attempts" class="leading-5">
-				{{
-					__('You can attempt this quiz {0}.').format(
-						quiz.data.max_attempts == 1
-							? '1 time'
-							: `${quiz.data.max_attempts} times`
-					)
-				}}
-			</div>
-			<div v-if="quiz.data.enable_negative_marking" class="leading-5">
-				{{
-					__(
-						'If you answer incorrectly, {0} {1} will be deducted from your score for each incorrect answer.'
+						'If you answer incorrectly, {0} {1} will be deducted from your score for each incorrect answer.',
 					).format(
 						quiz.data.marks_to_cut,
-						quiz.data.marks_to_cut == 1 ? 'mark' : 'marks'
+						quiz.data.marks_to_cut == 1 ? 'mark' : 'marks',
 					)
 				}}
 			</div>
-		</div>
-
-		<div v-if="quiz.data.duration" class="flex flex-col space-x-1 my-4">
-			<div class="mb-2">
-				<span class="text-ink-gray-9"> {{ __('Time') }}: </span>
-				<span class="font-semibold text-ink-gray-9">
-					{{ formatTimer(timer) }}
-				</span>
+			<div v-if="activeQuestion > 0" class="my-4">
+				<div class="flex justify-between items-end mb-2">
+					<p class="text-sm font-medium text-ink-gray-9">
+						{{ __('Your progress') }}
+					</p>
+					<p class="text-sm text-ink-gray-7">
+						{{
+							__('{0} of {1} questions').format(
+								activeQuestion,
+								questions.length,
+							)
+						}}
+					</p>
+				</div>
+				<ProgressBar :progress="questionProgress" />
 			</div>
-			<ProgressBar :progress="timerProgress" />
 		</div>
 
 		<div v-if="activeQuestion == 0">
-			<div class="border text-center p-20 rounded-md">
+			<div class="text-center p-20 rounded-md">
 				<div class="font-semibold text-lg text-ink-gray-9">
 					{{ quiz.data.title }}
 				</div>
@@ -94,7 +106,7 @@
 				>
 					{{
 						__(
-							'You have already exceeded the maximum number of attempts allowed for this quiz.'
+							'You have already exceeded the maximum number of attempts allowed for this quiz.',
 						)
 					}}
 				</div>
@@ -104,13 +116,15 @@
 			<div v-for="(question, qtidx) in questions">
 				<div
 					v-if="qtidx == activeQuestion - 1 && questionDetails.data"
-					class="border rounded-md p-5"
+					class="p-5"
 				>
 					<div class="flex justify-between">
 						<div class="text-sm text-ink-gray-5">
-							<span class="mr-2">
+							<Badge
+								class="mr-2 bg-primary-200/20 font-medium text-primary-600 p-3"
+							>
 								{{ __('Question {0}').format(activeQuestion) }}:
-							</span>
+							</Badge>
 							<span>
 								{{ getInstructions(questionDetails.data) }}
 							</span>
@@ -127,13 +141,13 @@
 					<div v-if="questionDetails.data.type == 'Choices'" v-for="index in 4">
 						<label
 							v-if="questionDetails.data[`option_${index}`]"
-							class="flex items-center bg-surface-gray-3 rounded-md p-3 mt-4 w-full cursor-pointer focus:border-blue-600"
+							class="flex items-center border border-gray-100 rounded-md p-3 mt-4 w-full cursor-pointer focus:border-blue-600"
 						>
 							<input
 								v-if="!showAnswers.length && !questionDetails.data.multiple"
 								type="radio"
 								:name="encodeURIComponent(questionDetails.data.question)"
-								class="w-3.5 h-3.5 text-ink-gray-9 focus:ring-outline-gray-modals"
+								class="w-3.5 h-3.5 text-primary-500 focus:ring-primary-200"
 								@change="markAnswer(index)"
 							/>
 
@@ -141,7 +155,7 @@
 								v-else-if="!showAnswers.length && questionDetails.data.multiple"
 								type="checkbox"
 								:name="encodeURIComponent(questionDetails.data.question)"
-								class="w-3.5 h-3.5 text-ink-gray-9 rounded-sm focus:ring-outline-gray-modals"
+								class="w-3.5 h-3.5 text-primary-500 rounded-sm focus:ring-primary-200"
 								@change="markAnswer(index)"
 							/>
 							<div
@@ -209,14 +223,7 @@
 						/>
 					</div>
 					<div class="flex items-center justify-between mt-4">
-						<div class="text-sm text-ink-gray-5">
-							{{
-								__('Question {0} of {1}').format(
-									activeQuestion,
-									questions.length
-								)
-							}}
-						</div>
+						<div class="flex-1"></div>
 						<Button
 							v-if="
 								quiz.data.show_answers &&
@@ -246,7 +253,7 @@
 				</div>
 			</div>
 		</div>
-		<div v-else class="border rounded-md p-20 text-center space-y-2">
+		<div v-else class="p-20 text-center space-y-2">
 			<div class="text-lg font-semibold text-ink-gray-9">
 				{{ __('Quiz Summary') }}
 			</div>
@@ -256,18 +263,18 @@
 			>
 				{{
 					__(
-						"Your submission has been successfully saved. The instructor will review and grade it shortly, and you'll be notified of your final result."
+						"Your submission has been successfully saved. The instructor will review and grade it shortly, and you'll be notified of your final result.",
 					)
 				}}
 			</div>
 			<div v-else class="text-ink-gray-7">
 				{{
 					__(
-						'You got {0}% correct answers with a score of {1} out of {2}'
+						'You got {0}% correct answers with a score of {1} out of {2}',
 					).format(
 						Math.ceil(quizSubmission.data.percentage),
 						quizSubmission.data.score,
-						quizSubmission.data.score_out_of
+						quizSubmission.data.score_out_of,
 					)
 				}}
 			</div>
@@ -314,7 +321,6 @@
 <script setup>
 import {
 	Badge,
-	Button,
 	call,
 	createResource,
 	ListView,
@@ -323,11 +329,10 @@ import {
 	toast,
 } from 'frappe-ui'
 import { ref, watch, reactive, inject, computed } from 'vue'
-import { CheckCircle, XCircle, MinusCircle } from 'lucide-vue-next'
+import { CheckCircle, XCircle, MinusCircle, Clock } from 'lucide-vue-next'
 import { timeAgo } from '@/utils'
-import { useRouter } from 'vue-router'
 import ProgressBar from '@/components/ProgressBar.vue'
-
+import Button from './ui/Button.vue'
 const user = inject('$user')
 const activeQuestion = ref(0)
 const currentQuestion = ref('')
@@ -415,6 +420,11 @@ const timerProgress = computed(() => {
 	return (timer.value / (quiz.data.duration * 60)) * 100
 })
 
+const questionProgress = computed(() => {
+	if (!questions.length) return 0
+	return (activeQuestion.value / questions.length) * 100
+})
+
 const shuffleArray = (array) => {
 	for (let i = array.length - 1; i > 0; i--) {
 		const j = Math.floor(Math.random() * (i + 1))
@@ -461,7 +471,7 @@ watch(
 			attempts.reload()
 			resetQuiz()
 		}
-	}
+	},
 )
 
 const quizSubmission = createResource({
@@ -496,7 +506,7 @@ watch(
 		if (newName) {
 			quiz.reload()
 		}
-	}
+	},
 )
 
 const startQuiz = () => {
@@ -577,7 +587,7 @@ const addToLocalStorage = () => {
 
 	if (quizData) {
 		let existingQuestion = quizData.find(
-			(q) => q.question_name == questionData.question_name
+			(q) => q.question_name == questionData.question_name,
 		)
 		if (!existingQuestion) {
 			quizData.push(questionData)
@@ -636,7 +646,7 @@ const createSubmission = () => {
 					}, 3000)
 				}
 			},
-		}
+		},
 	)
 }
 
