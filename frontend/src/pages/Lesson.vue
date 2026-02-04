@@ -111,6 +111,8 @@
 								@click="switchLesson('next')"
 								class="ml-auto"
 								variant="solid"
+								:disabled="!isLessonComplete"
+								:class="{ 'opacity-50 cursor-not-allowed': !isLessonComplete }"
 							>
 								<template #suffix>
 									<ChevronRight class="w-4 h-4 stroke-1" />
@@ -248,7 +250,7 @@
 									</Button>
 								</router-link>
 
-								<Button v-if="lesson.data.next" @click="switchLesson('next')">
+								<Button v-if="lesson.data.next" @click="switchLesson('next')" :disabled="!isLessonComplete" :class="{ 'opacity-50 cursor-not-allowed': !isLessonComplete }">
 									<template #suffix>
 										<ChevronRight class="w-4 h-4 stroke-1" />
 									</template>
@@ -509,6 +511,7 @@ const lesson = createResource({
 	auto: true,
 })
 
+
 const courseSummary = createResource({
 	url: 'lms.lms.utils.get_course_outline_summary',
 	params: {
@@ -733,8 +736,35 @@ watch(
 		getPlyrSource()
 		updateNotes()
 		if (data.icon == 'icon-youtube') clearInterval(timerInterval)
+		if (data.prev) {
+			await checkPreviousLessonAccess()
+		}
 	},
 )
+
+const checkPreviousLessonAccess = async () => {
+    try {
+        const prevLessonNumber = parseInt(props.lessonNumber) - 1
+        // Don't check if this is the first lesson
+        if (prevLessonNumber < 1) return
+        const prevData = await call('lms.lms.utils.get_lesson', {
+            course: props.courseName,
+            chapter: props.chapterNumber,
+            lesson: prevLessonNumber,
+        })
+        // Allow instructors and moderators to access any lesson
+        if (user.data?.is_moderator || user.data?.is_instructor) return
+        // Check if previous lesson is complete
+        if (prevData.membership && !prevData.is_complete) {
+			router.push({
+				name: 'CourseDetail',
+				params: { courseName: props.courseName },
+			})
+        }
+    } catch (error) {
+        console.error('Error checking previous lesson:', error)
+    }
+}
 
 const getPlyrSource = async () => {
 	await nextTick()
@@ -953,6 +983,11 @@ watch(allowDiscussions, () => {
 			},
 		]
 	}
+})
+
+const isLessonComplete = computed(() => {
+    if (!user.data || !lesson.data?.membership) return false
+    return lesson.data.is_complete
 })
 
 const redirectToLogin = () => {

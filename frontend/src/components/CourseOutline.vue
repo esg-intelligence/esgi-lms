@@ -95,7 +95,7 @@
 									@end="updateOutline"
 									:data-chapter="chapter.name"
 								>
-									<template #item="{ element: lesson }">
+									<template #item="{ element: lesson, index: lessonIndex }">
 										<div
 											class="outline-lesson pl-8 py-2 pr-4 text-ink-gray-9"
 											:class="
@@ -103,6 +103,7 @@
 											"
 										>
 											<router-link
+												v-if="isAccessible(allowEdit, index, lessonIndex)"
 												:to="{
 													name: allowEdit ? 'LessonForm' : 'Lesson',
 													params: {
@@ -139,6 +140,27 @@
 													/>
 												</div>
 											</router-link>
+											<div
+												v-else
+												class="flex items-center text-sm leading-5 group cursor-not-allowed opacity-60"
+											>
+												<MonitorPlay
+													v-if="lesson.icon === 'icon-youtube'"
+													class="h-4 w-4 stroke-1 mr-2"
+												/>
+												<HelpCircle
+													v-else-if="lesson.icon === 'icon-quiz'"
+													class="h-4 w-4 stroke-1 mr-2"
+												/>
+												<DocumentTextIcon
+													v-else-if="lesson.icon === 'icon-list'"
+													class="h-4 w-4 text-ink-gray-9 stroke-1 mr-2"
+												/>
+												{{ lesson.title }}
+												<Lock
+													class="h-4 w-4 text-gray-600 ml-2"
+												/>
+											</div>
 										</div>
 									</template>
 								</Draggable>
