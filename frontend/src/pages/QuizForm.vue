@@ -288,12 +288,20 @@ const quizDetails = createDocumentResource({
 	doctype: 'LMS Quiz',
 	name: props.quizID,
 	auto: false,
-	onSuccess(doc) {
-		if (doc.questions && doc.questions.length > 0) {
-			questions.value = doc.questions.map((question) => question)
+
+})
+
+watch(
+	() => quizDetails.doc?.questions,
+	(newQuestions) => {
+		if (newQuestions && newQuestions.length > 0) {
+			questions.value = newQuestions.map((question) => question)
+		} else {
+			questions.value = []
 		}
 	},
-})
+	{ deep: true }
+)
 
 const validateTitle = () => {
 	quizDetails.doc.title = escapeHTML(quizDetails.doc.title.trim())
