@@ -2,11 +2,10 @@
 	<Button
 		v-if="certification.data && certification.data.certificate"
 		@click="downloadCertificate"
-		class=""
+		variant="outline"
+		class="w-full mt-2"
+		size="md"
 	>
-		<template #prefix>
-			<GraduationCap class="size-4 stroke-1.5" />
-		</template>
 		{{ __('View Certificate') }}
 	</Button>
 	<div

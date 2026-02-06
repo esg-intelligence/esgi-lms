@@ -200,7 +200,7 @@
 					v-if="canGetCertificate"
 					@click="fetchCertificate()"
 					variant="outline"
-					class="w-full mt-2"
+					class="w-full mt-2 hidden"
 					size="md"
 				>
 					{{ __('View Certificate') }}
