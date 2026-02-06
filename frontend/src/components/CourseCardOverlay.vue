@@ -196,7 +196,7 @@
 						{{ __('Start Learning') }}
 					</span>
 				</Button>
-				<Button
+				<!-- <Button
 					v-if="canGetCertificate"
 					@click="fetchCertificate()"
 					variant="outline"
@@ -204,7 +204,7 @@
 					size="md"
 				>
 					{{ __('View Certificate') }}
-				</Button>
+				</Button> -->
 
 				<router-link
 					v-if="user?.data?.is_moderator || is_instructor()"

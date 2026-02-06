@@ -52,9 +52,10 @@
 	</div>
 </template>
 <script setup>
-import { Button, createResource } from 'frappe-ui'
+import { createResource } from 'frappe-ui'
 import { inject } from 'vue'
 import { GraduationCap } from 'lucide-vue-next'
+import Button from '@/components/ui/Button.vue'
 
 const user = inject('$user')
 
