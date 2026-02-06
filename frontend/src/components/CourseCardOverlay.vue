@@ -196,7 +196,7 @@
 						{{ __('Start Learning') }}
 					</span>
 				</Button>
-				<!-- <Button
+				<Button
 					v-if="canGetCertificate"
 					@click="fetchCertificate()"
 					variant="outline"
@@ -204,7 +204,7 @@
 					size="md"
 				>
 					{{ __('View Certificate') }}
-				</Button> -->
+				</Button>
 
 				<router-link
 					v-if="user?.data?.is_moderator || is_instructor()"
@@ -314,7 +314,18 @@ const is_instructor = () => {
 	return user_is_instructor
 }
 
+const certification = createResource({
+	url: 'lms.lms.api.get_certification_details',
+	params: {
+		course: props.course.data?.name,
+	},
+	auto: user.data ? true : false,
+	cache: ['certificationData', user.data?.name],
+})
+
 const canGetCertificate = computed(() => {
+	// No need to create certificate again
+	if (certification.data && certification.data.certificate) return false
 	if (
 		props.course.data?.enable_certification &&
 		props.course.data?.membership?.progress == 100
@@ -333,10 +344,11 @@ const certificate = createResource({
 	},
 	onSuccess(data) {
 		window.open(
-			`/api/method/frappe.utils.print_format.download_pdf?doctype=LMS+Certificate&name=${
-				data.name
-			}&format=${encodeURIComponent(data.template)}`,
-			'_blank',
+			`/api/method/lms.lms.utils.get_pdf?name=${data.name}`
+			// `/api/method/frappe.utils.print_format.download_pdf?doctype=LMS+Certificate&name=${
+			// 	data.name
+			// }&format=${encodeURIComponent(data.template)}`,
+			// '_blank',
 		)
 	},
 })

@@ -26,6 +26,7 @@ from frappe.utils import (
 	pretty_date,
 	rounded,
 )
+from frappe.utils.print_format import download_pdf
 
 from lms.lms.md import find_macros, markdown_to_html
 
@@ -2768,3 +2769,24 @@ def validate_batch_access(batch):
 	)
 	if not enrollment_exists:
 		frappe.throw(_("You do not have access to this batch."))
+
+@frappe.whitelist(allow_guest=True)
+def get_pdf(name: str, no_letterhead=0):
+    """
+    Simplified public PDF endpoint for sharing LMS Certificates
+    URL: /api/method/lms.lms.utils.get_pdf?name=CERT-001
+    """
+
+    # Validate that the document is an LMS Certificate
+    if not frappe.db.exists("LMS Certificate", name):
+        frappe.throw(_("Certificate not found."))
+    # Get the print format from the certificate document
+    template = frappe.db.get_value("LMS Certificate", name, "template")
+    format = template or "Certificate"
+
+    download_pdf(
+        doctype="LMS Certificate",
+        name=name,
+        format=format,
+        no_letterhead=no_letterhead
+    )

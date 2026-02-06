@@ -77,9 +77,8 @@ const certification = createResource({
 
 const downloadCertificate = () => {
 	window.open(
-		`/api/method/frappe.utils.print_format.download_pdf?doctype=LMS+Certificate&name=${
-			certification.data.certificate.name
-		}&format=${encodeURIComponent(certification.data.certificate.template)}`
+		// `/api/method/frappe.utils.print_format.download_pdf?doctype=LMS+Certificate&name=${
+		`/api/method/lms.lms.utils.get_pdf?name=${certification.data.certificate.name}`
 	)
 }
 </script>
