@@ -125,7 +125,7 @@ const slides = [
 		description:
 			'Empowering structured learning in one integrated platform. Brought to you by Center for Environmental, Social, and Governance Studies (CESGS) Universitas Airlangga: the first Center of Excellence for Sustainable Business (PUI PT Bisnis Berkelanjutan) and #1 ESG Research Center in Indonesia.',
 		videoUrl:
-			'https://drive.google.com/file/d/1_dV-jqHgImnb1ubg163d8AvlXQ5d5QIt/preview',
+		 	'https://drive.google.com/file/d/1RQh6ueGWBlxQfPkAxicWa82UFmLt1bNE/preview',
 		type: 'video',
 	},
 	{
