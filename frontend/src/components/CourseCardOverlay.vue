@@ -203,7 +203,7 @@
 					class="w-full mt-2 hidden"
 					size="md"
 				>
-					{{ __('View Certificate') }}
+					{{ __('Claim Certificate') }}
 				</Button>
 				<Button
 					v-if="certification.data && certification.data.certificate"
