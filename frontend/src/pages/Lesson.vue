@@ -593,6 +593,7 @@ const progress = createResource({
 	},
 	onSuccess(data) {
 		lessonProgress.value = data
+		lesson.data.is_complete = true
 	},
 })
 
