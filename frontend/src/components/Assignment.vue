@@ -315,7 +315,7 @@ watch(submissionResource, () => {
 		if (submissionResource.doc.comments) {
 			comments.value = submissionResource.doc.comments
 		} else {
-			answer.value = null
+			comments.value = null
 		}
 		if (submissionResource.isDirty) {
 			isDirty.value = true
