@@ -335,7 +335,7 @@ const certification = createResource({
 		course: props.course.data?.name,
 	},
 	auto: user.data ? true : false,
-	cache: ['certificationData', user.data?.name],
+	// cache: ['certificationData', user.data?.name],
 })
 
 const canGetCertificate = computed(() => {
