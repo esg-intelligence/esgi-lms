@@ -580,10 +580,6 @@ const renderEditor = (holder, content) => {
 const markProgress = () => {
 	if (user.data && lesson.data && !lesson.data.progress) {
 		progress.submit()
-		setTimeout(() => {
-			lesson.reload()
-			childRef?.value.reload()
-		}, 500)
 	}
 }
 
@@ -822,8 +818,8 @@ const updateVideoTime = (video) => {
 const startTimer = () => {
 	let timerInterval = setInterval(() => {
 		timer.value++
-		// if (timer.value == 30) {
-		if (timer.value == 10) {
+		if (timer.value == 30) {
+		// if (timer.value == 10) {
 			clearInterval(timerInterval)
 			markProgress()
 		}
