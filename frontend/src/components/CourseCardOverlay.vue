@@ -205,6 +205,20 @@
 				>
 					{{ __('View Certificate') }}
 				</Button>
+				<Button
+					v-if="certification.data && certification.data.certificate"
+					@click="copyCertificateUrl()"
+					variant="outline"
+					class="w-full mt-2"
+					size="md"
+				>
+					<template #prefix>
+						<Copy class="size-4 stroke-1.5" />
+					</template>
+					<span>
+						{{ __('Copy Certificate URL') }}
+					</span>
+				</Button>
 
 				<router-link
 					v-if="user?.data?.is_moderator || is_instructor()"
@@ -241,6 +255,7 @@ import {
 	Star,
 	TrendingUp,
 	Users,
+	Copy,
 } from 'lucide-vue-next'
 import { computed, inject, ref } from 'vue'
 import { Badge, call, createResource, toast } from 'frappe-ui'
@@ -358,6 +373,20 @@ const fetchCertificate = () => {
 		course: props.course.data?.name,
 		member: user.data?.name,
 	})
+}
+
+const copyCertificateUrl = () => {
+	if (certification.data && certification.data.certificate) {
+		const certificateUrl = `/api/method/lms.lms.utils.get_pdf?name=${certification.data.certificate.name}`
+		navigator.clipboard.writeText(window.location.origin + certificateUrl)
+			.then(() => {
+				toast.success(__('Certificate URL copied to clipboard'))
+			})
+			.catch((err) => {
+				toast.warning(__('Failed to copy URL'))
+				console.error(err)
+			})
+	}
 }
 
 const showProgressSummary = () => {
