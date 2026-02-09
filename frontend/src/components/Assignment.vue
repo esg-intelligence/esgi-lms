@@ -309,9 +309,13 @@ watch(submissionResource, () => {
 		}
 		if (submissionResource.doc.answer) {
 			answer.value = submissionResource.doc.answer
+		} else {
+			answer.value = null
 		}
 		if (submissionResource.doc.comments) {
 			comments.value = submissionResource.doc.comments
+		} else {
+			answer.value = null
 		}
 		if (submissionResource.isDirty) {
 			isDirty.value = true
