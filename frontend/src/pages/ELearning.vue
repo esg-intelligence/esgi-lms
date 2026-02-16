@@ -63,9 +63,9 @@
 
 				<div class="relative flex-1 flex flex-col overflow-visible">
 					<div
-						class="relative w-full mx-auto flex flex-col md:flex-row items-start px-12 lg:px-20 py-12 gap-12"
+						class="relative w-full mx-auto flex flex-col md:flex-row items-start md:items-center px-12 lg:px-20 py-12 gap-12"
 					>
-						<div class="w-full md:w-[50%] flex flex-col space-y-40">
+						<div class="w-full md:w-[60%] flex flex-col space-y-40">
 							<div class="relative overflow-hidden w-full">
 								<div
 									class="flex w-full transition-transform duration-700 ease-in-out"
@@ -127,7 +127,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="relative w-full md:w-[50%] flex justify-center z-10">
+						<div class="relative w-full md:w-[40%] flex justify-center z-10">
 							<div
 								class="w-full rounded-[30px] max-w-2xl animate-float"
 								style="
@@ -270,12 +270,65 @@
 			</div>
 		</section>
 
-		<section id="courses" class="max-w-7xl mx-auto px-4 py-24">
+		<section class="flex flex-col items-center max-w-7xl mx-auto px-4 py-24">
 			<div class="text-center space-y-4 mb-16">
-				<h2 class="text-2xl font-bold text-gray-800">Courses</h2>
+				<h2 class="text-2xl font-bold text-gray-800">Why Learn With CESGS</h2>
+			</div>
+			<div class="grid grid-cols-2 gap-6 w-full md:w-3/4">
+				<div class="flex flex-col gap-y-2 items-center justify-stretch p-6 rounded shadow-md text-center">
+					<Route class="h-8 w-8 text-primary-500 mb-3"/>
+					<h3 class="font-bold">Structured Learning Paths</h3>
+					<p>Follow clear step-by-step courses designed for beginners to professionals.</p>
+				</div>
+				<div class="flex flex-col gap-y-2 items-center justify-stretch p-6 rounded shadow-md text-center">
+					<BookOpenText class="h-8 w-8 text-primary-500 mb-3"/>
+					<h3 class="font-bold">Practical ESG Knowledge</h3>
+					<p>Learn real-world concepts, case studies, and industry-relevant insights.</p>
+				</div>
+				<div class="flex flex-col gap-y-2 items-center justify-stretch p-6 rounded shadow-md text-center">
+					<Presentation  class="h-8 w-8 text-primary-500 mb-3"/>
+					<h3 class="font-bold">Interactive Learning Experience</h3>
+					<p>Pretests, materials, case analysis, and quizzes keep you engaged.</p>
+				</div>
+				<div class="flex flex-col gap-y-2 items-center justify-stretch p-6 rounded shadow-md text-center">
+					<GraduationCap class="h-8 w-8 text-primary-500 mb-3"/>
+					<h3 class="font-bold">Recognized Certification</h3>
+					<p>Earn certificates to showcase your ESG skills and knowledge.</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="flex flex-col items-center max-w-7xl mx-auto px-4 py-24 border-t border-gray-100">
+			<div class="text-center space-y-4 mb-16">
+				<h2 class="text-2xl font-bold text-gray-800">How it Works</h2>
+			</div>
+			<div class="p-6">
+				<div v-for="(step, index) in steps" :key="index" class="relative pb-8 last:pb-0">
+					<div
+						v-if="index !== steps.length - 1"
+						class="absolute left-[15px] top-8 h-full w-0.5"
+						:class="step.status === 'completed' ? 'bg-blue-500' : 'bg-gray-200'"
+					></div>
+					<div class="flex items-start gap-4">
+						<div class="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 bg-blue-500 border-blue-500 text-white">
+							<span class="text-xs">{{ index + 1 }}</span>
+						</div>
+						<div class="pt-1">
+							<p class="text-base font-semibold text-gray-900">
+								{{ step.title }}
+							</p>
+							<p class="text-sm text-gray-800 mt-1">{{ step.description }}</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section id="courses" class="max-w-7xl mx-auto px-4 py-24 border-t border-gray-100">
+			<div class="text-center space-y-4 mb-16">
+				<h2 class="text-2xl font-bold text-gray-800">Explore Courses</h2>
 				<p class="text-gray-500 font-medium text-lg">
-					Explore our comprehensive curriculum designed to help you master
-					high-demand skills and advance your career.
+					Explore our comprehensive curriculum crafted to equip you with in-demand skills, real-world insights, and the confidence you need to grow, innovate, and succeed in your professional journey.
 				</p>
 			</div>
 
@@ -343,10 +396,9 @@
 			class="max-w-7xl mx-auto px-4 py-24 border-t border-gray-100"
 		>
 			<div class="text-center space-y-4 mb-16">
-				<h2 class="text-2xl font-bold text-gray-800">Available Batches</h2>
+				<h2 class="text-2xl font-bold text-gray-800">Upcoming Batches</h2>
 				<p class="text-gray-500 font-medium text-lg max-w-2xl mx-auto">
-					Join our upcoming cohorts to learn together with experts and peers in
-					a structured environment.
+					Join our upcoming learning cohorts and grow alongside experts and peers in a guided, structured program designed for real progress.
 				</p>
 				<Button
 					v-if="batches.data?.length"
@@ -387,6 +439,16 @@
 				</p>
 			</div>
 		</section>
+
+		<section class="max-w-7xl mx-auto px-4 pt-24 pb-16 border-t border-gray-100">
+			<div class="text-center space-y-4 mb-16 flex flex-col items-center">
+				<h2 class="text-2xl font-bold text-gray-800">Start Your ESG Learning Journey Today</h2>
+				<p class="text-gray-500 font-medium text-lg">
+					Build practical ESG skills with structured courses, real insights, and recognized certification.
+				</p>
+				<Button variant="solid" @click="router.push({ name: 'Courses' })">Start Learning</Button>
+			</div>
+		</section>
 	</div>
 </template>
 
@@ -406,6 +468,10 @@ import {
 	BookOpen,
 	ChevronLeft,
 	ChevronRight,
+	Route,
+	BookOpenText,
+	Presentation,
+	GraduationCap,
 } from 'lucide-vue-next'
 import { sessionStore } from '@/stores/session'
 import UnairLogo from '@/components/Icons/UnairLogo.vue'
@@ -495,9 +561,9 @@ const heroSlides = [
 		layout: 'centered',
 	},
 	{
-		title: 'Sharpen your skills',
+		title: 'Sharpen Your Skills with Structured Learning',
 		subtitle:
-			'Enhance your abilities with guided learning and practical, focused improvements',
+			'Enhance your capabilities through guided lessons, real-world case studies, and focused learning paths designed to build practical ESG expertise.',
 		content: 'image',
 		imageSrc: '/assets/lms/images/undraw_working-together_r43a.png',
 		highlight: 'skills',
@@ -505,14 +571,14 @@ const heroSlides = [
 	{
 		title: 'Learn Efficiently With AI Assistance',
 		subtitle:
-			'Get instant support from AI tutors, quick explanations, and smart suggestions to master any topic efficiently',
+			'Receive instant explanations, smart recommendations, and learning support that helps you understand complex topics faster and more efficiently.',
 		content: 'image',
 		imageSrc: '/assets/lms/images/undraw_online-stats_d57c 1.png',
 		highlight: 'AI',
 	},
 	{
 		title: 'Learn without limit',
-		subtitle: 'Learn at your own pace and without any limitations',
+		subtitle: 'Access your courses anytime, anywhere, and progress at your own pace in a flexible environment built for modern learners.',
 		content: 'image',
 		imageSrc: '/assets/lms/images/undraw_happy-announcement_23nf 1.png',
 		highlight: 'limit',
@@ -562,6 +628,14 @@ const testimonials = [
 		role: 'Performance Marketing Intern at Jakmall.com',
 		image: null,
 	},
+]
+
+const steps = [
+  { title: 'Create Your Account', description: 'Register or log in to access your learning dashboard.' },
+  { title: 'Choose a Course', description: 'Choose ESG topics and pick a course.' },
+  { title: 'Start Learning', description: 'Begin with a pre-test, explore reading materials, review slides, and analyze real case studies.' },
+  { title: 'Complete the Quiz', description: 'Test your understanding and reinforce key concepts.' },
+  { title: 'Get Certified', description: 'Receive your certificate after successfully completing the course.' },
 ]
 
 usePageMeta(() => {

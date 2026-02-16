@@ -129,23 +129,23 @@ const slides = [
 		type: 'video',
 	},
 	{
-		title: 'Sharpen your skills',
+		title: 'Sharpen Your Skills with Structured Learning',
 		description:
-			'Enhance your abilities with guided learning and practical, focused improvements',
+			'Enhance your capabilities through guided lessons, real-world case studies, and focused learning paths designed to build practical ESG expertise.',
 		imageUrl: '/images/undraw_working-together_r43a.png',
 		type: 'image',
 	},
 	{
 		title: 'Learn Efficiently With AI Assistance',
 		description:
-			'Get instant support from AI tutors, quick explanations, and smart suggestions to master any topic efficiently',
+			'Receive instant explanations, smart recommendations, and learning support that helps you understand complex topics faster and more efficiently.',
 		imageUrl: '/images/undraw_online-stats_d57c 1.png',
 		type: 'image',
 	},
 	{
-		title: 'Learn without limits',
+		title: 'Learn without limit',
 		description:
-			'Explore new knowledge at your own pace and unlock your full potential',
+			'Access your courses anytime, anywhere, and progress at your own pace in a flexible environment built for modern learners.',
 		imageUrl: '/images/undraw_happy-announcement_23nf 1.png',
 		type: 'image',
 	},
