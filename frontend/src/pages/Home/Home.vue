@@ -143,7 +143,7 @@ const subtitle = computed(() => {
 				evalSuffix,
 			)
 		}
-		return __('Continue your learning journey from where you left off')
+		return __('Ready to grow your ESG expertise? Start a course or continue learning today')
 	}
 })
 

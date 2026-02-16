@@ -2,13 +2,55 @@
 	<div>
 		<div v-if="myCourses.data?.length" class="mt-10">
 			<div class="flex items-center justify-between mb-8">
-				<span class="font-semibold text-lg text-ink-gray-9">
-					{{
-						myCourses.data[0].membership
-							? __('Continue Learning')
-							: __('Our Popular Courses')
-					}}
-				</span>
+				<div>
+					<div class="font-semibold text-lg text-ink-gray-9">
+						{{__('Continue Learning')}}
+					</div>
+					<p class="text-base text-gray-600 leading-6">
+						{{ __('Resume your courses and continue building your knowledge.') }}
+					</p>
+				</div>
+				<router-link
+					:to="{
+						name: 'Courses',
+					}"
+				>
+					<span
+						class="flex items-center space-x-1 text-base font-medium"
+						:class="
+							myBatches.data?.length
+								? 'text-primary-500 hover:text-primary-600'
+								: 'text-gray-500'
+						"
+					>
+						<span>
+							{{ __('View all courses') }}
+						</span>
+					</span>
+				</router-link>
+			</div>
+			<div
+				class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+			>
+				<router-link
+					v-for="course in myCourses.data"
+					:to="{ name: 'CourseDetail', params: { courseName: course.name } }"
+				>
+					<CourseCard :course="course" />
+				</router-link>
+			</div>
+		</div>
+
+		<div v-if="popularCourses.data?.length" class="mt-10">
+			<div class="flex items-center justify-between mb-8">
+				<div>
+					<div class="font-semibold text-lg text-ink-gray-9">
+						{{__('Our Popular Courses')}}
+					</div>
+					<p class="text-base text-gray-600 leading-6">
+						{{ __('Explore the most popular courses chosen by learners to build essential ESG knowledge and skills.') }}
+					</p>
+				</div>
 				<router-link
 					:to="{
 						name: 'Courses',
@@ -173,6 +215,11 @@ const props = defineProps<{
 
 const myCourses = createResource({
 	url: 'lms.lms.utils.get_my_courses',
+	auto: true,
+})
+
+const popularCourses = createResource({
+	url: 'lms.lms.utils.get_popular_courses_detail',
 	auto: true,
 })
 

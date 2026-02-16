@@ -2396,10 +2396,15 @@ def get_my_courses():
 		return my_courses
 
 	courses = get_my_latest_courses()
+	for course in courses:
+		my_courses.append(get_course_details(course))
 
-	if not len(courses):
-		courses = get_featured_home_courses()
+	return my_courses
 
+@frappe.whitelist()
+def get_popular_courses_detail():
+	my_courses = []
+	courses = get_featured_home_courses()
 	if not len(courses):
 		courses = get_popular_courses()
 
