@@ -271,6 +271,30 @@
 		</section>
 
 		<section class="flex flex-col items-center max-w-7xl mx-auto px-4 py-24">
+			<div class="flex flex-col items-center text-center space-y-4 mb-16">
+				<h2 class="text-2xl font-bold text-gray-800">What is ESG</h2>
+				<span class="block w-4/5 mt-4">ESG stands for Environmental, Social, and Governance, a framework used to evaluate how organizations operate responsibly, sustainably, and ethically.</span>
+			</div>
+			<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full md:w-3/4 px-16 md:px-0">
+				<div class="flex flex-col gap-y-2 items-center justify-stretch p-6 rounded shadow-md text-center">
+					<Leaf class="h-12 w-12 text-primary-500 mb-3"/>
+					<h3 class="font-bold">Environmental</h3>
+					<p>Focuses on how a company protects the planet. Includes carbon emissions, renewable energy, waste management, and resource efficiency.</p>
+				</div>
+				<div class="flex flex-col gap-y-2 items-center justify-stretch p-6 rounded shadow-md text-center">
+					<Users class="h-12 w-12 text-primary-500 mb-3"/>
+					<h3 class="font-bold">Social</h3>
+					<p>Measures how a company treats people and communities. Includes employee wellbeing, diversity & inclusion, human rights, and social impact.</p>
+				</div>
+				<div class="flex flex-col gap-y-2 items-center justify-stretch p-6 rounded shadow-md text-center">
+					<Landmark  class="h-12 w-12 text-primary-500 mb-3"/>
+					<h3 class="font-bold">Governance</h3>
+					<p>Evaluates how a company is managed and governed. Includes transparency, anti-corruption, leadership structure, and regulatory compliance.</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="flex flex-col items-center max-w-7xl mx-auto px-4 py-24 border-t border-gray-100">
 			<div class="text-center space-y-4 mb-16">
 				<h2 class="text-2xl font-bold text-gray-800">Why Learn With CESGS</h2>
 			</div>
@@ -304,13 +328,9 @@
 			</div>
 			<div class="p-6">
 				<div v-for="(step, index) in steps" :key="index" class="relative pb-8 last:pb-0">
-					<div
-						v-if="index !== steps.length - 1"
-						class="absolute left-[15px] top-8 h-full w-0.5"
-						:class="step.status === 'completed' ? 'bg-blue-500' : 'bg-gray-200'"
-					></div>
+					<div v-if="index !== steps.length - 1" class="absolute left-[15px] top-8 h-full w-0.5 bg-primary-300"></div>
 					<div class="flex items-start gap-4">
-						<div class="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 bg-blue-500 border-blue-500 text-white">
+						<div class="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 bg-primary-500 border-primary-500 text-white">
 							<span class="text-xs">{{ index + 1 }}</span>
 						</div>
 						<div class="pt-1">
@@ -472,6 +492,8 @@ import {
 	BookOpenText,
 	Presentation,
 	GraduationCap,
+	Leaf,
+	Landmark,
 } from 'lucide-vue-next'
 import { sessionStore } from '@/stores/session'
 import UnairLogo from '@/components/Icons/UnairLogo.vue'
