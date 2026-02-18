@@ -5,7 +5,7 @@ import { useSettings } from './stores/settings'
 
 const routes = [
 	{
-		path: '/',
+		path: '/home',
 		name: 'Home',
 		component: () => import('@/pages/Home/Home.vue'),
 	},
