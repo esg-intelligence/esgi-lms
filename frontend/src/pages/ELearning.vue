@@ -272,24 +272,24 @@
 
 		<section class="flex flex-col items-center max-w-7xl mx-auto px-4 py-24">
 			<div class="flex flex-col items-center text-center space-y-4 mb-16">
-				<h2 class="text-2xl font-bold text-gray-800">What is ESG</h2>
-				<span class="block w-4/5 mt-4">ESG stands for Environmental, Social, and Governance, a framework used to evaluate how organizations operate responsibly, sustainably, and ethically.</span>
+				<h2 class="text-2xl font-bold text-gray-800">Why Should We Learn ESG?</h2>
+				<span class="block w-4/5 mt-4">ESG is no longer “nice to have”—it’s a core skill for navigating modern business. By understanding Environmental, Social, and Governance principles, you’ll be better equipped to manage risks, unlock opportunities, and make decisions that are responsible, strategic, and future-ready</span>
 			</div>
 			<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full md:w-3/4 px-16 md:px-0">
 				<div class="flex flex-col gap-y-2 items-center justify-stretch p-6 rounded shadow-md text-center">
 					<Leaf class="h-12 w-12 text-primary-500 mb-3"/>
 					<h3 class="font-bold">Environmental</h3>
-					<p>Focuses on how a company protects the planet. Includes carbon emissions, renewable energy, waste management, and resource efficiency.</p>
+					<p class="text-sm">Learning the Environmental pillar helps you make sense of today’s biggest challenges—climate risk, resource scarcity, and the transition to sustainable operations. It empowers you to spot what could disrupt a business, and how organizations can stay resilient through smarter resource management and greener practices.</p>
 				</div>
 				<div class="flex flex-col gap-y-2 items-center justify-stretch p-6 rounded shadow-md text-center">
 					<Users class="h-12 w-12 text-primary-500 mb-3"/>
 					<h3 class="font-bold">Social</h3>
-					<p>Measures how a company treats people and communities. Includes employee wellbeing, diversity & inclusion, human rights, and social impact.</p>
+					<p class="text-sm">The Social pillar brings people to the center of business decisions. You’ll learn how organizations influence employees, customers, and communities—covering wellbeing, human rights, safety, and inclusion—so growth doesn’t just happen fast, but also happens fairly and sustainably.</p>
 				</div>
 				<div class="flex flex-col gap-y-2 items-center justify-stretch p-6 rounded shadow-md text-center">
 					<Landmark  class="h-12 w-12 text-primary-500 mb-3"/>
 					<h3 class="font-bold">Governance</h3>
-					<p>Evaluates how a company is managed and governed. Includes transparency, anti-corruption, leadership structure, and regulatory compliance.</p>
+					<p class="text-sm">Good Governance is what turns commitments into real action. Understanding governance gives you insight into ethical leadership, transparent reporting, accountability, and strong decision-making—building trust with stakeholders and supporting long-term stability.</p>
 				</div>
 			</div>
 		</section>
