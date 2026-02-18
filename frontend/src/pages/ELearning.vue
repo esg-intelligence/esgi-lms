@@ -182,7 +182,7 @@
 													class="relative aspect-[16/10] bg-gray-200 rounded-2xl overflow-hidden shadow-sm"
 												>
 													<iframe
-														src="https://drive.google.com/file/d/1_dV-jqHgImnb1ubg163d8AvlXQ5d5QIt/preview"
+														src="https://drive.google.com/file/d/1RQh6ueGWBlxQfPkAxicWa82UFmLt1bNE/preview"
 														width="100%"
 														height="100%"
 														allow="autoplay"
