@@ -347,6 +347,18 @@ def get_chart_details():
 	details.certifications = get_growth_details("LMS Certificate", {"published": 1})
 	return details
 
+@frappe.whitelist()
+def get_user_chart_details():
+	details = frappe._dict()
+	details.enrollments = get_growth_details("LMS Enrollment", {"member": frappe.session.user})
+	details.in_progress = get_growth_details(
+		"LMS Enrollment", {"member": frappe.session.user, "progress": ["between", [1, 99]]}
+	)
+	details.completions = get_growth_details(
+		"LMS Enrollment", {"member": frappe.session.user, "progress": 100}
+	)
+	details.certifications = get_growth_details("LMS Certificate", {"member": frappe.session.user})
+	return details
 
 @frappe.whitelist()
 def get_file_info(file_url):
