@@ -80,6 +80,17 @@
 							size="lg"
 						/>
 					</div>
+					<div class="w-full lg:min-w-0 lg:w-44">
+						<Select
+							v-if="categories.length"
+							v-model="currentCategory"
+							:options="categories"
+							:placeholder="__('All Categories')"
+							@change="updateCourses()"
+							variant="outline"
+							size="lg"
+						/>
+					</div>
 				</div>
 
 				<!-- <FormControl v-model="certification" :label="__('Certification')" type="checkbox"
@@ -147,7 +158,7 @@ onMounted(() => {
 	getCourseCount()
 	categories.value = [
 		{
-			label: '',
+			label: 'All Categories',
 			value: null,
 		},
 	]
@@ -329,7 +340,7 @@ const updateCategories = (data) => {
 	})
 }
 
-watch(currentTab, () => {
+watch([currentTab, currentCategory], () => {
 	updateCourses()
 })
 
@@ -337,12 +348,15 @@ const courseTabs = computed(() => {
 	let tabs = [
 		{
 			label: __('Live'),
+			value: 'Live'
 		},
 		{
 			label: __('New'),
+			value: 'New'
 		},
 		{
 			label: __('Upcoming'),
+			value: 'Upcoming'
 		},
 	]
 	if (
@@ -350,10 +364,10 @@ const courseTabs = computed(() => {
 		user.data?.is_instructor ||
 		user.data?.is_evaluator
 	) {
-		tabs.push({ label: __('Created') })
-		tabs.push({ label: __('Unpublished') })
+		tabs.push({ label: __('Created'), value: 'Created' })
+		tabs.push({ label: __('Unpublished'), value: 'Unpublished' })
 	} else if (user.data) {
-		tabs.push({ label: __('Enrolled') })
+		tabs.push({ label: __('Enrolled'), value: 'Enrolled' })
 	}
 	return tabs
 })
