@@ -118,6 +118,7 @@
 			</Button>
 		</div>
 	</div>
+	<ChatAssistant v-model="showAssistantModal" />
 </template>
 <script setup>
 import {
@@ -138,6 +139,7 @@ import CourseCard from '@/components/CourseCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import router from '../router'
 import Button from '@/components/ui/Button.vue'
+import ChatAssistant from '@/components/ChatAssistant.vue'
 
 const user = inject('$user')
 const dayjs = inject('$dayjs')
@@ -151,6 +153,7 @@ const filters = ref({})
 const currentTab = ref('Live')
 const { brand } = sessionStore()
 const courseCount = ref(0)
+const showAssistantModal = ref(true)
 
 onMounted(() => {
 	setFiltersFromQuery()

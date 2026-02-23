@@ -107,7 +107,10 @@
 				leave-to-class="opacity-0 -rotate-90 scale-50"
 				mode="out-in"
 			>
-				<AIStarIcon v-if="minimize" class="h-6 w-6" />
+				<div v-if="minimize" class="relative">
+					<p class="absolute text-sm -left-32 px-2 py-1 rounded-sm bg-gradient-left font-medium">AI Assistant</p>
+					<AIStarIcon class="h-6 w-6" />
+				</div>
 				<ChevronDown v-else class="h-7 w-7" />
 			</transition>
 		</button>

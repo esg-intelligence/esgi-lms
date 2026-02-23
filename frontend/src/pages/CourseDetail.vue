@@ -82,6 +82,7 @@
 			<RelatedCourses :courseName="course.data.name" />
 		</div>
 	</div>
+	<ChatAssistant v-model="showAssistantModal" />
 </template>
 <script setup>
 import { createResource, Badge, Tooltip, usePageMeta } from 'frappe-ui'
@@ -96,11 +97,13 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import CourseInstructors from '@/components/CourseInstructors.vue'
 import RelatedCourses from '@/components/RelatedCourses.vue'
 import CustomBreadcrumb from '@/components/ui/CustomBreadcrumb.vue'
+import ChatAssistant from '@/components/ChatAssistant.vue'
 
 const { brand } = sessionStore()
 const router = useRouter()
 const user = inject('$user')
 const activeTab = ref('overview')
+const showAssistantModal = ref(true)
 
 const props = defineProps({
 	courseName: {
