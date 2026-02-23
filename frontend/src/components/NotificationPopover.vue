@@ -102,6 +102,9 @@ import { createListResource, createResource, Button, Popover } from 'frappe-ui'
 import EmptyIcon from '@/components/Icons/EmptyIcon.vue'
 import { Bell } from 'lucide-vue-next'
 import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+dayjs.extend(relativeTime);
 
 const props = defineProps({
 	placement: {
