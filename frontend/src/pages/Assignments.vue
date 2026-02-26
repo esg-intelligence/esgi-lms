@@ -42,7 +42,7 @@
 				/>
 			</div>
 		</div>
-		<ListView
+		<!-- <ListView
 			v-if="assignments.data?.length"
 			:columns="assignmentColumns"
 			:rows="assignments.data"
@@ -57,7 +57,46 @@
 				},
 			}"
 		>
-		</ListView>
+		</ListView> -->
+		<Table v-if="assignments.data?.length">
+			<TableHeader>
+				<TableRow>
+					<TableHead>Title</TableHead>
+					<TableHead>Type</TableHead>
+					<TableHead>Created</TableHead>
+					<TableHead>Actions</TableHead>
+				</TableRow>
+			</TableHeader>
+			<TableBody>
+				<TableRow v-for="assignment in assignments.data" :key="assignment.name">
+					<TableCell class="font-medium">{{ assignment.title }}</TableCell>
+					<TableCell>{{ assignment.type }}</TableCell>
+					<TableCell>{{ assignment.creation }}</TableCell>
+					<TableCell>
+						<Btn
+							class="mr-2"
+							@click="() => {
+								if (readOnlyMode) return
+								assignmentID = assignment.name
+								showAssignmentForm = true
+							}"
+						>
+							Edit
+						</Btn>
+						<router-link
+							:to="{
+								name: 'AssignmentSubmissionList',
+								query: {
+									assignmentID: assignment.name,
+								},
+							}"
+						>
+							<Btn>Check Submissions</Btn>
+						</router-link>
+					</TableCell>
+				</TableRow>
+			</TableBody>
+		</Table>
 		<EmptyState v-else type="Assignments" />
 		<div
 			v-if="assignments.data && assignments.hasNextPage"
@@ -82,6 +121,7 @@ import {
 	FormControl,
 	ListView,
 	usePageMeta,
+	Button as Btn
 } from 'frappe-ui'
 import { computed, inject, onMounted, ref, watch } from 'vue'
 import { Plus } from 'lucide-vue-next'
@@ -90,6 +130,14 @@ import { sessionStore } from '../stores/session'
 import AssignmentForm from '@/components/Modals/AssignmentForm.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import Button from '@/components/ui/Button.vue'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 
 const user = inject('$user')
 const dayjs = inject('$dayjs')
