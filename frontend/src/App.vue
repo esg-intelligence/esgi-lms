@@ -10,7 +10,7 @@
 <script setup>
 import { FrappeUIProvider } from 'frappe-ui'
 import { Dialogs } from '@/utils/dialogs'
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useScreenSize } from './utils/composables'
 import { usersStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
@@ -24,7 +24,10 @@ const { isMobile } = useScreenSize()
 const router = useRouter()
 const noSidebar = ref(false)
 const { userResource } = usersStore()
-
+// Using light onmount
+onMounted(() => {
+	localStorage.setItem('theme', 'light')
+})
 router.beforeEach((to, from, next) => {
 	if (
 		to.query.fromLesson ||

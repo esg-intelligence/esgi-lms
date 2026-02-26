@@ -8,8 +8,8 @@
 						isCollapsed
 							? 'px-0 w-auto'
 							: open
-							? 'bg-surface-white shadow-sm px-2 w-52'
-							: 'hover:bg-surface-gray-3 px-2 w-52'
+								? 'bg-surface-white shadow-sm px-2 w-52'
+								: 'hover:bg-surface-gray-3 px-2 w-52'
 					"
 				>
 					<img
@@ -117,7 +117,7 @@ watch(
 	() => settingsStore.isSettingsOpen,
 	(value) => {
 		showSettingsModal.value = value
-	}
+	},
 )
 
 const toggleTheme = () => {
@@ -142,18 +142,18 @@ const userDropdownOptions = computed(() => {
 						return isLoggedIn
 					},
 				},
-				{
-					icon: theme.value === 'light' ? Moon : Sun,
-					label: 'Toggle Theme',
-					onClick: () => {
-						toggleTheme()
-					},
-				},
+				// {
+				// 	icon: theme.value === 'light' ? Moon : Sun,
+				// 	label: 'Toggle Theme',
+				// 	onClick: () => {
+				// 		toggleTheme()
+				// 	},
+				// },
 				{
 					component: markRaw(Apps),
 					condition: () => {
 						let cookies = new URLSearchParams(
-							document.cookie.split('; ').join('&')
+							document.cookie.split('; ').join('&'),
 						)
 						let system_user = cookies.get('system_user')
 						if (system_user === 'yes') return true
@@ -189,7 +189,7 @@ const userDropdownOptions = computed(() => {
 						$dialog({
 							title: __('Login to Frappe Cloud?'),
 							message: __(
-								'Are you sure you want to login to your Frappe Cloud dashboard?'
+								'Are you sure you want to login to your Frappe Cloud dashboard?',
 							),
 							actions: [
 								{
