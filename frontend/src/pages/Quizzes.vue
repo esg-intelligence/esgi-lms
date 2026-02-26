@@ -1,7 +1,5 @@
 <template>
-	<header
-		class="sticky top-0 z-10 flex items-center justify-between bg-surface-white px-3 py-2.5 sm:px-5"
-	>
+	<header class="sticky top-0 z-10 flex items-center justify-between bg-surface-white px-3 py-2.5 sm:px-5">
 		<Breadcrumbs :items="breadcrumbs" />
 		<Button v-if="!readOnlyMode" variant="solid" @click="showForm = true">
 			<template #prefix>
@@ -25,16 +23,9 @@
 				</template>
 			</FormControl>
 		</div>
-		<ListView
-			v-if="quizzes.data?.length"
-			:columns="quizColumns"
-			:rows="quizzes.data"
-			row-key="name"
-			:options="{ showTooltip: false, selectable: true }"
-		>
-			<ListHeader
-				class="mb-2 grid items-center space-x-4 rounded bg-surface-gray-2 p-2"
-			>
+		<ListView v-if="quizzes.data?.length" :columns="quizColumns" :rows="quizzes.data" row-key="name"
+			:options="{ showTooltip: false, selectable: true }">
+			<ListHeader class="mb-2 grid items-center space-x-4 rounded bg-surface-gray-2 p-2">
 				<ListHeaderItem :item="item" v-for="item in quizColumns">
 					<template #prefix="{ item }">
 						<FeatherIcon :name="item.icon?.toString()" class="h-4 w-4" />
@@ -42,29 +33,19 @@
 				</ListHeaderItem>
 			</ListHeader>
 			<ListRows>
-				<router-link
-					v-for="row in quizzes.data"
-					:to="{
-						name: 'QuizForm',
-						params: {
-							quizID: row.name,
-						},
-					}"
-				>
+				<router-link v-for="row in quizzes.data" :to="{
+					name: 'QuizForm',
+					params: {
+						quizID: row.name,
+					},
+				}">
 					<ListRow :row="row">
 						<template #default="{ column, item }">
 							<ListRowItem :item="row[column.key]" :align="column.align">
 								<div v-if="column.key == 'show_answers'">
-									<FormControl
-										type="checkbox"
-										v-model="row[column.key]"
-										:disabled="true"
-									/>
+									<FormControl type="checkbox" v-model="row[column.key]" :disabled="true" />
 								</div>
-								<div
-									v-else-if="column.key == 'modified'"
-									class="text-xs text-ink-gray-5"
-								>
+								<div v-else-if="column.key == 'modified'" class="text-xs text-ink-gray-5">
 									{{ row[column.key] }}
 								</div>
 								<div v-else>
@@ -78,10 +59,7 @@
 			<ListSelectBanner>
 				<template #actions="{ unselectAll, selections }">
 					<div class="flex gap-2">
-						<Button
-							variant="ghost"
-							@click="deleteQuiz(selections, unselectAll)"
-						>
+						<Button variant="ghost" @click="deleteQuiz(selections, unselectAll)">
 							<FeatherIcon name="trash-2" class="h-4 w-4 stroke-1.5" />
 						</Button>
 					</div>
@@ -95,22 +73,19 @@
 			</Button>
 		</div>
 	</div>
-	<Dialog
-		v-model="showForm"
-		:options="{
-			title: __('Create a Quiz'),
-			size: 'sm',
-			actions: [
-				{
-					label: __('Save'),
-					variant: 'solid',
-					onClick({ close }) {
-						insertQuiz(close)
-					},
+	<Dialog v-model="showForm" :options="{
+		title: __('Create a Quiz'),
+		size: 'sm',
+		actions: [
+			{
+				label: __('Save'),
+				variant: 'solid',
+				onClick({ close }) {
+					insertQuiz(close)
 				},
-			],
-		}"
-	>
+			},
+		],
+	}">
 		<template #body-content>
 			<FormControl v-model="title" :label="__('Title')" type="text" />
 		</template>
