@@ -25,7 +25,8 @@
   "question",
   "column_break_esgd",
   "course",
-  "lesson"
+  "lesson",
+  "score"
  ],
  "fields": [
   {
@@ -144,14 +145,21 @@
   {
    "fieldname": "section_break_ydgh",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "score",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Score",
+   "precision": "2"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2025-07-14 10:24:23.526176",
- "modified_by": "sayali@frappe.io",
+ "modified": "2026-03-02 16:08:23.310826",
+ "modified_by": "Administrator",
  "module": "LMS",
  "name": "LMS Assignment Submission",
  "naming_rule": "Expression (old style)",

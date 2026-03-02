@@ -118,6 +118,10 @@
 					</div>
 					<FormControl v-if="submissionResource.doc" v-model="submissionResource.doc.status"
 						:label="__('Grade')" type="select" :options="submissionStatusOptions" />
+					<div class="text-xs text-ink-gray-5 mb-1">
+						{{ __('Score') }}
+					</div>
+					<FormControl v-model="score" type="number" />
 					<div>
 						<div class="text-sm text-ink-gray-5 mb-1">
 							{{ __('Comments') }}
@@ -128,8 +132,8 @@
 								isDirty = true
 							}
 						" :editable="true" :fixedMenu="true" :uploadArgs="{
-								private: true,
-							}" editorClass="prose-sm max-w-none border-b border-x bg-surface-gray-2 rounded-b-md py-1 px-2 min-h-[7rem]" />
+							private: true,
+						}" editorClass="prose-sm max-w-none border-b border-x bg-surface-gray-2 rounded-b-md py-1 px-2 min-h-[7rem]" />
 					</div>
 				</div>
 			</div>
@@ -155,6 +159,7 @@ import { useRouter } from 'vue-router'
 
 const submissionFile = ref(null)
 const answer = ref(null)
+const score = ref(null)
 const comments = ref(null)
 const router = useRouter()
 const user = inject('$user')
@@ -263,6 +268,11 @@ watch(submissionResource, () => {
 		} else {
 			comments.value = null
 		}
+		if (submissionResource.doc.score) {
+			score.value = submissionResource.doc.score
+		} else {
+			score.value = null
+		}
 		if (submissionResource.isDirty) {
 			isDirty.value = true
 		} else if (showUploader() && !submissionFile.value) {
@@ -295,6 +305,7 @@ const submitAssignment = () => {
 				evaluator: evaluator,
 				comments: comments.value,
 				answer: answer.value,
+				score: score.value,
 			},
 			{
 				onSuccess(data) {
