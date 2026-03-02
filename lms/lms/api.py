@@ -1864,3 +1864,14 @@ def get_rating_breakdown(course):
 		"total_reviews": total_reviews,
 		"avg_rating": round(avg_rating, 1)
 	}
+
+@frappe.whitelist()
+def duplicate_quiz(title, base_name):
+	base_doc = frappe.get_doc('LMS Quiz', base_name)
+	# Create copy
+	new_doc = frappe.copy_doc(base_doc)
+	# Cleaning
+	new_doc.title = title
+	new_doc.lesson = None
+	new_doc.course = None
+	new_doc.insert()

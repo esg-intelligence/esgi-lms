@@ -23,49 +23,50 @@
 				</template>
 			</FormControl>
 		</div>
-		<ListView v-if="quizzes.data?.length" :columns="quizColumns" :rows="quizzes.data" row-key="name"
-			:options="{ showTooltip: false, selectable: true }">
-			<ListHeader class="mb-2 grid items-center space-x-4 rounded bg-surface-gray-2 p-2">
-				<ListHeaderItem :item="item" v-for="item in quizColumns">
-					<template #prefix="{ item }">
-						<FeatherIcon :name="item.icon?.toString()" class="h-4 w-4" />
-					</template>
-				</ListHeaderItem>
-			</ListHeader>
-			<ListRows>
-				<router-link v-for="row in quizzes.data" :to="{
-					name: 'QuizForm',
-					params: {
-						quizID: row.name,
-					},
-				}">
-					<ListRow :row="row">
-						<template #default="{ column, item }">
-							<ListRowItem :item="row[column.key]" :align="column.align">
-								<div v-if="column.key == 'show_answers'">
-									<FormControl type="checkbox" v-model="row[column.key]" :disabled="true" />
-								</div>
-								<div v-else-if="column.key == 'modified'" class="text-xs text-ink-gray-5">
-									{{ row[column.key] }}
-								</div>
-								<div v-else>
-									{{ row[column.key] }}
-								</div>
-							</ListRowItem>
-						</template>
-					</ListRow>
-				</router-link>
-			</ListRows>
-			<ListSelectBanner>
-				<template #actions="{ unselectAll, selections }">
-					<div class="flex gap-2">
-						<Button variant="ghost" @click="deleteQuiz(selections, unselectAll)">
-							<FeatherIcon name="trash-2" class="h-4 w-4 stroke-1.5" />
-						</Button>
-					</div>
-				</template>
-			</ListSelectBanner>
-		</ListView>
+		<Table v-if="quizzes.data?.length">
+			<TableHeader class="bg-surface-gray-2">
+				<TableRow>
+					<TableHead v-for="column in quizColumns" :key="column.key">
+						<div class="flex gap-x-2" :class="column.class == 'text-center' ? 'justify-center' : ''">
+							<FeatherIcon :name="column.icon?.toString()" class="h-4 w-4" />
+							<span class="block -mt-px">{{ column.label }}</span>
+						</div>
+					</TableHead>
+				</TableRow>
+			</TableHeader>
+			<TableBody>
+				<TableRow v-for="quiz in quizzes.data" :key="quiz.name">
+					<TableCell v-for="column in quizColumns" :class="column.class" class="text-base">
+						<div v-if="column.key == 'show_answers'">
+							<FormControl type="checkbox" v-model="quiz[column.key]" :disabled="true" />
+						</div>
+						<div v-else-if="column.key == 'modified'" class="text-xs text-ink-gray-5">
+							{{ quiz[column.key] }}
+						</div>
+						<div v-else-if="column.key == 'actions'" class="text-center">
+							<Btn class="mr-2" @click="() => {
+								// if (readOnlyMode) return
+								selectedQuiz = quiz.name
+								showDuplicateForm = true
+							}">
+								Duplicate
+							</Btn>
+							<router-link :to="{
+								name: 'QuizForm',
+								params: {
+									quizID: quiz.name,
+								},
+							}">
+								<Btn>Detail</Btn>
+							</router-link>
+						</div>
+						<div v-else>
+							{{ quiz[column.key] }}
+						</div>
+					</TableCell>
+				</TableRow>
+			</TableBody>
+		</Table>
 		<EmptyState v-else type="Quizzes" />
 		<div v-if="quizzes.hasNextPage" class="flex justify-center my-5">
 			<Button @click="quizzes.next()">
@@ -90,6 +91,7 @@
 			<FormControl v-model="title" :label="__('Title')" type="text" />
 		</template>
 	</Dialog>
+	<QuizForm v-model="showDuplicateForm" :reload="quizzes.reload" :selected="selectedQuiz" />
 </template>
 <script setup>
 import {
@@ -98,15 +100,9 @@ import {
 	Dialog,
 	FeatherIcon,
 	FormControl,
-	ListView,
-	ListRows,
-	ListRow,
-	ListRowItem,
-	ListHeader,
-	ListHeaderItem,
-	ListSelectBanner,
 	toast,
 	usePageMeta,
+	Button as Btn
 } from 'frappe-ui'
 import { useRouter } from 'vue-router'
 import { computed, inject, onMounted, ref, watch } from 'vue'
@@ -115,6 +111,15 @@ import { sessionStore } from '@/stores/session'
 import { escapeHTML } from '@/utils'
 import EmptyState from '@/components/EmptyState.vue'
 import Button from '@/components/ui/Button.vue'
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from '@/components/ui/table'
+import QuizForm from '@/components/Modals/QuizForm.vue'
 
 const { brand } = sessionStore()
 const user = inject('$user')
@@ -125,6 +130,8 @@ const readOnlyMode = window.read_only_mode
 const quizFilters = ref({})
 const showForm = ref(false)
 const title = ref('')
+const showDuplicateForm = ref(false)
+const selectedQuiz = ref('')
 
 onMounted(() => {
 	if (!user.data?.is_moderator && !user.data?.is_instructor) {
@@ -209,43 +216,43 @@ const quizColumns = computed(() => {
 		{
 			label: __('Title'),
 			key: 'title',
-			width: 2,
 			icon: 'file-text',
 		},
 		{
 			label: __('Total Marks'),
 			key: 'total_marks',
-			width: 1,
-			align: 'center',
+			class: 'text-center',
 			icon: 'hash',
 		},
 		{
 			label: __('Passing Percentage'),
 			key: 'passing_percentage',
-			width: 1,
-			align: 'center',
+			class: 'text-center',
 			icon: 'percent',
 		},
 		{
 			label: __('Max Attempts'),
 			key: 'max_attempts',
-			width: 1,
-			align: 'center',
+			class: 'text-center',
 			icon: 'repeat',
 		},
 		{
 			label: __('Show Answers'),
 			key: 'show_answers',
-			width: 1,
-			align: 'center',
+			class: 'text-center',
 			icon: 'eye',
 		},
 		{
 			label: __('Modified'),
 			key: 'modified',
-			width: 1,
-			align: 'center',
+			class: 'text-center',
 			icon: 'clock',
+		},
+		{
+			label: __('Actions'),
+			key: 'actions',
+			class: 'text-center',
+			icon: 'settings',
 		},
 	]
 })
