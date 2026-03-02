@@ -1,13 +1,7 @@
 <template>
-	<div
-		v-if="assignment.data"
-		class="grid grid-cols-2 h-full"
-		:class="{ 'border rounded-lg overflow-auto': !showTitle }"
-	>
-		<div
-			class="border-r p-5 overflow-y-auto h-[calc(100vh-3.2rem)]"
-			:class="{ 'h-full': !showTitle }"
-		>
+	<div v-if="assignment.data" class="grid grid-cols-2 h-full"
+		:class="{ 'border rounded-lg overflow-auto': !showTitle }">
+		<div class="border-r p-5 overflow-y-auto h-[calc(100vh-3.2rem)]" :class="{ 'h-full': !showTitle }">
 			<div v-if="showTitle" class="text-lg font-semibold mb-5 text-ink-gray-9">
 				<div v-if="submissionName === 'new'">
 					{{ __('Submission by') }} {{ user.data?.full_name }}
@@ -19,10 +13,9 @@
 			<div class="text-sm text-ink-gray-7 font-medium mb-2">
 				{{ __('Question') }}:
 			</div>
-			<div
-				v-html="assignment.data.question"
-				class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal"
-			></div>
+			<div v-html="assignment.data.question"
+				class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal">
+			</div>
 		</div>
 
 		<div class="flex flex-col">
@@ -35,11 +28,7 @@
 						<Badge v-if="isDirty" theme="orange">
 							{{ __('Not Saved') }}
 						</Badge>
-						<Badge
-							v-else-if="submissionResource.doc?.status"
-							:theme="statusTheme"
-							size="lg"
-						>
+						<Badge v-else-if="submissionResource.doc?.status" :theme="statusTheme" size="lg">
 							{{ submissionResource.doc?.status }}
 						</Badge>
 						<Button variant="solid" @click="submitAssignment()">
@@ -47,14 +36,11 @@
 						</Button>
 					</div>
 				</div>
-				<div
-					v-if="
-						submissionName != 'new' &&
-						!['Pass', 'Fail'].includes(submissionResource.doc?.status) &&
-						submissionResource.doc?.owner == user.data?.name
-					"
-					class="bg-surface-blue-2 text-ink-blue-2 p-3 rounded-md leading-5 text-sm mb-4"
-				>
+				<div v-if="
+					submissionName != 'new' &&
+					!['Pass', 'Fail'].includes(submissionResource.doc?.status) &&
+					submissionResource.doc?.owner == user.data?.name
+				" class="bg-surface-blue-2 text-ink-blue-2 p-3 rounded-md leading-5 text-sm mb-4">
 					{{ __("You've successfully submitted the assignment.") }}
 					{{
 						__(
@@ -67,15 +53,9 @@
 					<div class="text-xs text-ink-gray-5 mt-1 mb-2">
 						{{ __('Add your assignment as {0}').format(assignment.data.type) }}
 					</div>
-					<FileUploader
-						v-if="!submissionFile"
-						:fileTypes="getType()"
-						:uploadArgs="{
-							private: true,
-						}"
-						:validateFile="validateFile"
-						@success="(file) => saveSubmission(file)"
-					>
+					<FileUploader v-if="!submissionFile" :fileTypes="getType()" :uploadArgs="{
+						private: true,
+					}" :validateFile="validateFile" @success="(file) => saveSubmission(file)">
 						<template #default="{ uploading, progress, openFileSelector }">
 							<Button @click="openFileSelector" :loading="uploading">
 								{{
@@ -91,11 +71,8 @@
 							<div class="border self-start rounded-md p-2 mr-2">
 								<FileText class="h-5 w-5 stroke-1.5" />
 							</div>
-							<a
-								:href="submissionFile.file_url"
-								target="_blank"
-								class="flex flex-col cursor-pointer !no-underline"
-							>
+							<a :href="submissionFile.file_url" target="_blank"
+								class="flex flex-col cursor-pointer !no-underline">
 								<span class="text-sm leading-5">
 									{{ submissionFile.file_name }}
 								</span>
@@ -103,11 +80,8 @@
 									{{ getFileSize(submissionFile.file_size) }}
 								</span>
 							</a>
-							<X
-								v-if="canModifyAssignment"
-								@click="removeSubmission()"
-								class="bg-surface-gray-3 rounded-md cursor-pointer stroke-1.5 w-5 h-5 p-1 ml-4"
-							/>
+							<X v-if="canModifyAssignment" @click="removeSubmission()"
+								class="bg-surface-gray-3 rounded-md cursor-pointer stroke-1.5 w-5 h-5 p-1 ml-4" />
 						</div>
 					</div>
 				</div>
@@ -115,42 +89,26 @@
 					<div class="text-xs text-ink-gray-5 mb-1">
 						{{ __('Enter a URL') }}
 					</div>
-					<FormControl
-						v-model="answer"
-						type="text"
-						:readonly="!canModifyAssignment"
-					/>
+					<FormControl v-model="answer" type="text" :readonly="!canModifyAssignment" />
 				</div>
 				<div v-else>
 					<div class="text-sm mb-2 text-ink-gray-7">
 						{{ __('Write your answer here') }}
 					</div>
-					<TextEditor
-						:content="answer"
-						@change="(val) => (answer = val)"
-						:editable="true"
-						:fixedMenu="true"
+					<TextEditor :content="answer" @change="(val) => (answer = val)" :editable="true" :fixedMenu="true"
 						:uploadArgs="{
 							private: true,
-						}"
-						editorClass="prose-sm max-w-none border-b border-x bg-surface-gray-2 rounded-b-md py-1 px-2 min-h-[7rem]"
-					/>
+						}" editorClass="prose-sm max-w-none border-b border-x bg-surface-gray-2 rounded-b-md py-1 px-2 min-h-[7rem]" />
 				</div>
 
-				<div
-					v-if="
-						user.data?.name == submissionResource.doc?.owner &&
-						submissionResource.doc?.comments
-					"
-					class="mt-8 p-3 bg-surface-blue-2 rounded-md"
-				>
+				<div v-if="
+					user.data?.name == submissionResource.doc?.owner &&
+					submissionResource.doc?.comments
+				" class="mt-8 p-3 bg-surface-blue-2 rounded-md">
 					<div class="text-sm text-ink-gray-5 font-medium mb-2">
 						{{ __('Comments by Evaluator') }}:
 					</div>
-					<div
-						class="leading-5 text-ink-gray-9"
-						v-html="submissionResource.doc.comments"
-					></div>
+					<div class="leading-5 text-ink-gray-9" v-html="submissionResource.doc.comments"></div>
 				</div>
 
 				<!-- Grading -->
@@ -158,32 +116,20 @@
 					<div class="font-semibold mb-2 text-ink-gray-9">
 						{{ __('Grading') }}
 					</div>
-					<FormControl
-						v-if="submissionResource.doc"
-						v-model="submissionResource.doc.status"
-						:label="__('Grade')"
-						type="select"
-						:options="submissionStatusOptions"
-					/>
+					<FormControl v-if="submissionResource.doc" v-model="submissionResource.doc.status"
+						:label="__('Grade')" type="select" :options="submissionStatusOptions" />
 					<div>
 						<div class="text-sm text-ink-gray-5 mb-1">
 							{{ __('Comments') }}
 						</div>
-						<TextEditor
-							:content="comments"
-							@change="
-								(val) => {
-									comments = val
-									isDirty = true
-								}
-							"
-							:editable="true"
-							:fixedMenu="true"
-							:uploadArgs="{
+						<TextEditor :content="comments" @change="
+							(val) => {
+								comments = val
+								isDirty = true
+							}
+						" :editable="true" :fixedMenu="true" :uploadArgs="{
 								private: true,
-							}"
-							editorClass="prose-sm max-w-none border-b border-x bg-surface-gray-2 rounded-b-md py-1 px-2 min-h-[7rem]"
-						/>
+							}" editorClass="prose-sm max-w-none border-b border-x bg-surface-gray-2 rounded-b-md py-1 px-2 min-h-[7rem]" />
 					</div>
 				</div>
 			</div>
