@@ -58,6 +58,13 @@
 					</FormWrapper>
 					<FormWrapper class="mt-4" type="combobox">
 						<Link
+							:label="__('Industry')"
+							v-model="profile.industry"
+							doctype="Industry"
+						/>
+					</FormWrapper>
+					<FormWrapper class="mt-4" type="combobox">
+						<Link
 							:label="__('Language')"
 							v-model="profile.language"
 							doctype="Language"
@@ -123,6 +130,7 @@ const profile = reactive({
 	headline: '',
 	bio: '',
 	image: '',
+	industry: '',
 })
 
 const imageResource = createResource({
@@ -214,6 +222,7 @@ watch(
 			profile.headline = newVal.headline
 			profile.language = newVal.language
 			profile.bio = newVal.bio
+			profile.industry = newVal.industry
 			if (newVal.user_image) imageResource.submit({ image: newVal.user_image })
 		}
 	},
