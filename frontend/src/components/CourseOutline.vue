@@ -432,6 +432,7 @@ const isActiveLesson = (lessonNumber) => {
 }
 
 const isAccessible = (allowEdit, chapterIndex, lessonIndex) => {
+	if (!user.data) return false
 	if (allowEdit) return true
 	const chapters = outline.data
 	if (lessonIndex === 0) {

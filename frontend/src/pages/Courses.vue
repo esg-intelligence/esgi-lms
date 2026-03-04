@@ -118,7 +118,7 @@
 			</Button>
 		</div>
 	</div>
-	<ChatAssistant v-model="showAssistantModal" />
+	<ChatAssistant v-if="user.data" v-model="showAssistantModal" />
 </template>
 <script setup>
 import {

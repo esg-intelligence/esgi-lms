@@ -129,7 +129,7 @@
 									params: { courseName: courseName },
 								}"
 							>
-								<Button variant="solid" class="ml-auto">
+								<Button variant="solid" class="ml-2">
 									{{ __('Back to Course') }}
 								</Button>
 							</router-link>
@@ -266,7 +266,7 @@
 										params: { courseName: courseName },
 									}"
 								>
-									<Button>
+									<Button class="ml-2">
 										{{ __('Back to Course') }}
 									</Button>
 								</router-link>

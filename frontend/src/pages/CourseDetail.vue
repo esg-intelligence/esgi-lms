@@ -82,7 +82,7 @@
 			<RelatedCourses :courseName="course.data.name" />
 		</div>
 	</div>
-	<ChatAssistant v-model="showAssistantModal" />
+	<ChatAssistant v-if="user.data" v-model="showAssistantModal" />
 </template>
 <script setup>
 import { createResource, Badge, Tooltip, usePageMeta } from 'frappe-ui'

@@ -41,7 +41,7 @@
 		<StudentHome v-else :myLiveClasses="myLiveClasses" />
 	</div>
 	<Streak v-model="showStreakModal" :streakInfo="streakInfo" />
-	<ChatAssistant v-model="showAssistantModal" />
+	<ChatAssistant v-if="user.data" v-model="showAssistantModal" />
 </template>
 <script setup lang="ts">
 import { computed, inject, onMounted, ref } from 'vue'
