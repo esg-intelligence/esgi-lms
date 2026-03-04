@@ -27,6 +27,13 @@
 						:label="__('Submission Type')"
 						:required="true"
 					/>
+					<FormWrapper class="mt-4" type="combobox">
+						<Link
+							:label="__('Industry')"
+							v-model="assignment.industry"
+							doctype="Industry"
+						/>
+					</FormWrapper>
 					<div>
 						<div class="text-xs text-ink-gray-5 mb-2">
 							{{ __('Question') }}
@@ -65,6 +72,8 @@
 </template>
 <script setup lang="ts">
 import { Button, Dialog, FormControl, TextEditor, toast } from 'frappe-ui'
+import FormWrapper from '@/components/ui/FormWrapper.vue'
+import Link from '@/components/Controls/Link.vue'
 import { computed, reactive, watch } from 'vue'
 import { escapeHTML } from '@/utils'
 
@@ -75,6 +84,7 @@ interface Assignment {
 	title: string
 	type: string
 	question: string
+	industry: string
 }
 
 interface Assignments {
@@ -89,6 +99,7 @@ const assignment = reactive({
 	title: '',
 	type: '',
 	question: '',
+	industry: '',
 })
 
 const props = defineProps({
@@ -107,6 +118,7 @@ watch(
 					assignment.title = row.title
 					assignment.type = row.type
 					assignment.question = row.question
+					assignment.industry = row.industry
 				}
 			})
 		}
@@ -119,6 +131,7 @@ watch(show, (newVal) => {
 		assignment.title = ''
 		assignment.type = ''
 		assignment.question = ''
+		assignment.industry = ''
 	}
 })
 

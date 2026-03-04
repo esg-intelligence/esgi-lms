@@ -15,7 +15,8 @@
   "grade_assignment",
   "section_break_sjti",
   "show_answer",
-  "answer"
+  "answer",
+  "industry"
  ],
  "fields": [
   {
@@ -68,13 +69,19 @@
   {
    "fieldname": "section_break_sjti",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "industry",
+   "fieldtype": "Link",
+   "label": "Industry",
+   "options": "Industry"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-10 11:40:38.157448",
- "modified_by": "sayali@frappe.io",
+ "modified": "2026-03-04 14:18:44.874962",
+ "modified_by": "Administrator",
  "module": "LMS",
  "name": "LMS Assignment",
  "naming_rule": "Expression (old style)",

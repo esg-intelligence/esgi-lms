@@ -1779,6 +1779,7 @@ def get_profile_details(username):
 			"headline",
 			"language",
 			"cover_image",
+			"industry",
 		],
 		as_dict=True,
 	)
