@@ -27,7 +27,7 @@
 						{{ __('Edit') }}
 					</Button>
 				</router-link>
-				<CertificationLinks :courseName="courseName" />
+				<!-- <CertificationLinks :courseName="courseName" /> -->
 			</div>
 		</header>
 		<div class="grid md:grid-cols-[40%,60%] h-screen">
@@ -460,10 +460,19 @@ const checkQuiz = () => {
 const renderEditor = (holder, content) => {
 	if (document.getElementById(holder))
 		document.getElementById(holder).innerHTML = ''
+	const contentObj = JSON.parse(content)
+	const filteredBlocks = contentObj.blocks.filter(block => {
+		if (!user.data.industry) return true
+		if (block.type == 'assignment') {
+			return block.industry == user.data.industry
+		}
+		return true
+	})
+	contentObj['blocks'] = filteredBlocks
 	return new EditorJS({
 		holder: holder,
 		tools: getEditorTools(),
-		data: JSON.parse(content),
+		data: contentObj,
 		readOnly: true,
 		defaultBlock: 'embed',
 	})

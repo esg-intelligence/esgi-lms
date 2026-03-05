@@ -16,6 +16,12 @@
 			<div v-html="assignment.data.question"
 				class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal">
 			</div>
+			<template v-if="assignment.data.industry">
+				<div class="text-sm text-ink-gray-7 font-medium mt-4 mb-2">
+					{{ __('Industry') }}:
+				</div>
+				<p class="text-sm">{{ assignment.data.industry }}</p>
+			</template>
 		</div>
 
 		<div class="flex flex-col">

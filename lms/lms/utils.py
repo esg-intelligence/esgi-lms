@@ -1327,6 +1327,24 @@ def get_lesson(course, chapter, lesson):
 	else:
 		progress = get_progress(course, lesson_details.name)
 
+	# Get assignment industry
+	if lesson_details.content:
+		content_json = json.loads(lesson_details.content)
+		blocks = content_json.get('blocks')
+		if blocks:
+			for block in blocks:
+				if block.get('type') == 'assignment':
+					# Get assignment type
+					assignment_name = block.get('data').get('assignment')
+					industry = frappe.db.get_value(
+						"LMS Assignment",
+						assignment_name,
+						'industry'
+					)
+					block['industry'] = industry
+			content_json['blocks'] = blocks
+			lesson_details.content = json.dumps(content_json)
+
 	lesson_details.chapter_title = frappe.db.get_value("Course Chapter", chapter_name, "title")
 	neighbours = get_neighbour_lesson(course, chapter, lesson)
 	lesson_details.next = neighbours["next"]
