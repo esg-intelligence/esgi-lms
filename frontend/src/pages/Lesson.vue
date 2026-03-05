@@ -1,8 +1,6 @@
 <template>
 	<div v-if="lesson.data" class="">
-		<header
-			class="sticky top-0 z-10 flex items-center justify-between bg-surface-white px-3 py-2.5 sm:px-5"
-		>
+		<header class="sticky top-0 z-10 flex items-center justify-between bg-surface-white px-3 py-2.5 sm:px-5">
 			<CustomBreadcrumbs class="h-7" :items="breadcrumbs" />
 			<div class="flex items-center justify-center space-x-2">
 				<Tooltip v-if="canGoZen()" :text="__('Zen Mode')">
@@ -17,17 +15,14 @@
 						<TrendingUp class="size-4 stroke-1.5" />
 					</template>
 				</Button>
-				<router-link
-					v-if="allowEdit()"
-					:to="{
-						name: 'LessonForm',
-						params: {
-							courseName: courseName,
-							chapterNumber: props.chapterNumber,
-							lessonNumber: props.lessonNumber,
-						},
-					}"
-				>
+				<router-link v-if="allowEdit()" :to="{
+					name: 'LessonForm',
+					params: {
+						courseName: courseName,
+						chapterNumber: props.chapterNumber,
+						lessonNumber: props.lessonNumber,
+					},
+				}">
 					<Button class="" variant="outline">
 						{{ __('Edit') }}
 					</Button>
@@ -38,23 +33,16 @@
 		<div class="grid md:grid-cols-[40%,60%] h-screen">
 			<div class="px-5 py-3">
 				<div
-					class="bg-white space-y-3 rounded-xl w-full border border-gray-100 shadow-xl shadow-gray-100 p-5"
-				>
+					class="md:sticky md:top-14 bg-white space-y-3 rounded-xl w-full border border-gray-100 shadow-xl shadow-gray-100 p-5">
 					<h1 class="text-lg font-semibold text-ink-gray-9 mb-2">
 						{{ lesson.data.course_title }}
 					</h1>
 
 					<div class="flex items-center">
-						<span
-							class="h-6 mr-1"
-							:class="{
-								'avatar-group overlap': lesson.data.instructors.length > 1,
-							}"
-						>
-							<UserAvatar
-								v-for="instructor in lesson.data.instructors"
-								:user="instructor"
-							/>
+						<span class="h-6 mr-1" :class="{
+							'avatar-group overlap': lesson.data.instructors.length > 1,
+						}">
+							<UserAvatar v-for="instructor in lesson.data.instructors" :user="instructor" />
 						</span>
 						<CourseInstructors :instructors="lesson.data.instructors" />
 					</div>
@@ -68,36 +56,20 @@
 							{{ courseSummary.data?.materials || 0 }} Materials
 						</span>
 					</div>
-					<div
-						v-if="user && lesson.data.membership"
-						class="text-sm mt-4 mb-2 text-ink-gray-5"
-					>
+					<div v-if="user && lesson.data.membership" class="text-sm mt-4 mb-2 text-ink-gray-5">
 						{{ Math.ceil(lessonProgress) }}% {{ __('completed') }}
 					</div>
 
-					<ProgressBar
-						v-if="user && lesson.data.membership"
-						:progress="lessonProgress"
-					/>
+					<ProgressBar v-if="user && lesson.data.membership" :progress="lessonProgress" />
 					<div
-						class="w-full h-fit [&_.title-outline]:hide [&_.title-chapter]:!text-sm [&_.title-chapter]:!font-medium"
-					>
-						<CourseOutline
-							ref="childRef"
-							:courseName="courseName"
-							:key="chapterNumber"
-							:getProgress="lesson.data.membership ? true : false"
-							:lessonProgress="lessonProgress"
-						/>
+						class="w-full h-fit [&_.title-outline]:hide [&_.title-chapter]:!text-sm [&_.title-chapter]:!font-medium">
+						<CourseOutline ref="childRef" :courseName="courseName" :key="chapterNumber"
+							:getProgress="lesson.data.membership ? true : false" :lessonProgress="lessonProgress" />
 					</div>
 
 					<div class="space-y-2 !mt-10">
-						<div class="flex items-center">
-							<Button
-								v-if="lesson.data.prev"
-								@click="switchLesson('prev')"
-								variant="outline"
-							>
+						<div class="flex items-center gap-x-2 justify-between">
+							<Button v-if="lesson.data.prev" @click="switchLesson('prev')" variant="outline">
 								<template #prefix>
 									<ChevronLeft class="w-4 h-4 stroke-1" />
 								</template>
@@ -106,14 +78,9 @@
 								</span>
 							</Button>
 
-							<Button
-								v-if="lesson.data.next"
-								@click="switchLesson('next')"
-								class="ml-auto"
-								variant="solid"
+							<Button v-if="lesson.data.next" @click="switchLesson('next')" variant="solid"
 								:disabled="!isLessonComplete"
-								:class="{ 'opacity-50 cursor-not-allowed': !isLessonComplete }"
-							>
+								:class="{ 'opacity-50 cursor-not-allowed': !isLessonComplete }">
 								<template #suffix>
 									<ChevronRight class="w-4 h-4 stroke-1" />
 								</template>
@@ -122,13 +89,10 @@
 								</span>
 							</Button>
 
-							<router-link
-								v-else
-								:to="{
-									name: 'CourseDetail',
-									params: { courseName: courseName },
-								}"
-							>
+							<router-link v-else :to="{
+								name: 'CourseDetail',
+								params: { courseName: courseName },
+							}" class="ml-auto">
 								<Button variant="solid" class="ml-2">
 									{{ __('Back to Course') }}
 								</Button>
@@ -152,19 +116,11 @@
 							)
 						}}
 					</div>
-					<Button
-						v-if="user.data && !lesson.data.disable_self_learning"
-						@click="enrollStudent()"
-						variant="solid"
-					>
+					<Button v-if="user.data && !lesson.data.disable_self_learning" @click="enrollStudent()"
+						variant="solid">
 						{{ __('Start Learning') }}
 					</Button>
-					<Badge
-						theme="blue"
-						size="lg"
-						v-else-if="lesson.data.disable_self_learning"
-						class="mt-2"
-					>
+					<Badge theme="blue" size="lg" v-else-if="lesson.data.disable_self_learning" class="mt-2">
 						{{ __('Contact the Administrator to enroll for this course.') }}
 					</Badge>
 					<Button v-else @click="redirectToLogin()">
@@ -175,51 +131,35 @@
 					</Button>
 				</div>
 			</div>
-			<div
-				v-else
-				ref="lessonContainer"
-				class="bg-surface-white"
-				:class="{
-					'overflow-y-auto': zenModeEnabled,
-				}"
-			>
-				<div
-					class="pt-5 pb-10 h-full"
-					:class="{
-						'w-full md:w-3/5 mx-auto border-none !pt-10': zenModeEnabled,
-					}"
-				>
+			<div v-else ref="lessonContainer" class="bg-surface-white" :class="{
+				'overflow-y-auto': zenModeEnabled,
+			}">
+				<div class="pt-5 pb-10 h-full" :class="{
+					'w-full md:w-3/5 mx-auto border-none !pt-10': zenModeEnabled,
+				}">
 					<div class="px-5">
-						<div
-							class="flex flex-col space-y-3 md:space-y-0 md:flex-row md:items-center justify-between"
-						>
+						<div class="flex flex-col space-y-3 md:space-y-0 md:flex-row md:items-center justify-between">
 							<div class="flex flex-col">
 								<div class="text-3xl font-semibold text-ink-gray-9">
 									{{ lesson.data.title }}
 								</div>
 
-								<div
-									v-if="zenModeEnabled"
-									class="relative flex items-center space-x-2 text-sm mt-1 text-ink-gray-7 group w-fit mt-2"
-								>
+								<div v-if="zenModeEnabled"
+									class="relative flex items-center space-x-2 text-sm mt-1 text-ink-gray-7 group w-fit mt-2">
 									<span>
 										{{ lesson.data.chapter_title }} -
 										{{ lesson.data.course_title }}
 									</span>
 									<Info class="size-3" />
 									<div
-										class="hidden group-hover:block rounded bg-gray-900 px-2 py-1 text-xs text-white shadow-xl absolute left-0 top-full mt-2"
-									>
+										class="hidden group-hover:block rounded bg-gray-900 px-2 py-1 text-xs text-white shadow-xl absolute left-0 top-full mt-2">
 										{{ Math.ceil(lesson.data.membership.progress) }}%
 										{{ __('completed') }}
 									</div>
 								</div>
 							</div>
 
-							<div
-								v-if="zenModeEnabled"
-								class="flex items-center space-x-2 mt-2 md:mt-0"
-							>
+							<div v-if="zenModeEnabled" class="flex items-center space-x-2 mt-2 md:mt-0">
 								<Button @click="showDiscussionsInZenMode()">
 									<template #icon>
 										<MessageCircleQuestion class="w-4 h-4 stroke-1.5" />
@@ -234,23 +174,22 @@
 									</span>
 								</Button>
 
-								<router-link
-									v-if="allowEdit()"
-									:to="{
-										name: 'LessonForm',
-										params: {
-											courseName: courseName,
-											chapterNumber: props.chapterNumber,
-											lessonNumber: props.lessonNumber,
-										},
-									}"
-								>
+								<router-link v-if="allowEdit()" :to="{
+									name: 'LessonForm',
+									params: {
+										courseName: courseName,
+										chapterNumber: props.chapterNumber,
+										lessonNumber: props.lessonNumber,
+									},
+								}">
 									<Button>
 										{{ __('Edit') }}
 									</Button>
 								</router-link>
 
-								<Button v-if="lesson.data.next" @click="switchLesson('next')" :disabled="!isLessonComplete" :class="{ 'opacity-50 cursor-not-allowed': !isLessonComplete }">
+								<Button v-if="lesson.data.next" @click="switchLesson('next')"
+									:disabled="!isLessonComplete"
+									:class="{ 'opacity-50 cursor-not-allowed': !isLessonComplete }">
 									<template #suffix>
 										<ChevronRight class="w-4 h-4 stroke-1" />
 									</template>
@@ -259,13 +198,10 @@
 									</span>
 								</Button>
 
-								<router-link
-									v-else
-									:to="{
-										name: 'CourseDetail',
-										params: { courseName: courseName },
-									}"
-								>
+								<router-link v-else :to="{
+									name: 'CourseDetail',
+									params: { courseName: courseName },
+								}">
 									<Button class="ml-2">
 										{{ __('Back to Course') }}
 									</Button>
@@ -273,86 +209,51 @@
 							</div>
 						</div>
 
-						<div
-							v-if="
-								lesson.data.instructor_content &&
-								JSON.parse(lesson.data.instructor_content)?.blocks?.length >
-									1 &&
-								allowInstructorContent()
-							"
-							class="bg-surface-gray-2 p-3 rounded-md mt-6"
-						>
+						<div v-if="
+							lesson.data.instructor_content &&
+							JSON.parse(lesson.data.instructor_content)?.blocks?.length >
+							1 &&
+							allowInstructorContent()
+						" class="bg-surface-gray-2 p-3 rounded-md mt-6">
 							<div class="text-ink-gray-5 font-medium">
 								{{ __('Instructor Notes') }}
 							</div>
-							<div
-								id="instructor-content"
-								class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal"
-							></div>
+							<div id="instructor-content"
+								class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal">
+							</div>
 						</div>
-						<div
-							v-else-if="lesson.data.instructor_notes"
-							class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal mt-8"
-						>
+						<div v-else-if="lesson.data.instructor_notes"
+							class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal mt-3">
 							<LessonContent :content="lesson.data.instructor_notes" />
 						</div>
-						<div
-							v-if="lesson.data.content"
-							@mouseup="toggleInlineMenu"
-							class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal mt-8"
-						>
+						<div v-if="lesson.data.content" @mouseup="toggleInlineMenu"
+							class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal mt-3">
 							<div id="editor"></div>
 						</div>
-						<div
-							v-else
-							class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal mt-8"
-						>
-							<LessonContent
-								v-if="lesson.data?.body"
-								:content="lesson.data.body"
-								:youtube="lesson.data.youtube"
-								:quizId="lesson.data.quiz_id"
-							/>
+						<div v-else
+							class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal mt-3">
+							<LessonContent v-if="lesson.data?.body" :content="lesson.data.body"
+								:youtube="lesson.data.youtube" :quizId="lesson.data.quiz_id" />
 						</div>
 					</div>
-					<div
-						v-if="lesson.data"
-						class="mt-10 pb-20 pt-5 px-5"
-						ref="discussionsContainer"
-					>
+					<div v-if="lesson.data" class="mt-10 pb-20 pt-5 px-5" ref="discussionsContainer">
 						<div class="border-b mb-6">
 							<nav class="flex space-x-8">
-								<button
-									v-for="tab in tabs"
-									:key="tab.value"
-									@click="currentTab = tab.value"
-									:class="[
-										'pb-3 text-center px-2 border-b-[3px] font-medium transition-colors min-w-40',
-										currentTab === tab.value
-											? 'border-primary-500 text-primary-600'
-											: 'border-transparent text-ink-gray-5 hover:text-ink-gray-7',
-									]"
-								>
+								<button v-for="tab in tabs" :key="tab.value" @click="currentTab = tab.value" :class="[
+									'pb-3 text-center px-2 border-b-[3px] font-medium transition-colors min-w-40',
+									currentTab === tab.value
+										? 'border-primary-500 text-primary-600'
+										: 'border-transparent text-ink-gray-5 hover:text-ink-gray-7',
+								]">
 									{{ tab.label }}
 								</button>
 							</nav>
 						</div>
-						<Notes
-							v-if="currentTab === 'Notes'"
-							:lesson="lesson.data?.name"
-							v-model:notes="notes"
-							@updateNotes="updateNotes"
-						/>
-						<Discussions
-							v-else-if="allowDiscussions"
-							:title="'Questions'"
-							:doctype="'Course Lesson'"
-							:docname="lesson.data.name"
-							:key="lesson.data.name"
-							:emptyStateText="
-								__('Ask a question to get help from the community.')
-							"
-						/>
+						<Notes v-if="currentTab === 'Notes'" :lesson="lesson.data?.name" v-model:notes="notes"
+							@updateNotes="updateNotes" />
+						<Discussions v-else-if="allowDiscussions" :title="'Questions'" :doctype="'Course Lesson'"
+							:docname="lesson.data.name" :key="lesson.data.name" :emptyStateText="__('Ask a question to get help from the community.')
+								" />
 					</div>
 				</div>
 			</div>
@@ -360,18 +261,9 @@
 			<ChatAssistant v-model="showAssistantModal" />
 		</div>
 	</div>
-	<InlineLessonMenu
-		v-if="lesson.data"
-		v-model="showInlineMenu"
-		:lesson="lesson.data?.name"
-		v-model:notes="notes"
-		@updateNotes="updateNotes"
-	/>
-	<VideoStatistics
-		v-model="showStatsDialog"
-		:lessonName="lesson.data?.name"
-		:lessonTitle="lesson.data?.title"
-	/>
+	<InlineLessonMenu v-if="lesson.data" v-model="showInlineMenu" :lesson="lesson.data?.name" v-model:notes="notes"
+		@updateNotes="updateNotes" />
+	<VideoStatistics v-model="showStatsDialog" :lessonName="lesson.data?.name" :lessonTitle="lesson.data?.title" />
 </template>
 <script setup>
 import {
@@ -740,27 +632,27 @@ watch(
 )
 
 const checkPreviousLessonAccess = async () => {
-    try {
-        const prevLessonNumber = parseInt(props.lessonNumber) - 1
-        // Don't check if this is the first lesson
-        if (prevLessonNumber < 1) return
-        const prevData = await call('lms.lms.utils.get_lesson', {
-            course: props.courseName,
-            chapter: props.chapterNumber,
-            lesson: prevLessonNumber,
-        })
-        // Allow instructors and moderators to access any lesson
-        if (user.data?.is_moderator || user.data?.is_instructor) return
-        // Check if previous lesson is complete
-        if (prevData.membership && !prevData.is_complete) {
+	try {
+		const prevLessonNumber = parseInt(props.lessonNumber) - 1
+		// Don't check if this is the first lesson
+		if (prevLessonNumber < 1) return
+		const prevData = await call('lms.lms.utils.get_lesson', {
+			course: props.courseName,
+			chapter: props.chapterNumber,
+			lesson: prevLessonNumber,
+		})
+		// Allow instructors and moderators to access any lesson
+		if (user.data?.is_moderator || user.data?.is_instructor) return
+		// Check if previous lesson is complete
+		if (prevData.membership && !prevData.is_complete) {
 			router.push({
 				name: 'CourseDetail',
 				params: { courseName: props.courseName },
 			})
-        }
-    } catch (error) {
-        console.error('Error checking previous lesson:', error)
-    }
+		}
+	} catch (error) {
+		console.error('Error checking previous lesson:', error)
+	}
 }
 
 const getPlyrSource = async () => {
@@ -820,7 +712,7 @@ const startTimer = () => {
 	let timerInterval = setInterval(() => {
 		timer.value++
 		if (timer.value == 30) {
-		// if (timer.value == 10) {
+			// if (timer.value == 10) {
 			clearInterval(timerInterval)
 			markProgress()
 		}
@@ -983,8 +875,8 @@ watch(allowDiscussions, () => {
 })
 
 const isLessonComplete = computed(() => {
-    if (!user.data || !lesson.data?.membership) return false
-    return lesson.data.is_complete
+	if (!user.data || !lesson.data?.membership) return false
+	return lesson.data.is_complete
 })
 
 const redirectToLogin = () => {
@@ -1166,11 +1058,9 @@ usePageMeta(() => {
 }
 
 .plyr__control--overlaid {
-	background: radial-gradient(
-		circle,
-		rgba(0, 0, 0, 0.4) 0%,
-		rgba(0, 0, 0, 0.5) 50%
-	);
+	background: radial-gradient(circle,
+			rgba(0, 0, 0, 0.4) 0%,
+			rgba(0, 0, 0, 0.5) 50%);
 }
 
 .plyr__control:hover {

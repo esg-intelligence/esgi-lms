@@ -4,7 +4,12 @@
 			<div class="text-ink-gray-9 font-medium">
 				{{ students.data?.length }} {{ __('Students') }}
 			</div>
-			<Button v-if="!readOnlyMode" @click="openStudentModal()" variant="solid" size="lg" class="!bg-primary-500">
+			<Button
+				v-if="!readOnlyMode"
+				@click="openStudentModal()"
+				variant="solid"
+				class="!bg-primary-500"
+			>
 				<template #prefix>
 					<Plus class="h-4 w-4" />
 				</template>
@@ -90,8 +95,14 @@
 				</ListSelectBanner>
 			</ListView>
 		</div>
-		<div v-else-if="!students.loading" class="text-sm italic text-ink-gray-5">
-			{{ __('There are no students in this batch.') }}
+		<div v-else class="flex flex-col items-center justify-center mt-6">
+			<EmptyIcon class="size-24 mb-6" />
+			<h3 class="text-lg font-bold text-gray-900 mb-2">
+				Nothing to see here yet
+			</h3>
+			<p class="text-gray-500 text-ms font-medium">
+				{{ __('There are no students in this batch.') }}
+			</p>
 		</div>
 	</div>
 
@@ -109,7 +120,6 @@
 <script setup>
 import {
 	Avatar,
-	Button,
 	createResource,
 	FeatherIcon,
 	ListHeader,
@@ -126,7 +136,7 @@ import { ref } from 'vue'
 import StudentModal from '@/components/Modals/StudentModal.vue'
 import ProgressBar from '@/components/ProgressBar.vue'
 import BatchStudentProgress from '@/components/Modals/BatchStudentProgress.vue'
-
+import Button from './ui/Button.vue'
 const showStudentModal = ref(false)
 const showStudentProgressModal = ref(false)
 const selectedStudent = ref(null)
@@ -204,7 +214,7 @@ const removeStudents = (selections, unselectAll) => {
 				toast.success(__('Students deleted successfully'))
 				unselectAll()
 			},
-		}
+		},
 	)
 }
 </script>

@@ -1,10 +1,15 @@
 <template>
 	<div>
 		<div class="flex items-center justify-between mb-4">
-			<div class="font-medium text-ink-gray-9">
+			<div class="text-xl font-semibold text-ink-gray-9">
 				{{ __('Courses') }}
 			</div>
-			<Button v-if="canSeeAddButton()" @click="openCourseModal()">
+
+			<Button
+				v-if="canSeeAddButton()"
+				@click="openCourseModal()"
+				variant="solid"
+			>
 				<template #prefix>
 					<Plus class="h-4 w-4" />
 				</template>
@@ -25,26 +30,35 @@
 					}),
 				}"
 			>
-				<ListHeader
-					class="mb-2 grid items-center space-x-4 rounded bg-surface-gray-2 p-2"
-				>
-					<ListHeaderItem :item="item" v-for="item in getCoursesColumns()">
-						<template #prefix="{ item }">
-							<component
-								v-if="item.icon"
-								:is="item.icon"
-								class="h-4 w-4 stroke-1.5 ml-4"
-							/>
-						</template>
-					</ListHeaderItem>
-				</ListHeader>
 				<ListRows>
-					<ListRow :row="row" v-for="row in courses.data">
+					<ListRow
+						:row="row"
+						v-for="row in courses.data"
+						class="border border-gray-100 mb-4 px-4 py-3 [&_.h-px]:hidden"
+					>
 						<template #default="{ column, item }">
 							<ListRowItem :item="row[column.key]" :align="column.align">
-								<div>
-									{{ row[column.key] }}
+								<div
+									v-if="column.key == 'title'"
+									class="w-full flex items-center justify-between"
+								>
+									<div class="min-w-0 flex-1">
+										<p class="text-gray-900 font-semibold text-base mb-1">
+											{{ row['title'] }}
+										</p>
+										<div class="text-sm text-gray-600">
+											<span>
+												{{ `${row['lessons']} Lessons` }}
+											</span>
+											<span class="text-gray-700">{{ ` • ` }}</span>
+											<span>
+												{{ `${row['enrollments']} Enrollments` }}
+											</span>
+										</div>
+									</div>
+									<ChevronRight class="block ml-auto text-gray-600 size-4" />
 								</div>
+								<span v-else></span>
 							</ListRowItem>
 						</template>
 					</ListRow>
@@ -54,6 +68,7 @@
 						<div class="flex gap-2">
 							<Button
 								variant="ghost"
+								theme="red"
 								@click="removeCourses(selections, unselectAll)"
 							>
 								<Trash2 class="h-4 w-4 stroke-1.5" />
@@ -63,8 +78,14 @@
 				</ListSelectBanner>
 			</ListView>
 		</div>
-		<div v-else class="text-sm italic text-ink-gray-5">
-			{{ __('No courses added') }}
+		<div v-else class="flex flex-col items-center justify-center mt-6">
+			<EmptyIcon class="size-24 mb-6" />
+			<h3 class="text-lg font-bold text-gray-900 mb-2">
+				Nothing to see here yet
+			</h3>
+			<p class="text-gray-500 text-ms font-medium">
+				{{ __('No courses added') }}
+			</p>
 		</div>
 		<BatchCourseModal
 			v-model="showCourseModal"
@@ -87,7 +108,8 @@ import {
 	ListRowItem,
 	toast,
 } from 'frappe-ui'
-import { Plus, Trash2 } from 'lucide-vue-next'
+import { ChevronRight, Plus, Trash2 } from 'lucide-vue-next'
+import Button from './ui/Button.vue'
 const readOnlyMode = window.read_only_mode
 
 const showCourseModal = ref(false)
@@ -117,17 +139,6 @@ const getCoursesColumns = () => {
 		{
 			label: 'Title',
 			key: 'title',
-			width: 2,
-		},
-		{
-			label: 'Lessons',
-			key: 'lessons',
-			align: 'right',
-		},
-		{
-			label: 'Enrollments',
-			align: 'right',
-			key: 'enrollments',
 		},
 	]
 }

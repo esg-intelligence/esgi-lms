@@ -169,3 +169,43 @@
         @apply bg-background text-foreground;
     }
 }
+
+
+.mininal-scrollbar {
+    scrollbar-gutter: stable;
+}
+
+.mininal-scrollbar::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+    border-radius: 2px;
+}
+
+/* Track */
+.mininal-scrollbar::-webkit-scrollbar-track {
+    background: #eee;
+}
+
+/* Handle */
+.mininal-scrollbar::-webkit-scrollbar-thumb {
+    background: #aaa;
+    border-radius: 2px;
+    transition: ease-in 0.7s;
+}
+
+/* Handle on hover */
+.mininal-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #888;
+}
+
+/* global.css */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    /* IE & Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}

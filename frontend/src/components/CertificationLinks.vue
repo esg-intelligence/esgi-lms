@@ -1,48 +1,36 @@
 <template>
-	<Button
-		v-if="certification.data && certification.data.certificate"
-		@click="downloadCertificate"
-		variant="outline"
-		class="w-full mt-2"
-		size="md"
-	>
+	<Button v-if="certification.data && certification.data.certificate" @click="downloadCertificate" variant="outline"
+		class="w-full mt-2" size="md">
 		{{ __('View Certificate') }}
 	</Button>
-	<div
-		v-else-if="
-			certification.data &&
-			certification.data.membership &&
-			certification.data.paid_certificate &&
-			user.data?.is_student
-		"
-	>
-		<router-link
-			v-if="!certification.data.membership.purchased_certificate"
-			:to="{
-				name: 'Billing',
-				params: {
-					type: 'certificate',
-					name: courseName,
-				},
-			}"
-		>
-			<Button class="w-full">
+	<div v-else-if="
+		certification.data &&
+		certification.data.membership &&
+		certification.data.paid_certificate &&
+		user.data?.is_student
+	">
+		<router-link v-if="!certification.data.membership.purchased_certificate" :to="{
+			name: 'Billing',
+			params: {
+				type: 'certificate',
+				name: courseName,
+			},
+		}">
+			<Button class="w-full !border !bg-transparent !py-5 !border-primary-500 !text-primary-500">
 				<template #prefix>
 					<GraduationCap class="size-4 stroke-1.5" />
 				</template>
 				{{ __('Get Certified') }}
 			</Button>
 		</router-link>
-		<router-link
-			v-else-if="!certification.data.membership.certificate"
-			:to="{
-				name: 'CourseCertification',
-				params: {
-					courseName: courseName,
-				},
-			}"
-		>
-			<Button class="w-full">
+		<router-link v-else-if="!certification.data.membership.certificate" :to="{
+			name: 'CourseCertification',
+			params: {
+				courseName: courseName,
+			},
+		}">
+			<Button class="w-full !border !bg-transparent !py-5 !border-primary-500 !text-primary-500"
+				variant="outline">
 				<template #prefix>
 					<GraduationCap class="size-4 stroke-1.5" />
 				</template>

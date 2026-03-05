@@ -238,6 +238,7 @@ const showIntermediateModal = ref(false)
 const currentStep = ref({})
 const router = useRouter()
 let onboardingDetails
+let oldOnboarding
 let isOnboardingStepsCompleted = false
 const readOnlyMode = window.read_only_mode
 const iconProps = {
@@ -532,8 +533,135 @@ const articles = ref([
 	},
 ])
 
+const oldsteps = reactive([
+	{
+		name: 'create_first_course',
+		title: __('Create your first course'),
+		icon: markRaw(h(BookOpen, iconProps)),
+		completed: true,
+		onClick: () => {
+			minimize.value = true
+			router.push({
+				name: 'Courses',
+			})
+		},
+	},
+	{
+		name: 'create_first_chapter',
+		title: __('Add your first chapter'),
+		icon: markRaw(h(FolderTree, iconProps)),
+		completed: true,
+		dependsOn: 'create_first_course',
+		onClick: async () => {
+			minimize.value = true
+			let course = await getFirstCourse()
+			if (course) {
+				router.push({ name: 'CourseForm', params: { courseName: course } })
+			} else {
+				router.push({ name: 'CourseForm' })
+			}
+		},
+	},
+	{
+		name: 'create_first_lesson',
+		title: __('Add your first lesson'),
+		icon: markRaw(h(FileText, iconProps)),
+		completed: true,
+		dependsOn: 'create_first_chapter',
+		onClick: async () => {
+			minimize.value = true
+			let course = await getFirstCourse()
+			if (course) {
+				router.push({
+					name: 'CourseForm',
+					params: { courseName: course },
+				})
+			} else {
+				router.push({ name: 'Courses' })
+			}
+		},
+	},
+	{
+		name: 'create_first_quiz',
+		title: __('Create your first quiz'),
+		icon: markRaw(h(CircleHelp, iconProps)),
+		completed: true,
+		dependsOn: 'create_first_course',
+		onClick: () => {
+			minimize.value = true
+			router.push({ name: 'Quizzes' })
+		},
+	},
+	{
+		name: 'invite_students',
+		title: __('Invite your team and students'),
+		icon: markRaw(h(InviteIcon, iconProps)),
+		completed: true,
+		onClick: () => {
+			minimize.value = true
+			settingsStore.activeTab = 'Members'
+			settingsStore.isSettingsOpen = true
+		},
+	},
+	{
+		name: 'create_first_batch',
+		title: __('Create your first batch'),
+		icon: markRaw(h(Users, iconProps)),
+		completed: true,
+		onClick: () => {
+			minimize.value = true
+			router.push({ name: 'Batches' })
+		},
+	},
+	{
+		name: 'add_batch_student',
+		title: __('Add students to your batch'),
+		icon: markRaw(h(UserPlus, iconProps)),
+		completed: true,
+		dependsOn: 'create_first_batch',
+		onClick: async () => {
+			minimize.value = true
+			let batch = await getFirstBatch()
+			if (batch) {
+				router.push({
+					name: 'Batch',
+					params: {
+						batchName: batch,
+					},
+				})
+			} else {
+				router.push({ name: 'Batch' })
+			}
+		},
+	},
+	{
+		name: 'add_batch_course',
+		title: __('Add courses to your batch'),
+		icon: markRaw(h(BookText, iconProps)),
+		completed: true,
+		dependsOn: 'create_first_batch',
+		onClick: async () => {
+			minimize.value = true
+			let batch = await getFirstBatch()
+			if (batch) {
+				router.push({
+					name: 'Batch',
+					params: {
+						batchName: batch,
+					},
+					hash: '#courses',
+				})
+			} else {
+				router.push({ name: 'Batch' })
+			}
+		},
+	},
+])
 const setUpOnboarding = () => {
 	if (userResource.data?.is_system_manager) {
+		// Setup OLD step to fix error
+		oldOnboarding = useOnboarding('learning')
+		oldOnboarding.setUp(oldsteps)
 		// Menggunakan key baru 'lms_onboarding' karena jumlah steps berubah (8 -> 4).
 		// Key lama 'learning' masih menyimpan state 8 steps yang menyebabkan crash.
 		onboardingDetails = useOnboarding('lms_onboarding')

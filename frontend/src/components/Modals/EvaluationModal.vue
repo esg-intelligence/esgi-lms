@@ -4,13 +4,6 @@
 		:options="{
 			title: __('Schedule Evaluation'),
 			size: 'xl',
-			actions: [
-				{
-					label: __('Submit'),
-					variant: 'solid',
-					onClick: (close) => submitEvaluation(close),
-				},
-			],
 		}"
 	>
 		<template #body-content>
@@ -19,21 +12,25 @@
 					<div class="mb-1.5 text-sm text-ink-gray-5">
 						{{ __('Course') }}
 					</div>
-					<Select v-model="evaluation.course" :options="getCourses()" />
+					<FormWrapper type="combobox">
+						<Select v-model="evaluation.course" :options="getCourses()" />
+					</FormWrapper>
 				</div>
 				<div>
 					<div class="mb-1.5 text-sm text-ink-gray-5">
 						{{ __('Date') }}
 					</div>
-					<FormControl
-						type="date"
-						v-model="evaluation.date"
-						:min="
-							dayjs()
-								.add(dayjs.duration({ days: 1 }))
-								.format('YYYY-MM-DD')
-						"
-					/>
+					<FormWrapper>
+						<FormControl
+							type="date"
+							v-model="evaluation.date"
+							:min="
+								dayjs()
+									.add(dayjs.duration({ days: 1 }))
+									.format('YYYY-MM-DD')
+							"
+						/>
+					</FormWrapper>
 				</div>
 				<div v-if="slots.data?.length">
 					<div class="mb-1.5 text-sm text-ink-gray-5">
@@ -63,6 +60,11 @@
 				</div>
 			</div>
 		</template>
+		<template #actions="{ close }">
+			<Button class="w-full" variant="solid" @click="submitEvaluation(close)">
+				Submit
+			</Button>
+		</template>
 	</Dialog>
 </template>
 <script setup>
@@ -76,6 +78,7 @@ import {
 } from 'frappe-ui'
 import { reactive, watch, inject } from 'vue'
 import { formatTime } from '@/utils/'
+import FormWrapper from '../ui/FormWrapper.vue'
 
 const user = inject('$user')
 const show = defineModel()
@@ -136,7 +139,7 @@ function submitEvaluation(close) {
 			}
 			if (dayjs(evaluation.date).isAfter(dayjs(props.endDate), 'day')) {
 				return `Please select a date before the end date ${dayjs(
-					props.endDate
+					props.endDate,
 				).format('DD MMMM YYYY')}.`
 			}
 		},
@@ -187,7 +190,7 @@ watch(
 		if (date && evaluation.course) {
 			slots.submit(evaluation)
 		}
-	}
+	},
 )
 
 watch(
@@ -196,7 +199,7 @@ watch(
 		evaluation.date = ''
 		evaluation.start_time = ''
 		slots.reset()
-	}
+	},
 )
 
 const saveSlot = (slot) => {

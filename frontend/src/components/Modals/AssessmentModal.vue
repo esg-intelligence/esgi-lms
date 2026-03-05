@@ -8,34 +8,38 @@
 	>
 		<template #body-content>
 			<div class="space-y-4">
-				<FormControl
-					type="select"
-					:options="assessmentTypes"
-					v-model="assessmentType"
-					:label="__('Type')"
-				/>
-				<Link
-					v-model="assessment"
-					:doctype="assessmentType"
-					:label="__('Assessment')"
-					:onCreate="
-						(value, close) => {
-							close()
-							if (assessmentType === 'LMS Quiz') {
-								router.push({
-									name: 'QuizForm',
-									params: {
-										quizID: 'new',
-									},
-								})
-							} else if (assessmentType === 'LMS Assignment') {
-								router.push({
-									name: 'Assignments',
-								})
+				<FormWrapper type="combobox">
+					<FormControl
+						type="select"
+						:options="assessmentTypes"
+						v-model="assessmentType"
+						:label="__('Type')"
+					/>
+				</FormWrapper>
+				<FormWrapper type="combobox">
+					<Link
+						v-model="assessment"
+						:doctype="assessmentType"
+						:label="__('Assessment')"
+						:onCreate="
+							(value, close) => {
+								close()
+								if (assessmentType === 'LMS Quiz') {
+									router.push({
+										name: 'QuizForm',
+										params: {
+											quizID: 'new',
+										},
+									})
+								} else if (assessmentType === 'LMS Assignment') {
+									router.push({
+										name: 'Assignments',
+									})
+								}
 							}
-						}
-					"
-				/>
+						"
+					/>
+				</FormWrapper>
 			</div>
 		</template>
 		<template #actions="{ close }">
@@ -50,6 +54,7 @@ import { Dialog, FormControl, createResource, toast } from 'frappe-ui'
 import Link from '@/components/Controls/Link.vue'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import FormWrapper from '../ui/FormWrapper.vue'
 
 const show = defineModel()
 const assessmentType = ref(null)

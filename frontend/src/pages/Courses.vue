@@ -1,34 +1,27 @@
 <template>
-	<header
-		class="sticky flex items-center justify-end top-0 z-10 bg-surface-white px-3 py-2.5 sm:px-5"
-	>
-		<Dropdown
-			placement="start"
-			side="bottom"
-			v-if="canCreateCourse()"
-			:options="[
-				{
-					label: __('New Course'),
-					icon: 'book-open',
-					onClick() {
-						router.push({
-							name: 'CourseForm',
-							params: { courseName: 'new' },
-						})
-					},
+	<header class="sticky flex items-center justify-end top-0 z-10 bg-surface-white px-3 py-2.5 sm:px-5">
+		<Dropdown placement="start" side="bottom" v-if="canCreateCourse()" :options="[
+			{
+				label: __('New Course'),
+				icon: 'book-open',
+				onClick() {
+					router.push({
+						name: 'CourseForm',
+						params: { courseName: 'new' },
+					})
 				},
-				{
-					label: __('Import Course'),
-					icon: 'upload',
-					onClick() {
-						router.push({
-							name: 'NewDataImport',
-							params: { doctype: 'LMS Course' },
-						})
-					},
+			},
+			{
+				label: __('Import Course'),
+				icon: 'upload',
+				onClick() {
+					router.push({
+						name: 'NewDataImport',
+						params: { doctype: 'LMS Course' },
+					})
 				},
-			]"
-		>
+			},
+		]">
 			<template v-slot="{ open }">
 				<Button variant="solid">
 					<template #prefix>
@@ -36,60 +29,33 @@
 					</template>
 					{{ __('Create') }}
 					<template #suffix>
-						<ChevronDown
-							:class="[
-								'w-4 h-4 ml-1 transform transition-transform',
-								open ? 'rotate-180' : '',
-							]"
-						/>
+						<ChevronDown :class="[
+							'w-4 h-4 ml-1 transform transition-transform',
+							open ? 'rotate-180' : '',
+						]" />
 					</template>
 				</Button>
 			</template>
 		</Dropdown>
 	</header>
 	<div class="p-5 pb-10">
-		<div
-			class="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:items-center justify-between mb-5"
-		>
+		<div class="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:items-center justify-between mb-5">
 			<div class="text-lg text-ink-gray-9 font-semibold">
 				{{ __('All Courses') }}
 			</div>
-			<div
-				class="flex flex-col space-y-3 lg:space-y-0 lg:flex-row lg:items-center lg:space-x-4"
-			>
+			<div class="flex flex-col space-y-3 lg:space-y-0 lg:flex-row lg:items-center lg:space-x-4">
 				<!-- <TabButtons :buttons="courseTabs" v-model="currentTab" class="w-fit" /> -->
 
 				<div class="flex flex-row gap-2">
-					<FormControl
-						v-model="title"
-						:placeholder="__('Search in your courses...')"
-						type="text"
-						class="w-full lg:min-w-0 lg:w-64"
-						variant="outline"
-						size="lg"
-						@input="updateCourses()"
-					/>
+					<FormControl v-model="title" :placeholder="__('Search in your courses...')" type="text"
+						class="w-full lg:min-w-0 lg:w-64" variant="outline" size="lg" @input="updateCourses()" />
 					<div class="w-full lg:min-w-0 lg:w-32 xl:w-40">
-						<Select
-							v-if="courseTabs.length"
-							v-model="currentTab"
-							:options="courseTabs"
-							:placeholder="__('All')"
-							@change="updateCourses()"
-							variant="outline"
-							size="lg"
-						/>
+						<Select v-if="courseTabs.length" v-model="currentTab" :options="courseTabs"
+							:placeholder="__('All')" @change="updateCourses()" variant="outline" size="lg" />
 					</div>
 					<div class="w-full lg:min-w-0 lg:w-44">
-						<Select
-							v-if="categories.length"
-							v-model="currentCategory"
-							:options="categories"
-							:placeholder="__('All Categories')"
-							@change="updateCourses()"
-							variant="outline"
-							size="lg"
-						/>
+						<Select v-if="categories.length" v-model="currentCategory" :options="categories"
+							:placeholder="__('All Categories')" @change="updateCourses()" variant="outline" size="lg" />
 					</div>
 				</div>
 
@@ -97,22 +63,14 @@
 					@change="updateCourses()" /> -->
 			</div>
 		</div>
-		<div
-			v-if="courses.data?.length"
-			class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-		>
-			<router-link
-				v-for="course in courses.data"
-				:to="{ name: 'CourseDetail', params: { courseName: course.name } }"
-			>
+		<div v-if="courses.data?.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+			<router-link v-for="course in courses.data"
+				:to="{ name: 'CourseDetail', params: { courseName: course.name } }">
 				<CourseCard :course="course" />
 			</router-link>
 		</div>
 		<EmptyState v-else-if="!courses.list.loading" type="Courses" />
-		<div
-			v-if="!courses.list.loading && courses.hasNextPage"
-			class="flex justify-center mt-5"
-		>
+		<div v-if="!courses.list.loading && courses.hasNextPage" class="flex justify-center mt-5">
 			<Button @click="courses.next()">
 				{{ __('Load More') }}
 			</Button>

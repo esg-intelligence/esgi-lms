@@ -11,98 +11,122 @@
 			</span>
 		</div>
 
-		<div v-for="(reply, index) in replies.data">
+		<div v-if="replies.data?.length" class="space-y-6 mb-8">
 			<div
-				class="py-3"
-				:class="{ 'border-b': index + 1 != replies.data.length }"
+				v-for="reply in replies.data"
+				:key="reply.name"
+				class="pb-6 border-b last:border-b-0"
 			>
-				<div class="flex items-center justify-between mb-2">
-					<div class="flex items-center text-ink-gray-5">
-						<UserAvatar :user="reply.user" class="mr-2" />
-						<span>
-							{{ reply.user.full_name }}
-						</span>
-						<span class="text-sm ml-2">
-							{{ timeAgo(reply.creation) }}
-						</span>
-					</div>
-					<Dropdown
-						v-if="
-							user.data.name == reply.owner && !reply.editable && !readOnlyMode
-						"
-						:options="[
-							{
-								label: __('Edit'),
-								onClick() {
-									reply.editable = true
-								},
-							},
-							{
-								label: __('Delete'),
-								onClick() {
-									deleteReply(reply)
-								},
-							},
-						]"
-					>
-						<template v-slot="{ open }">
-							<MoreHorizontal class="w-4 h-4 stroke-1.5 cursor-pointer" />
-						</template>
-					</Dropdown>
-					<div v-if="reply.editable">
-						<Button variant="ghost" @click="postEdited(reply)">
-							{{ __('Post') }}
-						</Button>
-						<Button variant="ghost" @click="reply.editable = false">
-							{{ __('Discard') }}
-						</Button>
+				<div class="flex items-start gap-4">
+					<UserAvatar :user="reply.user" size="2xl" class="flex-shrink-0" />
+					<div class="flex-1 min-w-0">
+						<div class="flex items-center justify-between mb-1">
+							<div class="flex items-center gap-2">
+								<span class="font-medium text-sm text-ink-gray-9">
+									{{ reply.user.full_name }}
+								</span>
+								<span class="text-ink-gray-5 text-xs">•</span>
+								<span class="text-xs text-ink-gray-5">
+									{{ timeAgo(reply.creation) }}
+								</span>
+							</div>
+							<div class="flex items-center">
+								<Dropdown
+									v-if="
+										user.data.name == reply.owner &&
+										!reply.editable &&
+										!readOnlyMode
+									"
+									:options="[
+										{
+											label: __('Edit'),
+											onClick() {
+												reply.editable = true
+											},
+										},
+										{
+											label: __('Delete'),
+											onClick() {
+												deleteReply(reply)
+											},
+										},
+									]"
+								>
+									<template v-slot="{ open }">
+										<MoreHorizontal
+											class="w-4 h-4 stroke-1.5 cursor-pointer text-ink-gray-5 hover:text-ink-gray-9 transition-colors"
+										/>
+									</template>
+								</Dropdown>
+								<div v-if="reply.editable" class="flex items-center gap-2">
+									<Button
+										variant="ghost"
+										class="h-7 px-2 text-xs"
+										@click="postEdited(reply)"
+									>
+										{{ __('Post') }}
+									</Button>
+									<Button
+										variant="ghost"
+										class="h-7 px-2 text-xs text-red-500 hover:bg-red-50"
+										@click="reply.editable = false"
+									>
+										{{ __('Discard') }}
+									</Button>
+								</div>
+							</div>
+						</div>
+						<TextEditor
+							:content="reply.reply"
+							@change="(val) => (reply.reply = val)"
+							:editable="reply.editable || false"
+							:bubbleMenu="reply.editable || false"
+							:fixedMenu="false"
+							editorClass="ProseMirror prose prose-sm max-w-none text-ink-gray-7 leading-relaxed"
+						/>
 					</div>
 				</div>
-				<TextEditor
-					:content="reply.reply"
-					@change="(val) => (reply.reply = val)"
-					:editable="reply.editable || false"
-					:fixedMenu="reply.editable || false"
-					:editorClass="
-						reply.editable
-							? 'ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none'
-							: 'prose-sm'
-					"
-				/>
 			</div>
 		</div>
 
-		<TextEditor
-			v-if="renderEditor && !readOnlyMode"
-			class="mt-5"
-			:content="newReply"
-			:mentions="mentionUsers"
-			@change="(val) => (newReply = val)"
-			placeholder="Type your reply here..."
-			:fixedMenu="true"
-			editorClass="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none border border-outline-gray-2 rounded-b-md min-h-[7rem] py-1 px-2"
-		/>
-		<div v-if="!readOnlyMode" class="flex justify-between mt-2">
-			<span> </span>
+		<div
+			v-if="!readOnlyMode && renderEditor"
+			class="flex flex-col sm:flex-row items-center gap-3"
+		>
+			<div
+				class="flex-1 flex items-center w-full bg-white border border-gray-200 rounded-lg px-4 py-2 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-100 transition-all"
+			>
+				<Message2Icon
+					class="w-5 h-5 text-gray-400 mr-2 flex-shrink-0 stroke-1.5"
+				/>
+				<TextEditor
+					:content="newReply"
+					:mentions="mentionUsers"
+					@change="(val) => (newReply = val)"
+					:bubbleMenu="true"
+					placeholder="Write a Thread"
+					editorClass="ProseMirror pt-1 prose-sm max-w-none flex-1 outline-none min-h-[1.2rem]"
+				/>
+			</div>
 			<Button
 				@click="postReply()"
 				variant="solid"
 				size="lg"
-				class="!bg-primary-500"
+				class="!bg-primary-500 ml-auto sm:w-auto px-6 rounded-lg whitespace-nowrap"
 			>
-				<span>
-					{{ __('Post') }}
-				</span>
+				{{ __('Post Thread') }}
 			</Button>
 		</div>
 	</div>
 </template>
 <script setup>
-import { createResource, TextEditor, Button, Dropdown, toast } from 'frappe-ui'
+import { createResource, TextEditor, Dropdown, toast } from 'frappe-ui'
 import { timeAgo } from '@/utils'
 import UserAvatar from '@/components/UserAvatar.vue'
 import { ChevronLeft, MoreHorizontal } from 'lucide-vue-next'
 import { ref, inject, onMounted, onUnmounted } from 'vue'
+import Button from './ui/Button.vue'
+import Message2Icon from './Icons/Message2Icon.vue'
 
 const showTopics = defineModel('showTopics')
 const newReply = ref('')

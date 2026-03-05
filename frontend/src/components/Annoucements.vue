@@ -1,27 +1,42 @@
 <template>
-	<div v-if="communications.data?.length">
-		<div v-for="comm in communications.data">
-			<div class="mb-8">
-				<div class="flex items-center justify-between mb-2">
-					<div class="flex items-center">
-						<Avatar :label="comm.sender_full_name" size="lg" />
-						<div class="ml-2 text-ink-gray-7">
-							{{ comm.sender_full_name }}
-						</div>
+	<div class="flex items-center justify-between mb-6">
+		<div class="text-xl font-semibold text-ink-gray-9">
+			{{ __('Announcements') }}
+		</div>
+	</div>
+	<div v-if="communications.data?.length" class="space-y-4">
+		<div v-for="comm in communications.data" :key="comm.name">
+			<div
+				class="flex items-start p-4 rounded-xl border border-gray-100 w-full space-x-4 cursor-pointer bg-white"
+			>
+				<img
+					src="/icons/directbox.png"
+					alt="announcement"
+					class="w-10 h-10 flex-shrink-0"
+				/>
+				<div class="notification flex-1">
+					<div class="text-gray-900 text-md md:font-medium md:text-lg mb-1">
+						{{ comm.subject }}
 					</div>
-					<div class="text-sm">
+					<div
+						class="text-gray-600 text-sm md:text-md mb-2 line-clamp-2"
+						v-html="comm.content"
+					></div>
+					<div class="text-gray-500 font-regular text-xs md:text-sm">
 						{{ timeAgo(comm.communication_date) }}
 					</div>
 				</div>
-				<div
-					class="prose prose-sm bg-surface-menu-bar !min-w-full px-4 py-2 rounded-md"
-					v-html="comm.content"
-				></div>
 			</div>
 		</div>
 	</div>
-	<div v-else class="text-sm italic text-ink-gray-5">
-		{{ __('No announcements') }}
+	<div v-else class="flex flex-col items-center justify-center mt-6">
+		<EmptyIcon class="size-24 mb-6" />
+		<h3 class="text-lg font-bold text-gray-900 mb-2">
+			Nothing to see here yet
+		</h3>
+		<p class="text-gray-500 text-ms font-medium">
+			{{ __('No announcements') }}
+		</p>
 	</div>
 </template>
 <script setup>

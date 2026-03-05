@@ -1,10 +1,14 @@
 <template>
 	<div>
 		<div class="flex items-center justify-between mb-4">
-			<div class="text-lg font-semibold text-ink-gray-9">
+			<div class="text-xl font-semibold text-ink-gray-9">
 				{{ __('Assessments') }}
 			</div>
-			<Button v-if="canAddAssessments()" @click="showModal = true"  variant="solid" size="lg" class="!bg-primary-500">
+			<Button
+				v-if="canAddAssessments()"
+				@click="showModal = true"
+				variant="solid"
+			>
 				<template #prefix>
 					<Plus class="h-4 w-4" />
 				</template>
@@ -22,37 +26,37 @@
 					selectable: user.data?.is_student ? false : true,
 				}"
 			>
-				<ListHeader
-					class="mb-2 grid items-center space-x-4 rounded bg-surface-gray-2 p-2"
-				>
-					<ListHeaderItem :item="item" v-for="item in getAssessmentColumns()">
-						<template #prefix="{ item }">
-							<component
-								v-if="item.icon"
-								:is="item.icon"
-								class="h-4 w-4 stroke-1.5 ml-4"
-							/>
-						</template>
-					</ListHeaderItem>
-				</ListHeader>
 				<ListRows>
-					<ListRow :row="row" v-for="row in assessments.data">
+					<ListRow
+						:row="row"
+						v-for="row in assessments.data"
+						class="border border-gray-100 mb-4 px-4 py-3 [&_.h-px]:hidden"
+					>
 						<template #default="{ column, item }">
 							<ListRowItem :item="row[column.key]" :align="column.align">
-								<div v-if="column.key == 'assessment_type'">
-									{{ getAssessmentTypeLabel(row[column.key]) }}
+								<div
+									v-if="column.key == 'title'"
+									class="w-full flex items-center justify-between"
+								>
+									<div class="min-w-0 flex-1">
+										<p class="text-gray-900 font-semibold text-sm mb-1">
+											{{ row['title'] }}
+										</p>
+										<div class="text-xs text-gray-600">
+											{{ getAssessmentTypeLabel(row['assessment_type']) }}
+											<span
+												v-if="!user.data?.is_moderator"
+												class="text-gray-700"
+												>{{ ` • ` }}
+												<Badge :theme="getStatusTheme(row['status'])">
+													{{ row['status'] }}
+												</Badge></span
+											>
+										</div>
+									</div>
+									<ChevronRight class="block ml-auto text-gray-600 size-4" />
 								</div>
-								<div v-else-if="column.key == 'title'">
-									{{ row[column.key] }}
-								</div>
-								<div v-else-if="isNaN(row[column.key])">
-									<Badge :theme="getStatusTheme(row[column.key])">
-										{{ row[column.key] }}
-									</Badge>
-								</div>
-								<div v-else>
-									{{ row[column.key] }}
-								</div>
+								<span v-else></span>
 							</ListRowItem>
 						</template>
 					</ListRow>
@@ -62,6 +66,7 @@
 						<div class="flex gap-2">
 							<Button
 								variant="ghost"
+								theme="red"
 								@click="removeAssessments(selections, unselectAll)"
 							>
 								<Trash2 class="h-4 w-4 stroke-1.5" />
@@ -71,8 +76,14 @@
 				</ListSelectBanner>
 			</ListView>
 		</div>
-		<div v-else class="text-sm italic text-ink-gray-5">
-			{{ __('No Assessments') }}
+		<div v-else class="flex flex-col items-center justify-center mt-6">
+			<EmptyIcon class="size-24 mb-6" />
+			<h3 class="text-lg font-bold text-gray-900 mb-2">
+				Nothing to see here yet
+			</h3>
+			<p class="text-gray-500 text-ms font-medium">
+				{{ __('No Assessments') }}
+			</p>
 		</div>
 	</div>
 	<AssessmentModal
@@ -91,12 +102,13 @@ import {
 	ListRowItem,
 	ListSelectBanner,
 	createResource,
-	Button,
 	Badge,
 } from 'frappe-ui'
 import { inject, ref } from 'vue'
 import AssessmentModal from '@/components/Modals/AssessmentModal.vue'
-import { Plus, Trash2 } from 'lucide-vue-next'
+import { ChevronRight, Plus, Trash2 } from 'lucide-vue-next'
+import Button from './ui/Button.vue'
+import EmptyState from './EmptyState.vue'
 
 const user = inject('$user')
 const showModal = ref(false)
@@ -149,7 +161,7 @@ const removeAssessments = (selections, unselectAll) => {
 				assessments.reload()
 				unselectAll()
 			},
-		}
+		},
 	)
 }
 
@@ -210,23 +222,9 @@ const getAssessmentColumns = () => {
 		{
 			label: 'Assessment',
 			key: 'title',
-			width: '25rem',
-		},
-		{
-			label: 'Type',
-			key: 'assessment_type',
-			width: '15rem',
 		},
 	]
 
-	if (!user.data?.is_moderator) {
-		columns.push({
-			label: 'Status/Percentage',
-			key: 'status',
-			align: 'left',
-			width: '10rem',
-		})
-	}
 	return columns
 }
 
