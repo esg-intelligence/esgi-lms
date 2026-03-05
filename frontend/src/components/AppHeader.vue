@@ -1,34 +1,19 @@
 <template>
-	<header
-		class="flex h-16 w-full items-center justify-between border-b bg-surface-white px-5"
-	>
+	<header class="flex h-16 w-full items-center justify-between border-b bg-surface-white px-5">
 		<div class="flex items-center"></div>
-		<div
-			class="flex items-center gap-4"
-			v-if="profile.data || userResource.data"
-		>
+		<div class="flex items-center gap-4" v-if="profile.data || userResource.data">
 			<NotificationPopover placement="bottom-end" />
-			<Dropdown
-				:options="userDropdownOptions"
-				placement="right"
-				side="bottom"
-				class="border"
-				offset="1"
-			>
+			<Dropdown :options="userDropdownOptions" placement="right" side="bottom" class="border" offset="1">
 				<template v-slot="{ open }">
 					<button
-						class="flex items-center gap-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary-500"
-					>
+						class="flex items-center gap-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary-500">
 						<UserAvatar :user="profile.data || userResource.data" size="2xl" />
 					</button>
 				</template>
 			</Dropdown>
 		</div>
 	</header>
-	<SettingsModal
-		v-if="userResource.data?.is_moderator"
-		v-model="showSettingsModal"
-	/>
+	<SettingsModal v-if="userResource.data?.is_moderator" v-model="showSettingsModal" />
 </template>
 
 <script setup>
@@ -102,7 +87,7 @@ onMounted(() => {
 		{ immediate: true },
 	)
 
-	socket.on('publish_lms_notifications', (data) => {})
+	socket.on('publish_lms_notifications', (data) => { })
 })
 
 onUnmounted(() => {
