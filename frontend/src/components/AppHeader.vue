@@ -140,13 +140,13 @@ const userDropdownOptions = computed(() => {
 				return isLoggedIn
 			},
 		},
-		{
-			icon: theme.value === 'light' ? Moon : Sun,
-			label: 'Toggle Theme',
-			onClick: () => {
-				toggleTheme()
-			},
-		},
+		// {
+		// 	icon: theme.value === 'light' ? Moon : Sun,
+		// 	label: 'Toggle Theme',
+		// 	onClick: () => {
+		// 		toggleTheme()
+		// 	},
+		// },
 		{
 			component: markRaw(Apps),
 			condition: () => {
