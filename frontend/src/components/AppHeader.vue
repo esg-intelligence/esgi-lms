@@ -12,6 +12,16 @@
 				</template>
 			</Dropdown>
 		</div>
+		<div v-else class="flex items-center gap-2">
+			<a href="/login"
+				class="hidden sm:inline-flex items-center justify-center px-4 h-10 text-sm font-semibold text-primary-600 hover:bg-primary-50 rounded-lg transition-colors">
+				Sign In
+			</a>
+			<a href="/login#signup"
+				class="inline-flex items-center justify-center px-4 h-10 text-sm font-semibold text-white bg-primary-500 hover:bg-primary-600 rounded-full transition-colors shadow-sm">
+				Register
+			</a>
+		</div>
 	</header>
 	<SettingsModal v-if="userResource.data?.is_moderator" v-model="showSettingsModal" />
 </template>
