@@ -43,22 +43,29 @@
 						<div v-else-if="column.key == 'modified'" class="text-xs text-ink-gray-5">
 							{{ quiz[column.key] }}
 						</div>
-						<div v-else-if="column.key == 'actions'" class="text-center">
-							<Btn class="mr-2" @click="() => {
-								// if (readOnlyMode) return
-								selectedQuiz = quiz.name
-								showDuplicateForm = true
-							}">
-								Duplicate
-							</Btn>
+						<div v-else-if="column.key == 'actions'" class="text-center flex justify-center items-center">
 							<router-link :to="{
 								name: 'QuizForm',
 								params: {
 									quizID: quiz.name,
 								},
-							}">
+							}" class="mr-2">
 								<Btn>Detail</Btn>
 							</router-link>
+							<Btn class="mr-2" @click="() => {
+								// if (readOnlyMode) return
+								selectedQuiz = quiz.name
+								showDuplicateForm = true
+							}">
+								<Copy class="w-4 h-4" />
+							</Btn>
+							<Btn @click="() => {
+								// if (readOnlyMode) return
+								selectedQuiz = quiz.name
+								showDeleteForm = true
+							}">
+								<Trash2 class="w-4 h-4" />
+							</Btn>
 						</div>
 						<div v-else>
 							{{ quiz[column.key] }}
@@ -92,6 +99,21 @@
 		</template>
 	</Dialog>
 	<QuizForm v-model="showDuplicateForm" :reload="quizzes.reload" :selected="selectedQuiz" />
+	<Dialog v-model="showDeleteForm" :options="{
+		title: __('Delete Quiz'),
+		size: 'sm',
+		actions: [
+			{
+				label: __('Confirm'),
+				variant: 'solid',
+				onClick({ close }) {
+					deleteSingleQuiz(close)
+				},
+			},
+		],
+	}">
+		<template #body-content>Are you sure want to delete this?</template>
+	</Dialog>
 </template>
 <script setup>
 import {
@@ -106,7 +128,7 @@ import {
 } from 'frappe-ui'
 import { useRouter } from 'vue-router'
 import { computed, inject, onMounted, ref, watch } from 'vue'
-import { Plus } from 'lucide-vue-next'
+import { Copy, Plus, Trash2 } from 'lucide-vue-next'
 import { sessionStore } from '@/stores/session'
 import { escapeHTML } from '@/utils'
 import EmptyState from '@/components/EmptyState.vue'
@@ -131,6 +153,7 @@ const quizFilters = ref({})
 const showForm = ref(false)
 const title = ref('')
 const showDuplicateForm = ref(false)
+const showDeleteForm = ref(false)
 const selectedQuiz = ref('')
 
 onMounted(() => {
@@ -209,6 +232,21 @@ const deleteQuiz = (selections, unselectAll) => {
 	})
 	unselectAll()
 	toast.success(__('Quizzes deleted successfully'))
+}
+
+const deleteSingleQuiz = (close) => {
+	quizzes.delete.submit(
+		selectedQuiz.value,
+		{
+			onSuccess() {
+				toast.success(__('Quizzes deleted successfully'))
+				close()
+			},
+			onError(error) {
+				toast.error(__('Error deleting quiz', error.message))
+			}
+		}
+	)
 }
 
 const quizColumns = computed(() => {

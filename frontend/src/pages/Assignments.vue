@@ -84,6 +84,7 @@
 							Edit
 						</Btn>
 						<router-link
+							class="mr-2"
 							:to="{
 								name: 'AssignmentSubmissionList',
 								query: {
@@ -93,6 +94,16 @@
 						>
 							<Btn>Check Submissions</Btn>
 						</router-link>
+						<Btn
+							class="mr-2"
+							@click="() => {
+								if (readOnlyMode) return
+								assignmentID = assignment.name
+								showDeleteForm = true
+							}"
+						>
+						Delete
+						</Btn>
 					</TableCell>
 				</TableRow>
 			</TableBody>
@@ -112,15 +123,32 @@
 		v-model:assignments="assignments"
 		:assignmentID="assignmentID"
 	/>
+	<Dialog v-model="showDeleteForm" :options="{
+		title: __('Delete Assignment'),
+		size: 'sm',
+		actions: [
+			{
+				label: __('Confirm'),
+				variant: 'solid',
+				onClick({ close }) {
+					deleteAssignment(close)
+				},
+			},
+		],
+	}">
+		<template #body-content>Are you sure want to delete this?</template>
+	</Dialog>
 </template>
 <script setup>
 import {
+	Dialog,
 	Breadcrumbs,
 	call,
 	createListResource,
 	FormControl,
 	ListView,
 	usePageMeta,
+	toast,
 	Button as Btn
 } from 'frappe-ui'
 import { computed, inject, onMounted, ref, watch } from 'vue'
@@ -146,6 +174,7 @@ const typeFilter = ref('')
 const showAssignmentForm = ref(false)
 const assignmentID = ref('new')
 const assignmentCount = ref(0)
+const showDeleteForm = ref(false)
 const { brand } = sessionStore()
 const router = useRouter()
 const readOnlyMode = window.read_only_mode
@@ -233,6 +262,21 @@ const getAssignmentCount = () => {
 	}).then((data) => {
 		assignmentCount.value = data
 	})
+}
+
+const deleteAssignment = (close) => {
+	assignments.delete.submit(
+		assignmentID.value,
+		{
+			onSuccess() {
+				toast.success(__('Assignment deleted successfully'))
+				close()
+			},
+			onError(error) {
+				toast.error(__('Error deleting assignment', error.message))
+			}
+		}
+	)
 }
 
 const assignmentTypes = computed(() => {
