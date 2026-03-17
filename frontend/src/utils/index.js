@@ -427,13 +427,7 @@ export function getSidebarLinks() {
 			icon: 'Briefcase',
 			to: 'Jobs',
 			activeFor: ['Jobs', 'JobDetail'],
-		},
-		{
-			label: 'Statistics',
-			icon: 'StatisticsIcon',
-			to: 'Statistics',
-			activeFor: ['Statistics'],
-		},
+		}
 	]
 }
 

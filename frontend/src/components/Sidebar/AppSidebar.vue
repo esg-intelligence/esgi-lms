@@ -345,6 +345,20 @@ const addPrograms = async () => {
 	})
 }
 
+const addStatistics = () => {
+	const statisticsLinkExists = sidebarLinks.value.some(
+		(link) => link.label === 'Statistics',
+	)
+	if (statisticsLinkExists) return
+
+	sidebarLinks.value.splice(4, 0, {
+		label: 'Statistics',
+		icon: 'StatisticsIcon',
+		to: 'Statistics',
+		activeFor: ['Statistics'],
+	})
+}
+
 const addContactUsDetails = () => {
 	if (!settingsStore.contactUsEmail?.data && !settingsStore.contactUsURL?.data)
 		return
@@ -704,6 +718,7 @@ watch(userResource, () => {
 		// HIDE
 		// addPrograms()
 		// addProgrammingExercises()
+		addStatistics()
 		addQuizzes()
 		addAssignments()
 	}

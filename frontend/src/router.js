@@ -69,7 +69,7 @@ const routes = [
 	{
 		path: '/statistics',
 		name: 'Statistics',
-		component: () => import('@/pages/Statistics.vue'),
+		component: () => import('@/pages/Statistics/Statistics.vue'),
 	},
 	{
 		path: '/user/:username',
