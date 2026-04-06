@@ -80,6 +80,7 @@ const props = defineProps({
 
 onBeforeMount(() => {
 	sidebarStore.isSidebarCollapsed = true
+	progress.reload() // Fix reload scorm content after it was opened
 	setupSCORMAPI()
 })
 
