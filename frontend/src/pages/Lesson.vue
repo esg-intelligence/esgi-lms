@@ -1,8 +1,13 @@
 <template>
 	<div v-if="lesson.data" class="">
-		<header class="sticky top-0 z-10 flex items-center justify-between bg-surface-white px-3 py-2.5 sm:px-5">
-			<CustomBreadcrumbs class="h-7" :items="breadcrumbs" />
-			<div class="flex items-center justify-center space-x-2">
+		<header class="sticky top-0 z-30 flex items-center bg-surface-white px-3 py-2.5 sm:px-5">
+			<div class="md:w-[40%] shrink-0">
+				<CustomBreadcrumbs class="h-7" :items="breadcrumbs" />
+			</div>
+			<div v-if="featuredAudio && !zenModeEnabled" class="flex-1 mr-4">
+				<AudioBlock :file="featuredAudio" controlClass="w-full" />
+			</div>
+			<div class="flex items-center justify-center space-x-2 ml-auto">
 				<Tooltip v-if="canGoZen()" :text="__('Zen Mode')">
 					<Button @click="goFullScreen()">
 						<template #icon>
@@ -131,13 +136,17 @@
 					</Button>
 				</div>
 			</div>
-			<div v-else ref="lessonContainer" class="bg-surface-white" :class="{
-				'overflow-y-auto': zenModeEnabled,
-			}">
+			<div v-else ref="lessonContainer" class="bg-surface-white overflow-y-auto">
 				<div class="pt-5 pb-10 h-full" :class="{
 					'w-full md:w-3/5 mx-auto border-none !pt-10': zenModeEnabled,
 				}">
 					<div class="px-5">
+						<div v-if="featuredAudio && zenModeEnabled" class="mb-6">
+							<div class="text-sm font-medium text-ink-gray-5 mb-2">
+								{{ __('Lesson Audio') }}
+							</div>
+							<AudioBlock :file="featuredAudio" controlClass="w-full" />
+						</div>
 						<div class="flex flex-col space-y-3 md:space-y-0 md:flex-row md:items-center justify-between">
 							<div class="flex flex-col">
 								<div class="text-3xl font-semibold text-ink-gray-9">
@@ -299,6 +308,7 @@ import { getEditorTools, enablePlyr, highlightText } from '@/utils'
 import { sessionStore } from '@/stores/session'
 import { useSidebar } from '@/stores/sidebar'
 import EditorJS from '@editorjs/editorjs'
+import AudioBlock from '@/components/AudioBlock.vue'
 import LessonContent from '@/components/LessonContent.vue'
 import CourseInstructors from '@/components/CourseInstructors.vue'
 import ProgressBar from '@/components/ProgressBar.vue'
@@ -337,6 +347,7 @@ const sidebarStore = useSidebar()
 const plyrSources = ref([])
 const showInlineMenu = ref(false)
 const currentTab = ref('Notes')
+const featuredAudio = ref(null)
 
 let timerInterval
 
@@ -457,17 +468,33 @@ const checkQuiz = () => {
 	}
 }
 
+const AUDIO_TYPES = ['mp3', 'wav', 'ogg']
+
+const isAudioBlock = (block) =>
+	block.type === 'upload' &&
+	AUDIO_TYPES.includes(block.data?.file_type?.toLowerCase())
+
 const renderEditor = (holder, content) => {
 	if (document.getElementById(holder))
 		document.getElementById(holder).innerHTML = ''
 	const contentObj = JSON.parse(content)
-	const filteredBlocks = contentObj.blocks.filter(block => {
+	let filteredBlocks = contentObj.blocks.filter(block => {
 		if (!user.data.industry) return true
 		if (block.type == 'assignment') {
 			return block.industry == user.data.industry
 		}
 		return true
 	})
+	if (holder === 'editor') {
+		const firstAudioIndex = filteredBlocks.findIndex(isAudioBlock)
+		if (firstAudioIndex !== -1) {
+			featuredAudio.value = filteredBlocks[firstAudioIndex].data.file_url
+			filteredBlocks = [
+				...filteredBlocks.slice(0, firstAudioIndex),
+				...filteredBlocks.slice(firstAudioIndex + 1),
+			]
+		}
+	}
 	contentObj['blocks'] = filteredBlocks
 	return new EditorJS({
 		holder: holder,
@@ -574,6 +601,7 @@ const resetLessonState = (newChapterNumber, newLessonNumber) => {
 	editor.value = null
 	instructorEditor.value = null
 	allowDiscussions.value = false
+	featuredAudio.value = null
 	lesson.submit({
 		chapter: newChapterNumber,
 		lesson: newLessonNumber,

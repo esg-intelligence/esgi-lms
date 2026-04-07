@@ -3,10 +3,10 @@
 		<!-- <audio width="100%" controls controlsList="nodownload" class="mb-4">
 			<source :src="encodeURI(file)" type="audio/mp3" />
 		</audio> -->
-		<audio @ended="handleAudioEnd" controlsList="nodownload" class="mb-4">
+		<audio ref="audioEl" @ended="handleAudioEnd" controlsList="nodownload" class="mb-4">
 			<source :src="encodeURI(file)" type="audio/mp3" />
 		</audio>
-		<div class="flex items-center space-x-2 shadow rounded-lg p-1 w-1/2">
+		<div :class="['flex items-center space-x-2 shadow rounded-lg p-1', controlClass]">
 			<Button variant="ghost" @click="togglePlay">
 				<template #icon>
 					<Play v-if="!isPlaying" class="w-4 h-4 text-ink-gray-9" />
@@ -41,7 +41,7 @@ import { Play, Pause, Volume2, VolumeX } from 'lucide-vue-next'
 import { Button } from 'frappe-ui'
 
 const isPlaying = ref(false)
-const audio = ref(null)
+const audioEl = ref(null)
 let isMuted = ref(false)
 let currentTime = ref(0)
 let duration = ref(0)
@@ -51,37 +51,38 @@ const props = defineProps({
 		type: String,
 		required: true,
 	},
+	controlClass: {
+		type: String,
+		default: 'w-1/2',
+	},
 })
 
 onMounted(() => {
-	setTimeout(() => {
-		audio.value = document.querySelector('audio')
-		audio.value.onloadedmetadata = () => {
-			duration.value = audio.value.duration
-		}
-		audio.value.ontimeupdate = () => {
-			currentTime.value = audio.value.currentTime
-		}
-	}, 0)
+	audioEl.value.onloadedmetadata = () => {
+		duration.value = audioEl.value.duration
+	}
+	audioEl.value.ontimeupdate = () => {
+		currentTime.value = audioEl.value.currentTime
+	}
 })
 
 const togglePlay = () => {
-	if (audio.value.paused) {
-		audio.value.play()
+	if (audioEl.value.paused) {
+		audioEl.value.play()
 		isPlaying.value = true
 	} else {
-		audio.value.pause()
+		audioEl.value.pause()
 		isPlaying.value = false
 	}
 }
 
 const toggleMute = () => {
-	audio.value.muted = !audio.value.muted
-	isMuted.value = audio.value.muted
+	audioEl.value.muted = !audioEl.value.muted
+	isMuted.value = audioEl.value.muted
 }
 
 const changeCurrentTime = () => {
-	audio.value.currentTime = currentTime.value
+	audioEl.value.currentTime = currentTime.value
 }
 
 const handleAudioEnd = () => {
@@ -96,9 +97,9 @@ const formatTime = (time) => {
 
 watch(isPlaying, (newVal) => {
 	if (newVal) {
-		audio.value.play()
+		audioEl.value.play()
 	} else {
-		audio.value.pause()
+		audioEl.value.pause()
 	}
 })
 </script>
