@@ -71,6 +71,7 @@ declare module 'vue' {
     CourseProgressSummary: typeof import('./src/components/Modals/CourseProgressSummary.vue')['default']
     CourseReviews: typeof import('./src/components/CourseReviews.vue')['default']
     CoursesIcon: typeof import('./src/components/Icons/CoursesIcon.vue')['default']
+    CourseSidebar: typeof import('./src/components/CourseSidebar.vue')['default']
     CreateOutline: typeof import('./src/components/CreateOutline.vue')['default']
     CustomBreadcrumb: typeof import('./src/components/ui/CustomBreadcrumb.vue')['default']
     DateRange: typeof import('./src/components/Common/DateRange.vue')['default']
