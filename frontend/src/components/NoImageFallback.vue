@@ -36,7 +36,7 @@ const props = defineProps({
 		</div>
 
 		<div class="flex flex-col items-center text-center opacity-40">
-			<span class="text-[#333] text-base leading-tight">No Image</span>
+			<span class="text-[#333] text-base leading-tight">{{ __('No Image') }}</span>
 		</div>
 	</div>
 </template>

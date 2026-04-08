@@ -61,7 +61,7 @@
 					<!-- Progress -->
 					<div class="mb-6">
 						<div class="flex justify-between text-sm mb-1">
-							<span class="text-ink-gray-5">Course progress</span>
+							<span class="text-ink-gray-5">{{ __('Course progress') }}</span>
 							<span class="font-medium text-ink-gray-9"
 								>{{ course.progress }}%</span
 							>
@@ -130,7 +130,7 @@
 											quizExpanded ? '' : '-rotate-90',
 										]"
 									/>
-									<span class="text-sm text-teal-600 font-medium">Quiz</span>
+									<span class="text-sm text-teal-600 font-medium">{{ __('Quiz') }}</span>
 								</div>
 							</button>
 							<div v-show="quizExpanded" class="pl-6 space-y-1.5">
@@ -223,7 +223,7 @@
 					<div class="border rounded-lg p-4 mb-6">
 						<textarea
 							v-model="noteText"
-							placeholder="Write notes for quick revision"
+							:placeholder="__('Write notes for quick revision')"
 							class="w-full min-h-[80px] resize-none border-0 focus:ring-0 text-sm text-ink-gray-7 placeholder:text-ink-gray-4"
 						></textarea>
 						<div class="flex items-center justify-between border-t pt-3 mt-3">

@@ -10,7 +10,7 @@
 						<div class="flex-1">
 							<div class="text-xl text-gray-900 font-semibold">{{ chartDetails.data.enrollments.count }}
 							</div>
-							<div class="text-sm text-gray-700">Enrolled</div>
+							<div class="text-sm text-gray-700">{{ __('Enrolled') }}</div>
 						</div>
 					</div>
 				</Tooltip>
@@ -22,7 +22,7 @@
 						<div class="flex-1">
 							<div class="text-xl text-gray-900 font-semibold">{{ chartDetails.data.in_progress.count }}
 							</div>
-							<div class="text-sm text-gray-700">In Progress</div>
+							<div class="text-sm text-gray-700">{{ __('In Progress') }}</div>
 						</div>
 					</div>
 				</Tooltip>
@@ -34,7 +34,7 @@
 						<div class="flex-1">
 							<div class="text-xl text-gray-900 font-semibold">{{ chartDetails.data.completions.count }}
 							</div>
-							<div class="text-sm text-gray-700">Completed</div>
+							<div class="text-sm text-gray-700">{{ __('Completed') }}</div>
 						</div>
 					</div>
 				</Tooltip>
@@ -47,7 +47,7 @@
 							<div class="text-xl text-gray-900 font-semibold">{{ chartDetails.data.certifications.count
 							}}
 							</div>
-							<div class="text-sm text-gray-700">Certificates</div>
+							<div class="text-sm text-gray-700">{{ __('Certificates') }}</div>
 						</div>
 					</div>
 				</Tooltip>

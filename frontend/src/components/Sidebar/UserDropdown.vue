@@ -34,7 +34,7 @@
 							>
 								{{ branding.data?.app_name }}
 							</span>
-							<span v-else> Learning </span>
+							<span v-else> {{ __('Learning') }} </span>
 						</div>
 						<div
 							v-if="userResource.data"
@@ -134,7 +134,7 @@ const userDropdownOptions = computed(() => {
 			items: [
 				{
 					icon: User,
-					label: 'My Profile',
+	\t\t\t\tlabel: __('My Profile'),
 					onClick: () => {
 						router.push(`/user/${userResource.data?.username}`)
 					},

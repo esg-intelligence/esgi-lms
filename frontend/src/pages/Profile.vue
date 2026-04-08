@@ -55,7 +55,7 @@
 								: 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
 							'group flex items-center px-6 py-4 text-sm font-medium cursor-pointer transition-colors !border-b border-gray-100 lg:border-b-0',
 						]">
-							<span class="truncate">{{ tab.label }}</span>
+							<span class="truncate">{{ __(tab.label) }}</span>
 						</div>
 					</nav>
 				</div>

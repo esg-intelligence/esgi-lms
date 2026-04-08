@@ -6,7 +6,7 @@
 
             <!-- CENTER LABEL -->
             <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <div class="text-sm text-gray-500 font-medium">Total</div>
+                <div class="text-sm text-gray-500 font-medium">{{ __('Total') }}</div>
                 <div class="text-3xl font-bold text-gray-900">100%</div>
             </div>
         </div>

@@ -172,7 +172,7 @@ onUnmounted(() => {
 const breadcrumbs = computed(() => {
 	let crumbs = [
 		{
-			label: 'Notifications',
+			label: __('Notifications'),
 			route: {
 				name: 'Notifications',
 			},

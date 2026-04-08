@@ -35,8 +35,8 @@
 					/>
 					<Uploader
 						v-model="badge.image"
-						label="Badge Image"
-						description="An image that represents the badge."
+						:label="__('Badge Image')"
+						:description="__('An image that represents the badge.')"
 					/>
 				</div>
 

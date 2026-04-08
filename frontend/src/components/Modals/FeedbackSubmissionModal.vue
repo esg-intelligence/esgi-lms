@@ -24,7 +24,7 @@
 						type="textarea"
 						:label="__('Feedback')"
 						:rows="6"
-						placeholder="Share your thoughts about the batch..."
+						:placeholder="__('Share your thoughts about the batch...')"
 					/>
 				</FormWrapper>
 			</div>

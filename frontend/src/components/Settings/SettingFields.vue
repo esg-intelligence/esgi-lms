@@ -21,7 +21,7 @@
 						<CodeEditor
 							:label="__(field.label)"
 							type="HTML"
-							description="The HTML you add here will be shown on your sign up page."
+							:description="__('The HTML you add here will be shown on your sign up page.')"
 							v-model="data[field.name]"
 							height="250px"
 							class="shrink-0"

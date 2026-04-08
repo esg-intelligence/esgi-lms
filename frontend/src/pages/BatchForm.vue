@@ -671,7 +671,7 @@ const removeImage = () => {
 const breadcrumbs = computed(() => {
 	let crumbs = [
 		{
-			label: 'Batches',
+			label: __('Batches'),
 			route: {
 				name: 'Batches',
 			},

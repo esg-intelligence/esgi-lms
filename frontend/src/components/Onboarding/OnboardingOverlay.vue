@@ -7,7 +7,7 @@
 			</div>
 			<button @click="handleExit"
 				class="text-sm font-medium text-secondary-500 hover:text-secondary-800 transition-colors">
-				Exit
+				{{ __('Exit') }}
 			</button>
 		</div>
 
@@ -32,10 +32,10 @@
 							</div>
 
 							<h1 class="text-lg sm:text-3xl font-bold text-gray-900 mb-4 tracking-tight text-center">
-								{{ slide.title }}
+								{{ __(slide.title) }}
 							</h1>
 							<p class="text-gray-600 text-xs sm:text-base max-w-4xl mx-auto leading-relaxed text-center">
-								{{ slide.description }}
+								{{ __(slide.description) }}
 							</p>
 						</div>
 					</div>
@@ -45,14 +45,14 @@
 				<div class="max-w-3xl mx-auto flex items-center justify-center gap-4">
 					<Button v-if="currentSlide > 0" variant="outline" size="lg" @click="prevSlide"
 						class="min-w-[100px] border-primary-500 text-primary-500 hover:bg-primary-50 !rounded w-36 h-12">
-						Back
+						{{ __('Back') }}
 					</Button>
 					<Button variant="solid" size="lg" @click="
 						currentSlide === slides.length - 1
 							? handleComplete()
 							: nextSlide()
 						" class="min-w-[100px] !bg-primary-500 hover:!bg-primary-600 text-white border-none !rounded w-36 h-12">
-						{{ currentSlide === slides.length - 1 ? 'Continue' : 'Next' }}
+						{{ currentSlide === slides.length - 1 ? __('Continue') : __('Next') }}
 					</Button>
 				</div>
 			</div>

@@ -127,7 +127,7 @@
 										: 'border-transparent text-ink-gray-5 hover:text-ink-gray-7',
 								]"
 							>
-								{{ tab.label }}
+								{{ __(tab.label) }}
 							</button>
 						</nav>
 					</div>
@@ -453,10 +453,10 @@ const batch = createResource({
 })
 
 const breadcrumbs = computed(() => {
-	let crumbs = [{ label: 'Batches', route: { name: 'Batches' } }]
+	let crumbs = [{ label: __('Batches'), route: { name: 'Batches' } }]
 	if (!isStudent.value) {
 		crumbs.push({
-			label: 'Details',
+			label: __('Details'),
 			route: {
 				name: 'BatchDetail',
 				params: {
