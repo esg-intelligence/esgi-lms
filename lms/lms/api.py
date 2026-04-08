@@ -361,6 +361,66 @@ def get_user_chart_details():
 	return details
 
 @frappe.whitelist()
+def get_student_chart_data():
+	user = frappe.session.user
+
+	# Chart 1: Average pre-test and post-test percentages (all submissions, all courses)
+	pre_test = frappe.db.sql("""
+		SELECT ROUND(AVG(percentage), 1) as avg
+		FROM `tabLMS Quiz Submission`
+		WHERE member = %s AND LOWER(quiz) LIKE %s
+	""", (user, "%pre-test%"), as_dict=True)
+
+	post_test = frappe.db.sql("""
+		SELECT ROUND(AVG(percentage), 1) as avg
+		FROM `tabLMS Quiz Submission`
+		WHERE member = %s AND LOWER(quiz) LIKE %s
+	""", (user, "%post-test%"), as_dict=True)
+
+	# Chart 2: Top 5 courses by latest post-test percentage, ranked by score desc
+	top_courses = frappe.db.sql("""
+		SELECT s.course, c.title as course_title, s.percentage
+		FROM `tabLMS Quiz Submission` s
+		JOIN `tabLMS Course` c ON c.name = s.course
+		WHERE s.member = %s
+		  AND LOWER(s.quiz) LIKE %s
+		  AND s.creation = (
+		      SELECT MAX(s2.creation)
+		      FROM `tabLMS Quiz Submission` s2
+		      WHERE s2.member = s.member
+		        AND s2.course = s.course
+		        AND LOWER(s2.quiz) LIKE %s
+		  )
+		ORDER BY s.percentage DESC
+		LIMIT 5
+	""", (user, "%post-test%", "%post-test%"), as_dict=True)
+
+	# Chart 3: Course status distribution from LMS Enrollment.progress
+	enrollments = frappe.get_all(
+		"LMS Enrollment",
+		filters={"member": user},
+		fields=["progress"]
+	)
+	completed   = sum(1 for e in enrollments if (e.progress or 0) == 100)
+	in_progress = sum(1 for e in enrollments if 0 < (e.progress or 0) < 100)
+	not_yet    = sum(1 for e in enrollments if (e.progress or 0) == 0)
+
+	return {
+		"pre_test_avg":  flt(pre_test[0].avg or 0, 1),
+		"post_test_avg": flt(post_test[0].avg or 0, 1),
+		"top_courses": [
+			{"label": c.course_title, "value": c.percentage}
+			for c in top_courses
+		],
+		"course_status": [
+			{"label": "Completed",   "value": completed},
+			{"label": "In Progress", "value": in_progress},
+			{"label": "Not Yet",    "value": not_yet},
+		],
+	}
+
+
+@frappe.whitelist()
 def get_file_info(file_url):
 	"""Get file info for the given file URL."""
 	file_info = frappe.db.get_value(
