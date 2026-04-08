@@ -321,18 +321,18 @@ const removeImage = () => {
 
 const jobTypes = computed(() => {
 	return [
-		{ label: 'Full Time', value: 'Full Time' },
-		{ label: 'Part Time', value: 'Part Time' },
-		{ label: 'Contract', value: 'Contract' },
-		{ label: 'Freelance', value: 'Freelance' },
+		{ label: __('Full Time'), value: 'Full Time' },
+		{ label: __('Part Time'), value: 'Part Time' },
+		{ label: __('Contract'), value: 'Contract' },
+		{ label: __('Freelance'), value: 'Freelance' },
 	]
 })
 
 const workModes = computed(() => {
 	return [
-		{ label: 'On site', value: 'On-site' },
-		{ label: 'Hybrid', value: 'Hybrid' },
-		{ label: 'Remote', value: 'Remote' },
+		{ label: __('On site'), value: 'On-site' },
+		{ label: __('Hybrid'), value: 'Hybrid' },
+		{ label: __('Remote'), value: 'Remote' },
 	]
 })
 

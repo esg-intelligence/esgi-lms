@@ -220,7 +220,7 @@ const canAddAssessments = () => {
 const getAssessmentColumns = () => {
 	let columns = [
 		{
-			label: 'Assessment',
+			label: __('Assessment'),
 			key: 'title',
 		},
 	]

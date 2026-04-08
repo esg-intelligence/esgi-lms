@@ -4,7 +4,7 @@
 	}">
 		<template #body>
 			<div class="p-5 text-base">
-				<div class="text-lg text-ink-gray-9 font-semibold mb-5">Duplicate Quiz</div>
+				<div class="text-lg text-ink-gray-9 font-semibold mb-5">{{ __('Duplicate Quiz') }}</div>
 				<div class="space-y-4 max-h-[75vh] overflow-y-auto">
 					<FormControl v-model="quiz.title" :label="__('Title')" :required="true" />
 				</div>

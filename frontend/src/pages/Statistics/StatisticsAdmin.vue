@@ -10,7 +10,7 @@
 					</div>
 					<div class="flex-1">
 						<div class="text-xl text-gray-900 font-semibold">{{ chartDetails.data.courses.count }}</div>
-						<div class="text-sm text-gray-700">Courses</div>
+						<div class="text-sm text-gray-700">{{ __('Courses') }}</div>
 					</div>
 					<div class="flex items-start h-12">
 						<div class="text-sm font-medium flex items-center gap-1"
@@ -31,7 +31,7 @@
 					</div>
 					<div class="flex-1">
 						<div class="text-xl text-gray-900 font-semibold">{{ chartDetails.data.users.count }}</div>
-						<div class="text-sm text-gray-700">Signups</div>
+						<div class="text-sm text-gray-700">{{ __('Signups') }}</div>
 					</div>
 					<div class="flex items-start h-12">
 						<div class="text-sm font-medium flex items-center gap-1"
@@ -54,7 +54,7 @@
 					</div>
 					<div class="flex-1">
 						<div class="text-xl text-gray-900 font-semibold">{{ chartDetails.data.enrollments.count }}</div>
-						<div class="text-sm text-gray-700">Enrollments</div>
+						<div class="text-sm text-gray-700">{{ __('Enrollments') }}</div>
 					</div>
 					<div class="flex items-start h-12">
 						<div class="text-sm font-medium flex items-center gap-1"
@@ -77,7 +77,7 @@
 					</div>
 					<div class="flex-1">
 						<div class="text-xl text-gray-900 font-semibold">{{ chartDetails.data.completions.count }}</div>
-						<div class="text-sm text-gray-700">Completions</div>
+						<div class="text-sm text-gray-700">{{ __('Completions') }}</div>
 					</div>
 					<div class="flex items-start h-12">
 						<div class="text-sm font-medium flex items-center gap-1"
@@ -101,7 +101,7 @@
 					<div class="flex-1">
 						<div class="text-xl text-gray-900 font-semibold">{{ chartDetails.data.certifications.count }}
 						</div>
-						<div class="text-sm text-gray-700">Certifications</div>
+						<div class="text-sm text-gray-700">{{ __('Certifications') }}</div>
 					</div>
 					<div class="flex items-start h-12">
 						<div class="text-sm font-medium flex items-center gap-1"
@@ -118,7 +118,7 @@
 			<div class="border rounded-xl min-h-72">
 				<div>
 					<div class="text-lg text-gray-900 font-medium px-5 py-3 border-b">
-						Daily Signups</div>
+						{{ __('Daily Signups') }}</div>
 				</div>
 				<div class="px-5 py-3">
 					<AreaChart v-if="signupsChart.data"
@@ -129,7 +129,7 @@
 			<div class="border rounded-xl min-h-72">
 				<div>
 					<div class="text-lg text-gray-900 font-medium px-5 py-3 border-b">
-						Daily Enrollments</div>
+						{{ __('Daily Enrollments') }}</div>
 				</div>
 				<div class="px-5 py-3">
 					<AreaChart v-if="enrollmentChart.data"
@@ -140,7 +140,7 @@
 			<div class="border rounded-xl">
 				<div>
 					<div class="text-lg text-gray-900 font-medium px-5 py-3 border-b">
-						Daily Certifications</div>
+						{{ __('Daily Certifications') }}</div>
 				</div>
 				<div class="px-5 py-3">
 					<AreaChart v-if="certification.data"
@@ -151,7 +151,7 @@
 			<div class="border rounded-xl">
 				<div>
 					<div class="text-lg text-gray-900 font-medium px-5 py-3 border-b">
-						Course Completions</div>
+						{{ __('Course Completions') }}</div>
 				</div>
 				<DonutChart v-if="courseCompletion.data" :data="courseCompletion.data" />
 			</div>

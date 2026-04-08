@@ -119,7 +119,7 @@ onMounted(() => {
 	getCourseCount()
 	categories.value = [
 		{
-			label: 'All Categories',
+			label: __('All Categories'),
 			value: null,
 		},
 	]

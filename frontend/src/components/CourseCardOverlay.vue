@@ -79,7 +79,7 @@
 
 				<div v-if="user && course.data.membership">
 					<div class="flex items-center justify-between text-sm mb-1">
-						<span class="text-md text-gray-600">Course progress</span>
+						<span class="text-md text-gray-600">{{ __('Course progress') }}</span>
 						<span class="text-md text-gray-600">{{ Math.ceil(course.data.membership.progress) }}%</span>
 					</div>
 

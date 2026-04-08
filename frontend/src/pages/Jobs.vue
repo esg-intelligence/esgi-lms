@@ -262,9 +262,9 @@ const jobTypes = computed(() => {
 const workModes = computed(() => {
 	return [
 		{ label: '', value: '' },
-		{ label: 'On site', value: 'On-site' },
-		{ label: 'Hybrid', value: 'Hybrid' },
-		{ label: 'Remote', value: 'Remote' },
+		{ label: __('On site'), value: 'On-site' },
+		{ label: __('Hybrid'), value: 'Hybrid' },
+		{ label: __('Remote'), value: 'Remote' },
 	]
 })
 

@@ -32,7 +32,7 @@
 					{{ __('Choose Availability Date') }}
 				</h2>
 				<div>
-					<DateRangePicker v-model="range" placeholder="Set Range" label="Set Range" variant="solid" size="lg"
+					<DateRangePicker v-model="range" :placeholder="__('Set Range')" :label="__('Set Range')" variant="solid" size="lg"
 						inputClass="[&>input]:!bg-gray-50 [&>input]:!border-gray-100 [&>input]:!p-6"
 						@change="handleChange">
 						<template #suffix>
@@ -322,31 +322,31 @@ const authorizeCalendar = createResource({
 const days = computed(() => {
 	return [
 		{
-			label: 'Monday',
+			label: __('Monday'),
 			value: 'Monday',
 		},
 		{
-			label: 'Tuesday',
+			label: __('Tuesday'),
 			value: 'Tuesday',
 		},
 		{
-			label: 'Wednesday',
+			label: __('Wednesday'),
 			value: 'Wednesday',
 		},
 		{
-			label: 'Thursday',
+			label: __('Thursday'),
 			value: 'Thursday',
 		},
 		{
-			label: 'Friday',
+			label: __('Friday'),
 			value: 'Friday',
 		},
 		{
-			label: 'Saturday',
+			label: __('Saturday'),
 			value: 'Saturday',
 		},
 		{
-			label: 'Sunday',
+			label: __('Sunday'),
 			value: 'Sunday',
 		},
 	]

@@ -99,7 +99,7 @@ const userDropdownOptions = computed(() => {
 	const items = [
 		{
 			icon: CircleProfileIcon,
-			label: 'My Profile',
+			label: __('My Profile'),
 			onClick: () => {
 				router.push(`/user/${userResource.data?.username}`)
 			},
@@ -215,7 +215,7 @@ const userDropdownOptions = computed(() => {
 			group: 'Navigation',
 			items: items.filter(
 				(i) =>
-					!['My Profile', 'Log out', 'Log in'].includes(i.label) &&
+					![__('My Profile'), __('Log out'), __('Log in')].includes(i.label) &&
 					(!i.condition || i.condition()),
 			),
 		},
@@ -223,7 +223,7 @@ const userDropdownOptions = computed(() => {
 			group: 'Profile',
 			items: items.filter(
 				(i) =>
-					['My Profile', 'Log out', 'Log in'].includes(i.label) &&
+					[__('My Profile'), __('Log out'), __('Log in')].includes(i.label) &&
 					(!i.condition || i.condition()),
 			),
 		},

@@ -567,40 +567,40 @@ const categories = computed(() => {
 })
 
 const simplifiedNav = [
-	{ label: 'Courses', to: 'Courses' },
-	{ label: 'Batches', to: 'Batches' },
+	{ label: __('Courses'), to: 'Courses' },
+	{ label: __('Batches'), to: 'Batches' },
 ]
 
 /* Slider state for Hero section */
 const currentSlide = ref(0)
 const heroSlides = [
 	{
-		title: 'CESGS Learning Management System',
+		title: __('CESGS Learning Management System'),
 		subtitle:
-			'Empowering structured learning in one integrated platform. Brought to you by Center for Environmental, Social, and Governance Studies (CESGS) Universitas Airlangga: the first Center of Excellence for Sustainable Business (PUI PT Bisnis Berkelanjutan) and #1 ESG Research Center in Indonesia.',
+			__('Empowering structured learning in one integrated platform. Brought to you by Center for Environmental, Social, and Governance Studies (CESGS) Universitas Airlangga: the first Center of Excellence for Sustainable Business (PUI PT Bisnis Berkelanjutan) and #1 ESG Research Center in Indonesia.'),
 		content: 'text',
 		highlight: 'CESGS',
 		layout: 'centered',
 	},
 	{
-		title: 'Sharpen Your Skills with Structured Learning',
+		title: __('Sharpen Your Skills with Structured Learning'),
 		subtitle:
-			'Enhance your capabilities through guided lessons, real-world case studies, and focused learning paths designed to build practical ESG expertise.',
+			__('Enhance your capabilities through guided lessons, real-world case studies, and focused learning paths designed to build practical ESG expertise.'),
 		content: 'image',
 		imageSrc: '/assets/lms/images/undraw_working-together_r43a.png',
 		highlight: 'skills',
 	},
 	{
-		title: 'Learn Efficiently With AI Assistance',
+		title: __('Learn Efficiently With AI Assistance'),
 		subtitle:
-			'Receive instant explanations, smart recommendations, and learning support that helps you understand complex topics faster and more efficiently.',
+			__('Receive instant explanations, smart recommendations, and learning support that helps you understand complex topics faster and more efficiently.'),
 		content: 'image',
 		imageSrc: '/assets/lms/images/undraw_online-stats_d57c 1.png',
 		highlight: 'AI',
 	},
 	{
-		title: 'Learn without limit',
-		subtitle: 'Access your courses anytime, anywhere, and progress at your own pace in a flexible environment built for modern learners.',
+		title: __('Learn without limit'),
+		subtitle: __('Access your courses anytime, anywhere, and progress at your own pace in a flexible environment built for modern learners.'),
 		content: 'image',
 		imageSrc: '/assets/lms/images/undraw_happy-announcement_23nf 1.png',
 		highlight: 'limit',

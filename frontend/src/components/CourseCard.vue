@@ -59,7 +59,7 @@
 							<span class="text-base font-medium mr-1">{{
 								formatAmount(course.enrollments)
 							}}</span>
-							<span class="text-sm text-gray-600">Enrolled Students</span>
+							<span class="text-sm text-gray-600">{{ __('Enrolled Students') }}</span>
 						</div>
 					</Tooltip>
 				</div>
@@ -111,7 +111,7 @@
 
 			<div class="mb-4" v-if="user && course.membership">
 				<div class="flex items-center justify-between text-sm mb-1">
-					<span class="text-md text-gray-600">Course progress</span>
+					<span class="text-md text-gray-600">{{ __('Course progress') }}</span>
 					<span class="text-md text-gray-600"
 						>{{ Math.ceil(course.membership.progress) }}%</span
 					>
