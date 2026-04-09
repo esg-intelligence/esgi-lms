@@ -365,35 +365,42 @@ def get_student_chart_data():
 	user = frappe.session.user
 
 	# Chart 1: Average pre-test and post-test percentages (all submissions, all courses)
+	# Join LMS Quiz to match by quiz name containing 'pretest' or 'pre-test'
 	pre_test = frappe.db.sql("""
-		SELECT ROUND(AVG(percentage), 1) as avg
-		FROM `tabLMS Quiz Submission`
-		WHERE member = %s AND LOWER(quiz) LIKE %s
-	""", (user, "%pre-test%"), as_dict=True)
+		SELECT ROUND(AVG(s.percentage), 1) as avg
+		FROM `tabLMS Quiz Submission` s
+		JOIN `tabLMS Quiz` lq ON lq.name = s.quiz
+		WHERE s.member = %s
+		  AND (LOWER(lq.name) LIKE %s OR LOWER(lq.name) LIKE %s)
+	""", (user, "%pretest%", "%pre-test%"), as_dict=True)
 
 	post_test = frappe.db.sql("""
-		SELECT ROUND(AVG(percentage), 1) as avg
-		FROM `tabLMS Quiz Submission`
-		WHERE member = %s AND LOWER(quiz) LIKE %s
-	""", (user, "%post-test%"), as_dict=True)
+		SELECT ROUND(AVG(s.percentage), 1) as avg
+		FROM `tabLMS Quiz Submission` s
+		JOIN `tabLMS Quiz` lq ON lq.name = s.quiz
+		WHERE s.member = %s
+		  AND (LOWER(lq.name) LIKE %s OR LOWER(lq.name) LIKE %s)
+	""", (user, "%posttest%", "%post-test%"), as_dict=True)
 
 	# Chart 2: Top 5 courses by latest post-test percentage, ranked by score desc
 	top_courses = frappe.db.sql("""
 		SELECT s.course, c.title as course_title, s.percentage
 		FROM `tabLMS Quiz Submission` s
+		JOIN `tabLMS Quiz` lq ON lq.name = s.quiz
 		JOIN `tabLMS Course` c ON c.name = s.course
 		WHERE s.member = %s
-		  AND LOWER(s.quiz) LIKE %s
+		  AND (LOWER(lq.name) LIKE %s OR LOWER(lq.name) LIKE %s)
 		  AND s.creation = (
 		      SELECT MAX(s2.creation)
 		      FROM `tabLMS Quiz Submission` s2
+		      JOIN `tabLMS Quiz` lq2 ON lq2.name = s2.quiz
 		      WHERE s2.member = s.member
 		        AND s2.course = s.course
-		        AND LOWER(s2.quiz) LIKE %s
+		        AND (LOWER(lq2.name) LIKE %s OR LOWER(lq2.name) LIKE %s)
 		  )
 		ORDER BY s.percentage DESC
 		LIMIT 5
-	""", (user, "%post-test%", "%post-test%"), as_dict=True)
+	""", (user, "%posttest%", "%post-test%", "%posttest%", "%post-test%"), as_dict=True)
 
 	# Chart 3: Course status distribution from LMS Enrollment.progress
 	enrollments = frappe.get_all(
