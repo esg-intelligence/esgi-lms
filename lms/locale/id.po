@@ -3541,7 +3541,7 @@ msgstr "Petunjuk"
 #: frontend/src/pages/Home/Home.vue:5 frontend/src/pages/Home/Home.vue:160
 #: lms/www/login.html:458
 msgid "Home"
-msgstr "Rumah"
+msgstr "Beranda"
 
 #. Label of the host (Link) field in DocType 'LMS Live Class'
 #: lms/lms/doctype/lms_live_class/lms_live_class.json
