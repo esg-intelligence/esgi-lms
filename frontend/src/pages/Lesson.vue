@@ -1,4 +1,7 @@
 <template>
+	<div v-if="!isSupportedBrowser" class="sticky top-0 z-40 flex items-center justify-center bg-yellow-50 border-b border-yellow-200 px-4 py-2 text-sm text-yellow-800">
+		<span>{{ __('Please use Google Chrome (Chrome based browsers) or Firefox for better experience') }}</span>
+	</div>
 	<div v-if="lesson.data" class="">
 		<header class="sticky top-0 z-30 flex items-center bg-surface-white px-3 py-2.5 sm:px-5">
 			<div class="md:w-[40%] shrink-0">
@@ -861,6 +864,13 @@ watch(allowDiscussions, () => {
 			},
 		]
 	}
+})
+
+const isSupportedBrowser = computed(() => {
+	const ua = navigator.userAgent
+	const isChromeBased = /Chrome|Chromium|CriOS/i.test(ua)
+	const isFirefox = /Firefox|FxiOS/i.test(ua)
+	return isChromeBased || isFirefox
 })
 
 const isLessonComplete = computed(() => {
