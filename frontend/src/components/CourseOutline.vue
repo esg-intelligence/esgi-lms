@@ -48,8 +48,7 @@
 									:class="{
 										'rotate-90 transform duration-200': open,
 										'duration-200': !open,
-										hidden: chapter.is_scorm_package,
-										open: index == 1,
+										open: index == 1 && !chapter.is_scorm_package,
 									}"
 									class="h-4 w-4 text-ink-gray-9 stroke-1"
 								/>

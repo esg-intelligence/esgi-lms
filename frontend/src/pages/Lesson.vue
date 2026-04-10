@@ -4,9 +4,6 @@
 			<div class="md:w-[40%] shrink-0">
 				<CustomBreadcrumbs class="h-7" :items="breadcrumbs" />
 			</div>
-			<div v-if="featuredAudio && !zenModeEnabled" class="flex-1 mr-4">
-				<AudioBlock :file="featuredAudio" controlClass="w-full" />
-			</div>
 			<div class="flex items-center justify-center space-x-2 ml-auto">
 				<Button @click="sidebarMinimized = !sidebarMinimized">
 					<template #icon>
@@ -96,12 +93,6 @@
 					'w-full md:w-3/5 mx-auto border-none !pt-10': zenModeEnabled,
 				}">
 					<div class="px-5">
-						<div v-if="featuredAudio && zenModeEnabled" class="mb-6">
-							<div class="text-sm font-medium text-ink-gray-5 mb-2">
-								{{ __('Lesson Audio') }}
-							</div>
-							<AudioBlock :file="featuredAudio" controlClass="w-full" />
-						</div>
 						<div class="flex flex-col space-y-3 md:space-y-0 md:flex-row md:items-center justify-between">
 							<div class="flex flex-col">
 								<div class="text-3xl font-semibold text-ink-gray-9">
@@ -171,6 +162,13 @@
 									</Button>
 								</router-link>
 							</div>
+						</div>
+
+						<div v-if="featuredAudio" class="mt-4">
+							<div class="text-sm font-medium text-ink-gray-5 mb-2">
+								{{ __('Audio for this material is available here:') }}
+							</div>
+							<AudioBlock :file="featuredAudio" controlClass="w-full" />
 						</div>
 
 						<div v-if="
