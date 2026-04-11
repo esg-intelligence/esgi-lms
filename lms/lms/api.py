@@ -1138,15 +1138,24 @@ def upsert_chapter(title, course, is_scorm_package, scorm_package, name=None):
 	values = frappe._dict({"title": title, "course": course, "is_scorm_package": is_scorm_package})
 
 	if is_scorm_package:
+		# Clean up old SCORM directory when updating an existing SCORM chapter
+		if name:
+			old_info = frappe.db.get_value(
+				"Course Chapter", name, ["is_scorm_package", "scorm_package_path"], as_dict=True
+			)
+			if old_info and old_info.is_scorm_package and old_info.scorm_package_path:
+				delete_scorm_package(old_info.scorm_package_path)
+
 		scorm_package = frappe._dict(scorm_package)
 		extract_path = extract_package(course, title, scorm_package)
 
+		site_public = frappe.get_site_path("public")
 		values.update(
 			{
 				"scorm_package": scorm_package.name,
-				"scorm_package_path": extract_path.split("public")[1],
-				"manifest_file": get_manifest_file(extract_path).split("public")[1],
-				"launch_file": get_launch_file(extract_path).split("public")[1],
+				"scorm_package_path": "/" + os.path.relpath(extract_path, site_public),
+				"manifest_file": "/" + os.path.relpath(get_manifest_file(extract_path), site_public),
+				"launch_file": "/" + os.path.relpath(get_launch_file(extract_path), site_public),
 			}
 		)
 
@@ -1258,11 +1267,13 @@ def add_lesson(title, chapter, course, idx):
 @frappe.whitelist()
 def delete_chapter(chapter):
 	chapterInfo = frappe.db.get_value(
-		"Course Chapter", chapter, ["is_scorm_package", "scorm_package_path"], as_dict=True
+		"Course Chapter", chapter, ["is_scorm_package", "scorm_package_path", "scorm_package"], as_dict=True
 	)
 
 	if chapterInfo.is_scorm_package:
 		delete_scorm_package(chapterInfo.scorm_package_path)
+		if chapterInfo.scorm_package:
+			frappe.delete_doc("File", chapterInfo.scorm_package, ignore_permissions=True, force=True)
 
 	frappe.db.delete("Chapter Reference", {"chapter": chapter})
 	frappe.db.delete("Lesson Reference", {"parent": chapter})
@@ -1271,9 +1282,21 @@ def delete_chapter(chapter):
 
 
 def delete_scorm_package(scorm_package_path):
-	scorm_package_path = frappe.get_site_path("public", scorm_package_path[1:])
-	if os.path.exists(scorm_package_path):
-		shutil.rmtree(scorm_package_path)
+	if not scorm_package_path:
+		return
+
+	site_public = frappe.get_site_path("public")
+	full_path = os.path.normpath(os.path.join(site_public, scorm_package_path.lstrip("/")))
+	scorm_base = os.path.join(site_public, "scorm")
+
+	# Safety: only delete if path is inside public/scorm/ and has at least 2 segments (course + chapter)
+	rel = os.path.relpath(full_path, scorm_base)
+	if rel.startswith("..") or len(rel.split(os.sep)) < 2:
+		frappe.log_error(f"delete_scorm_package: refused to delete unsafe path {full_path}")
+		return
+
+	if os.path.exists(full_path):
+		shutil.rmtree(full_path)
 
 
 @frappe.whitelist()
