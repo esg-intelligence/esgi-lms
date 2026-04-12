@@ -69,7 +69,6 @@
 				<TableRow>
 					<TableHead>Title</TableHead>
 					<TableHead>Type</TableHead>
-					<TableHead>Category</TableHead>
 					<TableHead>Created</TableHead>
 					<TableHead>Actions</TableHead>
 				</TableRow>
@@ -78,7 +77,6 @@
 				<TableRow v-for="assignment in assignments.data" :key="assignment.name">
 					<TableCell class="font-medium">{{ assignment.title }}</TableCell>
 					<TableCell>{{ assignment.type }}</TableCell>
-					<TableCell>{{ assignment.category || '—' }}</TableCell>
 					<TableCell>{{ assignment.creation }}</TableCell>
 					<TableCell>
 						<Btn

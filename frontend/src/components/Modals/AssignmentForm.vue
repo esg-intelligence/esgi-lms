@@ -27,12 +27,12 @@
 						:label="__('Submission Type')"
 						:required="true"
 					/>
-					<FormControl
+					<!-- <FormControl
 						v-model="assignment.category"
 						type="select"
 						:options="categoryOptions"
 						:label="__('Category')"
-					/>
+					/> -->
 					<FormWrapper class="mt-4" type="combobox">
 						<Link
 							:label="__('Industry')"
