@@ -335,6 +335,9 @@ onMounted(() => {
 	socket.on('update_lesson_progress', (data) => {
 		if (data.course === props.courseName) {
 			lessonProgress.value = data.progress
+			if (data.lesson === lesson.data?.name && 'is_complete' in data) {
+				lesson.data.is_complete = data.is_complete
+			}
 		}
 	})
 })

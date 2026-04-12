@@ -9,6 +9,9 @@ from frappe.utils import validate_url
 
 
 class LMSAssignmentSubmission(Document):
+	def before_save(self):
+		self.handle_resubmission()
+
 	def validate(self):
 		self.validate_duplicates()
 		self.validate_url()
@@ -16,6 +19,25 @@ class LMSAssignmentSubmission(Document):
 
 	def on_update(self):
 		self.validate_private_attachments()
+
+	def handle_resubmission(self):
+		"""Reset status to Not Graded when a student re-submits after receiving a Fail.
+		For Post-Test assignments, block re-submission after 2 failed attempts.
+		"""
+		if not self.is_new():
+			doc_before_save = self.get_doc_before_save()
+			if (
+				frappe.session.user == self.member
+				and doc_before_save.status == "Fail"
+			):
+				category = frappe.db.get_value(
+					"LMS Assignment", self.assignment, "category"
+				)
+				if category == "Post-Test" and (doc_before_save.fail_count or 0) >= 2:
+					frappe.throw(
+						_("You have reached the maximum number of attempts for this Post-Test assignment.")
+					)
+				self.status = "Not Graded"
 
 	def validate_duplicates(self):
 		if frappe.db.exists(
@@ -34,8 +56,23 @@ class LMSAssignmentSubmission(Document):
 	def validate_status(self):
 		if not self.is_new():
 			doc_before_save = self.get_doc_before_save()
-			if doc_before_save.status != self.status or doc_before_save.comments != self.comments:
+			status_changed = doc_before_save.status != self.status
+			comments_changed = doc_before_save.comments != self.comments
+			is_evaluator_action = frappe.session.user != self.member
+
+			if (status_changed or comments_changed) and is_evaluator_action:
 				self.trigger_update_notification()
+
+			if status_changed and is_evaluator_action and self.lesson:
+				course = frappe.db.get_value("Course Lesson", self.lesson, "course")
+				if course:
+					if self.status == "Pass":
+						from lms.lms.doctype.course_lesson.course_lesson import save_progress
+						save_progress(self.lesson, course, member_override=self.member)
+					elif self.status == "Fail":
+						self.fail_count = (self.fail_count or 0) + 1
+						from lms.lms.doctype.course_lesson.course_lesson import reset_lesson_progress
+						reset_lesson_progress(self.lesson, self.member, course)
 
 	def validate_private_attachments(self):
 		if self.type == "Text":
@@ -153,3 +190,31 @@ def grade_assignment(name, result, comments):
 	doc.status = result
 	doc.comments = comments
 	doc.save(ignore_permissions=True)
+
+
+@frappe.whitelist()
+def reset_post_test_submission(assignment, lesson, course):
+	"""Allow a student who has exhausted Post-Test attempts to start over.
+	Deletes the submission record so the student can re-submit fresh,
+	and resets lesson progress.
+	"""
+	submission = frappe.db.get_value(
+		"LMS Assignment Submission",
+		{"assignment": assignment, "member": frappe.session.user},
+		"name",
+	)
+	if not submission:
+		frappe.throw(_("No submission found."))
+
+	category = frappe.db.get_value("LMS Assignment", assignment, "category")
+	if category != "Post-Test":
+		frappe.throw(_("Only Post-Test assignments can be reset."))
+
+	fail_count = frappe.db.get_value("LMS Assignment Submission", submission, "fail_count")
+	if (fail_count or 0) < 2:
+		frappe.throw(_("Maximum attempts have not been reached yet."))
+
+	frappe.delete_doc("LMS Assignment Submission", submission, ignore_permissions=True)
+
+	from lms.lms.doctype.course_lesson.course_lesson import reset_lesson_progress
+	reset_lesson_progress(lesson, frappe.session.user, course)

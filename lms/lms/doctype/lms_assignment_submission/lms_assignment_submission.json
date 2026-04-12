@@ -26,7 +26,8 @@
   "column_break_esgd",
   "course",
   "lesson",
-  "score"
+  "score",
+  "fail_count"
  ],
  "fields": [
   {
@@ -152,6 +153,13 @@
    "in_list_view": 1,
    "label": "Score",
    "precision": "2"
+  },
+  {
+   "default": "0",
+   "fieldname": "fail_count",
+   "fieldtype": "Int",
+   "label": "Fail Count",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
