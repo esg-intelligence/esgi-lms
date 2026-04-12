@@ -113,9 +113,24 @@ def quiz_summary(quiz, results):
 			"course",
 			"enable_negative_marking",
 			"marks_to_cut",
+			"category",
 		],
 		as_dict=1,
 	)
+
+	# Block re-submission for Open Ended Post-Test when fail_count >= 2
+	if quiz_details.category == "Post-Test" and _is_open_ended_quiz(quiz):
+		latest = frappe.db.get_value(
+			"LMS Quiz Submission",
+			{"quiz": quiz, "member": frappe.session.user},
+			["status", "fail_count"],
+			as_dict=True,
+			order_by="creation desc",
+		)
+		if latest and latest.status == "Fail" and (latest.fail_count or 0) >= 2:
+			frappe.throw(
+				_("You have reached the maximum number of attempts for this Post-Test quiz.")
+			)
 
 	data = process_results(results, quiz_details)
 	results = data["results"]
@@ -126,7 +141,7 @@ def quiz_summary(quiz, results):
 	percentage = (score / score_out_of) * 100 if score_out_of else 0
 	submission = create_submission(quiz, results, score_out_of, quiz_details.passing_percentage)
 
-	save_progress_after_quiz(quiz_details, percentage)
+	save_progress_after_quiz(quiz_details, percentage, is_open_ended)
 
 	return {
 		"score": score,
@@ -247,11 +262,68 @@ def create_submission(quiz, results, score_out_of, passing_percentage):
 	return submission
 
 
-def save_progress_after_quiz(quiz_details, percentage):
+def save_progress_after_quiz(quiz_details, percentage, is_open_ended=False):
+	if is_open_ended:
+		return  # progress for open-ended quizzes is handled by instructor grading
+	if not quiz_details.lesson or not quiz_details.course:
+		return
 	if percentage >= quiz_details.passing_percentage and quiz_details.lesson and quiz_details.course:
 		save_progress(quiz_details.lesson, quiz_details.course)
 	elif not quiz_details.passing_percentage:
 		save_progress(quiz_details.lesson, quiz_details.course)
+
+
+def _is_open_ended_quiz(quiz):
+	"""Returns True if all questions in the quiz are of Open Ended type."""
+	question_types = frappe.get_all(
+		"LMS Quiz Question",
+		filters={"parent": quiz},
+		pluck="type",
+	)
+	return bool(question_types) and all(t == "Open Ended" for t in question_types)
+
+
+@frappe.whitelist()
+def reset_post_test_quiz(quiz):
+	"""Allow a student who exhausted Post-Test attempts to start over.
+	Deletes all submission records and resets lesson progress.
+	"""
+	quiz_details = frappe.db.get_value(
+		"LMS Quiz",
+		quiz,
+		["category", "lesson", "course", "max_attempts"],
+		as_dict=True,
+	)
+
+	if quiz_details.category != "Post-Test":
+		frappe.throw(_("Only Post-Test quizzes can be reset."))
+
+	submissions = frappe.get_all(
+		"LMS Quiz Submission",
+		filters={"quiz": quiz, "member": frappe.session.user},
+		pluck="name",
+	)
+
+	if _is_open_ended_quiz(quiz):
+		latest_fail_count = frappe.db.get_value(
+			"LMS Quiz Submission",
+			{"quiz": quiz, "member": frappe.session.user},
+			"fail_count",
+			order_by="creation desc",
+		)
+		if (latest_fail_count or 0) < 2:
+			frappe.throw(_("Maximum attempts have not been reached yet."))
+	else:
+		if not quiz_details.max_attempts or len(submissions) < quiz_details.max_attempts:
+			frappe.throw(_("Maximum attempts have not been reached yet."))
+
+	for sub in submissions:
+		frappe.delete_doc("LMS Quiz Submission", sub, ignore_permissions=True)
+
+	if quiz_details.lesson and quiz_details.course:
+		from lms.lms.doctype.course_lesson.course_lesson import reset_lesson_progress
+
+		reset_lesson_progress(quiz_details.lesson, frappe.session.user, quiz_details.course)
 
 
 @frappe.whitelist()

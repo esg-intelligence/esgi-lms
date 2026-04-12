@@ -45,6 +45,33 @@
 					:disabled="true"
 				/>
 			</div>
+
+			<div v-if="isOpenEndedSubmission" class="pt-2 space-y-3">
+				<div class="text-sm font-medium text-ink-gray-7">{{ __('Grade Submission') }}</div>
+				<div
+					v-if="submissionDetails.doc.status && submissionDetails.doc.status !== 'Not Graded'"
+					class="text-sm text-ink-gray-6"
+				>
+					{{ __('Current status:') }}
+					<span
+						class="font-semibold"
+						:class="submissionDetails.doc.status === 'Pass' ? 'text-ink-green-2' : 'text-ink-red-3'"
+					>
+						{{ submissionDetails.doc.status }}
+					</span>
+					<span v-if="submissionDetails.doc.status === 'Fail' && submissionDetails.doc.fail_count" class="text-ink-gray-5 ml-1">
+						({{ __('Fail #{0}').format(submissionDetails.doc.fail_count) }})
+					</span>
+				</div>
+				<div class="flex gap-2">
+					<Button variant="solid" theme="green" @click="gradeSubmission('Pass')" :loading="grading">
+						{{ __('Pass') }}
+					</Button>
+					<Button variant="subtle" theme="red" @click="gradeSubmission('Fail')" :loading="grading">
+						{{ __('Fail') }}
+					</Button>
+				</div>
+			</div>
 		</div>
 
 		<div class="divide-y">
@@ -75,14 +102,16 @@
 <script setup>
 import {
 	createDocumentResource,
+	createResource,
 	Breadcrumbs,
 	FormControl,
 	Button,
 	Badge,
 	usePageMeta,
 	toast,
+	call,
 } from 'frappe-ui'
-import { computed, onBeforeUnmount, onMounted, inject } from 'vue'
+import { computed, onBeforeUnmount, onMounted, inject, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { sessionStore } from '@/stores/session'
 
@@ -141,6 +170,50 @@ const breadcrumbs = computed(() => {
 		},
 	]
 })
+
+const grading = ref(false)
+
+const quizQuestions = createResource({
+	url: 'frappe.client.get_list',
+	makeParams() {
+		return {
+			doctype: 'LMS Quiz Question',
+			filters: { parent: submissionDetails.doc?.quiz },
+			fields: ['type'],
+		}
+	},
+	auto: false,
+})
+
+watch(
+	() => submissionDetails.doc?.quiz,
+	(quiz) => {
+		if (quiz) quizQuestions.reload()
+	}
+)
+
+const isOpenEndedSubmission = computed(() => {
+	if (!quizQuestions.data?.length) return false
+	return quizQuestions.data.every((q) => q.type === 'Open Ended')
+})
+
+const gradeSubmission = (status) => {
+	grading.value = true
+	call(
+		'lms.lms.doctype.lms_quiz_submission.lms_quiz_submission.grade_quiz_submission',
+		{ submission_name: props.submission, status }
+	)
+		.then(() => {
+			submissionDetails.reload()
+			toast.success(__('Submission graded successfully'))
+		})
+		.catch((err) => {
+			toast.error(err.messages?.[0] || err)
+		})
+		.finally(() => {
+			grading.value = false
+		})
+}
 
 const saveSubmission = () => {
 	submissionDetails.save.submit(

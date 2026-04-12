@@ -76,39 +76,83 @@
 		</div>
 
 		<div v-if="activeQuestion == 0">
-			<div class="text-center p-20 rounded-md">
+			<div class="text-center p-20 rounded-md space-y-4">
 				<div class="font-semibold text-lg text-ink-gray-9">
 					{{ quiz.data.title }}
 				</div>
-				<div class="flex items-center justify-center space-x-2 mt-4">
-					<Button
-						v-if="
-							!quiz.data.max_attempts ||
-							attempts.data?.length < quiz.data.max_attempts
-						"
-						variant="solid"
-						@click="startQuiz"
-					>
-						<span>
-							{{ inVideo ? __('Start the Quiz') : __('Start') }}
-						</span>
-					</Button>
-					<Button v-if="inVideo" @click="props.backToVideo()">
-						{{ __('Resume Video') }}
-					</Button>
-				</div>
-				<div
-					v-if="
-						quiz.data.max_attempts &&
-						attempts.data?.length >= quiz.data.max_attempts
-					"
-					class="leading-5 text-ink-gray-7"
-				>
+
+				<!-- Open Ended: awaiting instructor grade -->
+				<div v-if="isOpenEndedAwaitingGrade" class="leading-5 text-ink-gray-7">
 					{{
 						__(
-							'You have already exceeded the maximum number of attempts allowed for this quiz.',
+							'Your submission is awaiting review by the instructor. You cannot proceed to the next lesson until it is graded.',
 						)
 					}}
+				</div>
+
+				<!-- Open Ended Post-Test: max fail_count reached -->
+				<div v-else-if="isOpenEndedMaxAttemptsReached" class="space-y-3">
+					<p class="leading-5 text-ink-gray-7">
+						{{
+							__(
+								'You have reached the maximum number of attempts for this Post-Test. You can re-learn the lesson and try again.',
+							)
+						}}
+					</p>
+					<Button @click="resetAndRelearn()" :loading="isResetting">
+						{{ __('Re-learn Lesson') }}
+					</Button>
+				</div>
+
+				<!-- Normal start / exhausted states -->
+				<div v-else class="space-y-3">
+					<div class="flex items-center justify-center space-x-2">
+						<Button
+							v-if="
+								!quiz.data.max_attempts ||
+								attempts.data?.length < quiz.data.max_attempts
+							"
+							variant="solid"
+							@click="startQuiz"
+						>
+							<span>
+								{{ inVideo ? __('Start the Quiz') : __('Start') }}
+							</span>
+						</Button>
+						<Button v-if="inVideo" @click="props.backToVideo()">
+							{{ __('Resume Video') }}
+						</Button>
+					</div>
+
+					<!-- Regular exhausted (non-Post-Test) -->
+					<div
+						v-if="
+							quiz.data.max_attempts &&
+							attempts.data?.length >= quiz.data.max_attempts &&
+							quiz.data.category !== 'Post-Test'
+						"
+						class="leading-5 text-ink-gray-7"
+					>
+						{{
+							__(
+								'You have already exceeded the maximum number of attempts allowed for this quiz.',
+							)
+						}}
+					</div>
+
+					<!-- Auto-graded Post-Test: max_attempts exhausted -->
+					<div v-if="isPostTestMaxAttemptsReached" class="space-y-3">
+						<p class="leading-5 text-ink-gray-7">
+							{{
+								__(
+									'You have reached the maximum number of attempts for this Post-Test. You can re-learn the lesson and try again.',
+								)
+							}}
+						</p>
+						<Button @click="resetAndRelearn()" :loading="isResetting">
+							{{ __('Re-learn Lesson') }}
+						</Button>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -253,12 +297,31 @@
 				</div>
 			</div>
 		</div>
-		<div v-else class="p-20 text-center space-y-2">
+		<div v-else class="p-20 text-center space-y-3">
 			<div class="text-lg font-semibold text-ink-gray-9">
 				{{ __('Quiz Summary') }}
 			</div>
+
+			<!-- Open Ended: max attempts reached (Post-Test, fail_count >= 2) -->
+			<div v-if="isOpenEndedMaxAttemptsReached" class="bg-surface-red-1 text-ink-red-3 p-3 rounded-md text-sm space-y-1 text-left">
+				<p>{{ __('You have reached the maximum number of attempts for this Post-Test.') }}</p>
+				<p>{{ __('You can re-learn the lesson and try again.') }}</p>
+				<Button class="mt-2" @click="resetAndRelearn()" :loading="isResetting">
+					{{ __('Re-learn Lesson') }}
+				</Button>
+			</div>
+
+			<!-- Open Ended: failed, can re-submit -->
 			<div
-				v-if="quizSubmission.data.is_open_ended"
+				v-else-if="isOpenEndedFailed"
+				class="bg-surface-red-1 text-ink-red-3 p-3 rounded-md text-sm"
+			>
+				{{ __('Your submission was marked as Fail. Please review the feedback and re-submit.') }}
+			</div>
+
+			<!-- Open Ended: awaiting grade -->
+			<div
+				v-else-if="quizSubmission.data.is_open_ended"
 				class="leading-5 text-ink-gray-7"
 			>
 				{{
@@ -267,6 +330,8 @@
 					)
 				}}
 			</div>
+
+			<!-- Auto-graded: show score -->
 			<div v-else class="text-ink-gray-7">
 				{{
 					__(
@@ -278,19 +343,31 @@
 					)
 				}}
 			</div>
+
 			<div class="space-x-2">
+				<!-- Try Again: auto-graded with attempts remaining, OR open-ended failed (can retry) -->
 				<Button
 					@click="resetQuiz()"
 					class="mt-2"
 					v-if="
-						!quiz.data.max_attempts ||
-						attempts?.data.length < quiz.data.max_attempts
+						(!quizSubmission.data.is_open_ended &&
+							(!quiz.data.max_attempts ||
+								attempts?.data.length < quiz.data.max_attempts)) ||
+						isOpenEndedFailed
 					"
 				>
-					<span>
-						{{ __('Try Again') }}
-					</span>
+					<span>{{ __('Try Again') }}</span>
 				</Button>
+
+				<!-- Post-Test auto-graded: Re-learn button after max_attempts exhausted -->
+				<Button
+					v-if="isPostTestMaxAttemptsReached"
+					@click="resetAndRelearn()"
+					:loading="isResetting"
+				>
+					{{ __('Re-learn Lesson') }}
+				</Button>
+
 				<Button v-if="inVideo" @click="props.backToVideo()">
 					{{ __('Resume Video') }}
 				</Button>
@@ -328,7 +405,7 @@ import {
 	FormControl,
 	toast,
 } from 'frappe-ui'
-import { ref, watch, reactive, inject, computed } from 'vue'
+import { ref, watch, reactive, inject, computed, onMounted } from 'vue'
 import { CheckCircle, XCircle, MinusCircle, Clock } from 'lucide-vue-next'
 import { timeAgo } from '@/utils'
 import ProgressBar from '@/components/ProgressBar.vue'
@@ -449,6 +526,8 @@ const attempts = createResource({
 				'score_out_of',
 				'percentage',
 				'passing_percentage',
+				'status',
+				'fail_count',
 			],
 			order_by: 'creation desc',
 		}
@@ -466,9 +545,9 @@ watch(
 	() => {
 		if (quiz.data) {
 			populateQuestions()
+			attempts.reload()
 		}
 		if (quiz.data && quiz.data.max_attempts) {
-			attempts.reload()
 			resetQuiz()
 		}
 	},
@@ -633,7 +712,7 @@ const createSubmission = () => {
 		{
 			onSuccess(data) {
 				markLessonProgress()
-				if (quiz.data && quiz.data.max_attempts) attempts.reload()
+				attempts.reload()
 				if (quiz.data.duration) clearInterval(timerInterval)
 			},
 			onError(err) {
@@ -664,6 +743,58 @@ const getInstructions = (question) => {
 		if (question.multiple) return __('Choose all answers that apply')
 		else return __('Choose one answer')
 	else return __('Type your answer')
+}
+
+const isOpenEndedQuiz = computed(() => {
+	if (!quiz.data?.questions?.length) return false
+	return quiz.data.questions.every((q) => q.type === 'Open Ended')
+})
+
+const latestSubmission = computed(() => attempts.data?.[0] || null)
+
+const isOpenEndedAwaitingGrade = computed(() =>
+	isOpenEndedQuiz.value &&
+	latestSubmission.value?.status === 'Not Graded' &&
+	!isOpenEndedMaxAttemptsReached.value
+)
+
+const isOpenEndedFailed = computed(() =>
+	isOpenEndedQuiz.value &&
+	latestSubmission.value?.status === 'Fail' &&
+	!isOpenEndedMaxAttemptsReached.value
+)
+
+const isOpenEndedMaxAttemptsReached = computed(() =>
+	isOpenEndedQuiz.value &&
+	quiz.data?.category === 'Post-Test' &&
+	latestSubmission.value?.status === 'Fail' &&
+	(latestSubmission.value?.fail_count || 0) >= 2
+)
+
+const isPostTestMaxAttemptsReached = computed(() =>
+	!isOpenEndedQuiz.value &&
+	quiz.data?.category === 'Post-Test' &&
+	quiz.data?.max_attempts > 0 &&
+	(attempts.data?.length || 0) >= quiz.data.max_attempts
+)
+
+const isResetting = ref(false)
+
+const resetAndRelearn = () => {
+	isResetting.value = true
+	call('lms.lms.doctype.lms_quiz.lms_quiz.reset_post_test_quiz', {
+		quiz: props.quizName,
+	})
+		.then(() => {
+			attempts.reload()
+			resetQuiz()
+		})
+		.catch((err) => {
+			toast.error(err.messages?.[0] || err)
+		})
+		.finally(() => {
+			isResetting.value = false
+		})
 }
 
 const markLessonProgress = () => {

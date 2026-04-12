@@ -17,11 +17,19 @@
 						: __('No Quizzes')
 				}}
 			</div>
-			<FormControl v-model="search" type="text" placeholder="Search">
-				<template #prefix>
-					<FeatherIcon name="search" class="size-4 text-ink-gray-5" />
-				</template>
-			</FormControl>
+			<div class="flex items-center gap-2">
+				<FormControl
+					v-model="categoryFilter"
+					type="select"
+					:options="categoryFilterOptions"
+					:placeholder="__('All Categories')"
+				/>
+				<FormControl v-model="search" type="text" placeholder="Search">
+					<template #prefix>
+						<FeatherIcon name="search" class="size-4 text-ink-gray-5" />
+					</template>
+				</FormControl>
+			</div>
 		</div>
 		<Table v-if="quizzes.data?.length">
 			<TableHeader class="bg-surface-gray-2">
@@ -148,6 +156,7 @@ const user = inject('$user')
 const dayjs = inject('$dayjs')
 const router = useRouter()
 const search = ref('')
+const categoryFilter = ref('')
 const readOnlyMode = window.read_only_mode
 const quizFilters = ref({})
 const showForm = ref(false)
@@ -166,9 +175,17 @@ onMounted(() => {
 
 watch(search, () => {
 	quizFilters.value['title'] = ['like', `%${search.value}%`]
-	quizzes.update({
-		filters: quizFilters.value,
-	})
+	quizzes.update({ filters: quizFilters.value })
+	quizzes.reload()
+})
+
+watch(categoryFilter, () => {
+	if (categoryFilter.value) {
+		quizFilters.value['category'] = categoryFilter.value
+	} else {
+		delete quizFilters.value['category']
+	}
+	quizzes.update({ filters: quizFilters.value })
 	quizzes.reload()
 })
 
@@ -182,6 +199,7 @@ const quizzes = createListResource({
 		'total_marks',
 		'show_answers',
 		'max_attempts',
+		'category',
 		'modified',
 	],
 	auto: true,
@@ -249,12 +267,23 @@ const deleteSingleQuiz = (close) => {
 	)
 }
 
+const categoryFilterOptions = computed(() => [
+	{ label: __('All Categories'), value: '' },
+	{ label: __('Pre-Test'), value: 'Pre-Test' },
+	{ label: __('Post-Test'), value: 'Post-Test' },
+])
+
 const quizColumns = computed(() => {
 	return [
 		{
 			label: __('Title'),
 			key: 'title',
 			icon: 'file-text',
+		},
+		{
+			label: __('Category'),
+			key: 'category',
+			icon: 'tag',
 		},
 		{
 			label: __('Total Marks'),

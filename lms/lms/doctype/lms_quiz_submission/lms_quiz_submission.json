@@ -17,6 +17,8 @@
   "column_break_gkip",
   "percentage",
   "passing_percentage",
+  "status",
+  "fail_count",
   "section_break_6",
   "result"
  ],
@@ -110,6 +112,21 @@
    "fieldname": "quiz_title",
    "fieldtype": "Data",
    "label": "Quiz Title",
+   "read_only": 1
+  },
+  {
+   "default": "Not Graded",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Not Graded\nPass\nFail",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "fail_count",
+   "fieldtype": "Int",
+   "label": "Fail Count",
    "read_only": 1
   }
  ],

@@ -78,6 +78,12 @@
 						:label="__('Passing Percentage')"
 						:required="true"
 					/>
+					<FormControl
+						v-model="quizDetails.doc.category"
+						type="select"
+						:options="categoryOptions"
+						:label="__('Category')"
+					/>
 				</div>
 			</div>
 		</div>
@@ -399,6 +405,12 @@ const deleteQuestions = (selections, unselectAll) => {
 		}
 	)
 }
+
+const categoryOptions = computed(() => [
+	{ label: '—', value: null },
+	{ label: __('Pre-Test'), value: 'Pre-Test' },
+	{ label: __('Post-Test'), value: 'Post-Test' },
+])
 
 const breadcrumbs = computed(() => {
 	let crumbs = [

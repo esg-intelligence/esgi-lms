@@ -73,3 +73,42 @@ class LMSQuizSubmission(Document):
 
 class MaximumAttemptsExceededError(frappe.DuplicateEntryError):
 	pass
+
+
+@frappe.whitelist()
+def grade_quiz_submission(submission_name, status):
+	"""Grade an Open Ended quiz submission. Only callable by instructors/moderators."""
+	from lms.lms.utils import has_moderator_role, is_instructor
+
+	submission = frappe.get_doc("LMS Quiz Submission", submission_name)
+
+	quiz_details = frappe.db.get_value(
+		"LMS Quiz", submission.quiz, ["lesson", "course"], as_dict=True
+	)
+
+	caller = frappe.session.user
+	if not has_moderator_role(caller) and not is_instructor(quiz_details.course):
+		frappe.throw(_("You are not authorized to grade quiz submissions."))
+
+	old_status = submission.status
+	if status == old_status:
+		return
+
+	frappe.db.set_value("LMS Quiz Submission", submission_name, "status", status)
+
+	if status == "Fail" and old_status != "Fail":
+		new_fail_count = (submission.fail_count or 0) + 1
+		frappe.db.set_value("LMS Quiz Submission", submission_name, "fail_count", new_fail_count)
+
+	if not quiz_details.lesson or not quiz_details.course:
+		return
+
+	if status == "Pass" and old_status != "Pass":
+		from lms.lms.doctype.course_lesson.course_lesson import save_progress
+
+		save_progress(quiz_details.lesson, quiz_details.course, member_override=submission.member)
+
+	elif status == "Fail" and old_status != "Fail":
+		from lms.lms.doctype.course_lesson.course_lesson import reset_lesson_progress
+
+		reset_lesson_progress(quiz_details.lesson, submission.member, quiz_details.course)

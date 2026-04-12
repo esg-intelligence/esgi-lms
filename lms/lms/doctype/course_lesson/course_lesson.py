@@ -184,16 +184,28 @@ def get_quiz_progress(lesson, member=None):
 		quizzes = [value for name, value in macros if name == "Quiz"]
 
 	for quiz in quizzes:
-		passing_percentage = frappe.db.get_value("LMS Quiz", quiz, "passing_percentage")
-		if not frappe.db.exists(
-			"LMS Quiz Submission",
-			{
-				"quiz": quiz,
-				"member": member,
-				"percentage": [">=", passing_percentage],
-			},
-		):
-			return False
+		question_types = frappe.get_all(
+			"LMS Quiz Question", filters={"parent": quiz}, pluck="type"
+		)
+		is_open_ended = bool(question_types) and all(t == "Open Ended" for t in question_types)
+
+		if is_open_ended:
+			if not frappe.db.exists(
+				"LMS Quiz Submission",
+				{"quiz": quiz, "member": member, "status": "Pass"},
+			):
+				return False
+		else:
+			passing_percentage = frappe.db.get_value("LMS Quiz", quiz, "passing_percentage")
+			if not frappe.db.exists(
+				"LMS Quiz Submission",
+				{
+					"quiz": quiz,
+					"member": member,
+					"percentage": [">=", passing_percentage],
+				},
+			):
+				return False
 	return True
 
 

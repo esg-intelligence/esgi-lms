@@ -14,6 +14,7 @@
   "column_break_gaac",
   "total_marks",
   "passing_percentage",
+  "category",
   "duration",
   "section_break_tzbu",
   "shuffle_questions",
@@ -149,6 +150,14 @@
    "fieldname": "marks_to_cut",
    "fieldtype": "Int",
    "label": "Marks To Cut"
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Category",
+   "options": "\nPre-Test\nPost-Test"
   }
  ],
  "grid_page_length": 50,
