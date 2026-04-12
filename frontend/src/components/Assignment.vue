@@ -55,6 +55,20 @@
 					}}
 					{{ __('Feel free to make edits to your submission if needed.') }}
 				</div>
+				<div v-if="isAwaitingGrade" class="bg-surface-yellow-1 text-ink-yellow-3 p-3 rounded-md leading-5 text-sm mb-4">
+					{{ __("Your submission is awaiting review by the instructor.") }}
+					{{ __("You cannot proceed to the next lesson until it is graded.") }}
+				</div>
+				<div v-if="isFailed" class="bg-surface-red-1 text-ink-red-3 p-3 rounded-md leading-5 text-sm mb-4">
+					{{ __("Your submission was marked as Fail. Please review the feedback and re-submit.") }}
+				</div>
+				<div v-if="isMaxAttemptsReached" class="bg-surface-red-1 text-ink-red-3 p-3 rounded-md leading-5 text-sm mb-4">
+					<p>{{ __("You have reached the maximum number of attempts for this Post-Test.") }}</p>
+					<p class="mt-1">{{ __("You can re-learn the lesson and try again.") }}</p>
+					<Button class="mt-3" @click="resetAndRelearn()" :loading="isResetting">
+						{{ __('Re-learn Lesson') }}
+					</Button>
+				</div>
 				<div v-if="showUploader()">
 					<div class="text-xs text-ink-gray-5 mt-1 mb-2">
 						{{ __('Add your assignment as {0}').format(assignment.data.type) }}
@@ -184,6 +198,10 @@ const props = defineProps({
 		type: Boolean,
 		default: true,
 	},
+	fromLesson: {
+		type: Boolean,
+		default: false,
+	},
 })
 
 onMounted(() => {
@@ -299,6 +317,10 @@ watch(submissionFile, () => {
 
 const submitAssignment = () => {
 	if (props.submissionName != 'new') {
+		const isStudentResubmitting =
+			submissionResource.doc?.owner == user.data?.name &&
+			submissionResource.doc?.status == 'Fail'
+
 		let evaluator =
 			submissionResource.doc && submissionResource.doc.owner != user.data?.name
 				? user.data?.name
@@ -316,6 +338,9 @@ const submitAssignment = () => {
 			{
 				onSuccess(data) {
 					toast.success(__('Changes saved successfully'))
+					if (isStudentResubmitting) {
+						markLessonProgress()
+					}
 				},
 			}
 		)
@@ -411,6 +436,7 @@ const removeSubmission = () => {
 
 const canGradeSubmission = computed(() => {
 	return (
+		!props.fromLesson &&
 		(user.data?.is_moderator ||
 			user.data?.is_evaluator ||
 			user.data?.is_instructor) &&
@@ -420,12 +446,65 @@ const canGradeSubmission = computed(() => {
 })
 
 const canModifyAssignment = computed(() => {
-	return (
-		!submissionResource.doc ||
-		(submissionResource.doc?.owner == user.data?.name &&
-			submissionResource.doc?.status == 'Not Graded')
-	)
+	if (!submissionResource.doc) return true
+	const isOwner = submissionResource.doc.owner == user.data?.name
+	if (!isOwner) return false
+	if (submissionResource.doc.status === 'Not Graded') return true
+	if (submissionResource.doc.status === 'Fail') {
+		if (assignment.data?.category === 'Post-Test') {
+			return (submissionResource.doc.fail_count || 0) < 2
+		}
+		return true
+	}
+	return false
 })
+
+const isAwaitingGrade = computed(() =>
+	submissionResource.doc?.status == 'Not Graded' &&
+	props.submissionName != 'new' &&
+	submissionResource.doc?.owner == user.data?.name
+)
+
+const isMaxAttemptsReached = computed(() =>
+	submissionResource.doc?.status === 'Fail' &&
+	assignment.data?.category === 'Post-Test' &&
+	(submissionResource.doc?.fail_count || 0) >= 2 &&
+	submissionResource.doc?.owner === user.data?.name
+)
+
+const isFailed = computed(() =>
+	submissionResource.doc?.status === 'Fail' &&
+	submissionResource.doc?.owner === user.data?.name &&
+	!isMaxAttemptsReached.value
+)
+
+const isResetting = ref(false)
+
+const resetAndRelearn = () => {
+	isResetting.value = true
+	call(
+		'lms.lms.doctype.lms_assignment_submission.lms_assignment_submission.reset_post_test_submission',
+		{
+			assignment: props.assignmentID,
+			lesson: submissionResource.doc?.lesson,
+			course: submissionResource.doc?.course,
+		}
+	).then(() => {
+		if (props.fromLesson) {
+			window.parent.location.reload()
+		} else {
+			router.push({
+				name: 'AssignmentSubmission',
+				params: {
+					assignmentID: props.assignmentID,
+					submissionName: 'new',
+				},
+			})
+		}
+	}).finally(() => {
+		isResetting.value = false
+	})
+}
 
 const submissionStatusOptions = computed(() => {
 	return [

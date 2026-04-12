@@ -46,25 +46,27 @@ class CourseLesson(Document):
 
 
 @frappe.whitelist()
-def save_progress(lesson, course, scorm_details=None):
+def save_progress(lesson, course, scorm_details=None, member_override=None):
 	"""
-	Note: Pass the argument scorm_details as a dict if it is SCORM related save_progress
+	Note: Pass the argument scorm_details as a dict if it is SCORM related save_progress.
+	Pass member_override to act on behalf of a specific member (e.g. when called from grading context).
 	"""
-	membership = frappe.db.exists("LMS Enrollment", {"course": course, "member": frappe.session.user})
+	member = member_override or frappe.session.user
+	membership = frappe.db.exists("LMS Enrollment", {"course": course, "member": member})
 	if not membership:
 		return 0
 
 	frappe.db.set_value("LMS Enrollment", membership, "current_lesson", lesson)
 	progress_already_exists = frappe.db.exists(
-		"LMS Course Progress", {"lesson": lesson, "member": frappe.session.user}
+		"LMS Course Progress", {"lesson": lesson, "member": member}
 	)
 	lesson_already_completed = frappe.db.exists(
 		"LMS Course Progress",
-		{"lesson": lesson, "member": frappe.session.user, "status": "Complete"},
+		{"lesson": lesson, "member": member, "status": "Complete"},
 	)
 
-	quiz_completed = get_quiz_progress(lesson)
-	assignment_completed = get_assignment_progress(lesson)
+	quiz_completed = get_quiz_progress(lesson, member=member)
+	assignment_completed = get_assignment_progress(lesson, member=member)
 
 	if scorm_details:
 		scorm_details = frappe._dict(**scorm_details)
@@ -75,7 +77,7 @@ def save_progress(lesson, course, scorm_details=None):
 				"doctype": "LMS Course Progress",
 				"lesson": lesson,
 				"status": "Complete",
-				"member": frappe.session.user,
+				"member": member,
 			}
 		).save(ignore_permissions=True)
 	elif scorm_details and not lesson_already_completed and not progress_already_exists:
@@ -85,7 +87,7 @@ def save_progress(lesson, course, scorm_details=None):
 				"doctype": "LMS Course Progress",
 				"lesson": lesson,
 				"status": "Complete" if scorm_details.is_complete else "Partially Complete",
-				"member": frappe.session.user,
+				"member": member,
 				"scorm_content": "" if scorm_details.is_complete else scorm_details.scorm_content,
 			}
 		).save(ignore_permissions=True)
@@ -97,12 +99,15 @@ def save_progress(lesson, course, scorm_details=None):
 			{
 				"lesson": lesson,
 				"status": "Complete" if scorm_details.is_complete else "Partially Complete",
-				"member": frappe.session.user,
+				"member": member,
 				"scorm_content": "" if scorm_details.is_complete else scorm_details.scorm_content,
 			},
 		)
 
-	progress = get_course_progress(course)
+	is_complete = bool(
+		frappe.db.exists("LMS Course Progress", {"lesson": lesson, "member": member, "status": "Complete"})
+	)
+	progress = get_course_progress(course, member)
 	capture_progress_for_analytics(progress, course)
 
 	# Had to get doc, as on_change doesn't trigger when you use set_value. The trigger is necessary for badge to get assigned.
@@ -114,11 +119,40 @@ def save_progress(lesson, course, scorm_details=None):
 	frappe.publish_realtime(
 		event="update_lesson_progress",
 		room=get_website_room(),
-		message={"course": course, "lesson": lesson, "progress": progress},
+		message={"course": course, "lesson": lesson, "progress": progress, "is_complete": is_complete},
 		after_commit=True,
 	)
 
 	return progress
+
+
+def reset_lesson_progress(lesson, member, course):
+	"""Deletes the Complete progress record for a lesson and recalculates enrollment progress."""
+	existing = frappe.db.exists(
+		"LMS Course Progress",
+		{"lesson": lesson, "member": member, "status": "Complete"},
+	)
+	if existing:
+		frappe.delete_doc("LMS Course Progress", existing, ignore_permissions=True)
+
+	membership = frappe.db.get_value(
+		"LMS Enrollment", {"course": course, "member": member}, "name"
+	)
+	if not membership:
+		return
+
+	progress = get_course_progress(course, member)
+	enrollment = frappe.get_doc("LMS Enrollment", membership)
+	enrollment.progress = progress
+	enrollment.save()
+	enrollment.run_method("on_change")
+
+	frappe.publish_realtime(
+		event="update_lesson_progress",
+		room=get_website_room(),
+		message={"course": course, "lesson": lesson, "progress": progress, "is_complete": False},
+		after_commit=True,
+	)
 
 
 def capture_progress_for_analytics(progress, course):
@@ -126,7 +160,10 @@ def capture_progress_for_analytics(progress, course):
 		capture("course_progress", "lms", properties={"course": course, "progress": progress})
 
 
-def get_quiz_progress(lesson):
+def get_quiz_progress(lesson, member=None):
+	if not member:
+		member = frappe.session.user
+
 	lesson_details = frappe.db.get_value("Course Lesson", lesson, ["body", "content"], as_dict=1)
 	quizzes = []
 
@@ -152,7 +189,7 @@ def get_quiz_progress(lesson):
 			"LMS Quiz Submission",
 			{
 				"quiz": quiz,
-				"member": frappe.session.user,
+				"member": member,
 				"percentage": [">=", passing_percentage],
 			},
 		):
@@ -160,7 +197,10 @@ def get_quiz_progress(lesson):
 	return True
 
 
-def get_assignment_progress(lesson):
+def get_assignment_progress(lesson, member=None):
+	if not member:
+		member = frappe.session.user
+
 	lesson_details = frappe.db.get_value("Course Lesson", lesson, ["body", "content"], as_dict=1)
 	assignments = []
 
@@ -176,11 +216,33 @@ def get_assignment_progress(lesson):
 		assignments = [value for name, value in macros if name == "Assignment"]
 
 	for assignment in assignments:
-		if not frappe.db.exists(
+		submission = frappe.db.get_value(
 			"LMS Assignment Submission",
-			{"assignment": assignment, "member": frappe.session.user},
-		):
+			{"assignment": assignment, "member": member},
+			["status", "score"],
+			as_dict=True,
+		)
+
+		if not submission:
 			return False
+
+		assignment_details = frappe.db.get_value(
+			"LMS Assignment", assignment, ["grade_assignment", "passing_score"], as_dict=True
+		)
+
+		# Text type with grade_assignment=0: any submission suffices
+		if assignment_details.get("grade_assignment") == 0:
+			continue
+
+		# All other cases: must be Pass or Not Applicable
+		if submission.status not in ["Pass", "Not Applicable"]:
+			return False
+
+		# Passing score gate (if configured)
+		if assignment_details.get("passing_score") and submission.score is not None:
+			if submission.score < assignment_details.passing_score:
+				return False
+
 	return True
 
 

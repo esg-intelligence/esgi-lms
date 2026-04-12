@@ -28,7 +28,7 @@
 			</div>
 			<div
 				v-if="assignments.data?.length || assignmentCount > 0"
-				class="grid grid-cols-2 gap-5"
+				class="grid grid-cols-3 gap-5"
 			>
 				<FormControl
 					v-model="titleFilter"
@@ -39,6 +39,12 @@
 					type="select"
 					:options="assignmentTypes"
 					:placeholder="__('Type')"
+				/>
+				<FormControl
+					v-model="categoryFilter"
+					type="select"
+					:options="assignmentCategories"
+					:placeholder="__('Category')"
 				/>
 			</div>
 		</div>
@@ -63,6 +69,7 @@
 				<TableRow>
 					<TableHead>Title</TableHead>
 					<TableHead>Type</TableHead>
+					<TableHead>Category</TableHead>
 					<TableHead>Created</TableHead>
 					<TableHead>Actions</TableHead>
 				</TableRow>
@@ -71,6 +78,7 @@
 				<TableRow v-for="assignment in assignments.data" :key="assignment.name">
 					<TableCell class="font-medium">{{ assignment.title }}</TableCell>
 					<TableCell>{{ assignment.type }}</TableCell>
+					<TableCell>{{ assignment.category || '—' }}</TableCell>
 					<TableCell>{{ assignment.creation }}</TableCell>
 					<TableCell>
 						<Btn
@@ -171,6 +179,7 @@ const user = inject('$user')
 const dayjs = inject('$dayjs')
 const titleFilter = ref('')
 const typeFilter = ref('')
+const categoryFilter = ref('')
 const showAssignmentForm = ref(false)
 const assignmentID = ref('new')
 const assignmentCount = ref(0)
@@ -186,13 +195,15 @@ onMounted(() => {
 	getAssignmentCount()
 	titleFilter.value = router.currentRoute.value.query.title
 	typeFilter.value = router.currentRoute.value.query.type
+	categoryFilter.value = router.currentRoute.value.query.category
 })
 
-watch([titleFilter, typeFilter], () => {
+watch([titleFilter, typeFilter, categoryFilter], () => {
 	router.push({
 		query: {
 			title: titleFilter.value,
 			type: typeFilter.value,
+			category: categoryFilter.value,
 		},
 	})
 	reloadAssignments()
@@ -213,6 +224,9 @@ const assignmentFilter = computed(() => {
 	if (typeFilter.value) {
 		filters.type = typeFilter.value
 	}
+	if (categoryFilter.value) {
+		filters.category = categoryFilter.value
+	}
 	if (!user.data?.is_moderator) {
 		filters.owner = user.data?.email
 	}
@@ -221,7 +235,7 @@ const assignmentFilter = computed(() => {
 
 const assignments = createListResource({
 	doctype: 'LMS Assignment',
-	fields: ['name', 'title', 'type', 'creation', 'question', 'industry'],
+	fields: ['name', 'title', 'type', 'category', 'creation', 'question', 'industry', 'passing_score'],
 	orderBy: 'modified desc',
 	cache: ['assignments'],
 	transform(data) {
@@ -287,6 +301,14 @@ const assignmentTypes = computed(() => {
 			value: type,
 		}
 	})
+})
+
+const assignmentCategories = computed(() => {
+	return [
+		{ label: '', value: '' },
+		{ label: __('Pre-Test'), value: 'Pre-Test' },
+		{ label: __('Post-Test'), value: 'Post-Test' },
+	]
 })
 
 const breadcrumbs = computed(() => [

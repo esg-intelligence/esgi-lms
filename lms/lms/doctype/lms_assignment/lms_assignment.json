@@ -12,7 +12,9 @@
   "question",
   "column_break_hmwv",
   "type",
+  "category",
   "grade_assignment",
+  "passing_score",
   "section_break_sjti",
   "show_answer",
   "answer",
@@ -33,6 +35,14 @@
    "label": "Type",
    "options": "Document\nPDF\nURL\nImage\nText",
    "reqd": 1
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Category",
+   "options": "\nPre-Test\nPost-Test"
   },
   {
    "fieldname": "title",
@@ -65,6 +75,13 @@
    "fieldname": "grade_assignment",
    "fieldtype": "Check",
    "label": "Grade Assignment"
+  },
+  {
+   "depends_on": "eval:doc.grade_assignment == 1 || doc.type != \"Text\"",
+   "fieldname": "passing_score",
+   "fieldtype": "Float",
+   "label": "Passing Score",
+   "description": "Minimum score required to pass. Leave empty for no score requirement."
   },
   {
    "fieldname": "section_break_sjti",

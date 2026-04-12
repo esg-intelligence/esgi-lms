@@ -27,6 +27,12 @@
 						:label="__('Submission Type')"
 						:required="true"
 					/>
+					<FormControl
+						v-model="assignment.category"
+						type="select"
+						:options="categoryOptions"
+						:label="__('Category')"
+					/>
 					<FormWrapper class="mt-4" type="combobox">
 						<Link
 							:label="__('Industry')"
@@ -34,6 +40,12 @@
 							doctype="Industry"
 						/>
 					</FormWrapper>
+					<FormControl
+						v-model="assignment.passing_score"
+						type="number"
+						:label="__('Passing Score')"
+						:description="__('Minimum score required to pass. Leave empty for no score requirement.')"
+					/>
 					<div>
 						<div class="text-xs text-ink-gray-5 mb-2">
 							{{ __('Question') }}
@@ -100,6 +112,8 @@ const assignment = reactive({
 	type: '',
 	question: '',
 	industry: '',
+	passing_score: null,
+	category: null,
 })
 
 const props = defineProps({
@@ -119,6 +133,8 @@ watch(
 					assignment.type = row.type
 					assignment.question = row.question
 					assignment.industry = row.industry
+					assignment.passing_score = row.passing_score || null
+					assignment.category = row.category || null
 				}
 			})
 		}
@@ -132,6 +148,8 @@ watch(show, (newVal) => {
 		assignment.type = ''
 		assignment.question = ''
 		assignment.industry = ''
+		assignment.passing_score = null
+		assignment.category = null
 	}
 })
 
@@ -184,6 +202,14 @@ const assignmentOptions = computed(() => {
 		{ label: __('Document'), value: 'Document' },
 		{ label: __('Text'), value: 'Text' },
 		{ label: __('URL'), value: 'URL' },
+	]
+})
+
+const categoryOptions = computed(() => {
+	return [
+		{ label: '—', value: null },
+		{ label: __('Pre-Test'), value: 'Pre-Test' },
+		{ label: __('Post-Test'), value: 'Post-Test' },
 	]
 })
 </script>

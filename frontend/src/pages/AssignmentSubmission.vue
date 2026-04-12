@@ -10,6 +10,7 @@
 			:assignmentID="assignmentID"
 			:submissionName="submissionName"
 			:showTitle="!fromLesson"
+			:fromLesson="fromLesson"
 		/>
 	</div>
 </template>
