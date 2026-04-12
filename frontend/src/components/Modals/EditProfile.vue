@@ -55,12 +55,37 @@
 						/>
 						<FormControl v-model="profile.last_name" :label="__('Last Name')" />
 						<FormControl v-model="profile.headline" :label="__('Headline')" />
+						<FormControl v-model="profile.company" :label="__('Company')" />
+						<FormControl v-model="profile.position" :label="__('Position')" />
+						<FormControl
+							v-model="profile.level"
+							type="select"
+							:options="levelOptions"
+							:label="__('Level')"
+						/>
 					</FormWrapper>
 					<FormWrapper class="mt-4" type="combobox">
 						<Link
 							:label="__('Industry')"
 							v-model="profile.industry"
 							doctype="Industry"
+						/>
+					</FormWrapper>
+					<FormWrapper class="mt-4" type="combobox">
+						<Link
+							:label="__('Sector')"
+							v-model="profile.sector"
+							doctype="LMS Sector"
+						/>
+					</FormWrapper>
+					<FormWrapper class="mt-4" type="combobox">
+						<Link
+							:key="profile.sector"
+							:label="__('Sub Sector')"
+							v-model="profile.sub_sector"
+							doctype="LMS Sub Sector"
+							:filters="profile.sector ? { sector: profile.sector } : {}"
+							:readonly="!profile.sector"
 						/>
 					</FormWrapper>
 					<FormWrapper class="mt-4" type="combobox">
@@ -105,7 +130,7 @@ import {
 	toast,
 	Avatar,
 } from 'frappe-ui'
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
 import { X } from 'lucide-vue-next'
 import { getFileSize, decodeEntities } from '@/utils'
 import Link from '@/components/Controls/Link.vue'
@@ -116,6 +141,7 @@ import GalleryEditIcon from '../Icons/GalleryEditIcon.vue'
 
 const reloadProfile = defineModel('reloadProfile')
 const hasLanguageChanged = ref(false)
+const isPopulating = ref(false)
 
 const props = defineProps({
 	profile: {
@@ -131,6 +157,12 @@ const profile = reactive({
 	bio: '',
 	image: '',
 	industry: '',
+	language: '',
+	company: '',
+	position: '',
+	level: '',
+	sector: '',
+	sub_sector: '',
 })
 
 const imageResource = createResource({
@@ -153,7 +185,7 @@ const updateProfile = createResource({
 			doctype: 'User',
 			name: props.profile.data.name,
 			fieldname: {
-				user_image: profile.image.file_url,
+				user_image: profile.image?.file_url,
 				...profile,
 			},
 		}
@@ -217,12 +249,19 @@ watch(
 	() => props.profile.data,
 	(newVal) => {
 		if (newVal) {
+			isPopulating.value = true
 			profile.first_name = newVal.first_name
 			profile.last_name = newVal.last_name
 			profile.headline = newVal.headline
 			profile.language = newVal.language
 			profile.bio = newVal.bio
 			profile.industry = newVal.industry
+			profile.company = newVal.company || ''
+			profile.position = newVal.position || ''
+			profile.level = newVal.level || ''
+			profile.sector = newVal.sector || ''
+			profile.sub_sector = newVal.sub_sector || ''
+			isPopulating.value = false
 			if (newVal.user_image) imageResource.submit({ image: newVal.user_image })
 		}
 	},
@@ -236,4 +275,24 @@ watch(
 		}
 	},
 )
+
+watch(
+	() => profile.sector,
+	(newVal, oldVal) => {
+		if (!isPopulating.value && newVal !== oldVal) {
+			profile.sub_sector = ''
+		}
+	},
+	{ flush: 'sync' },
+)
+
+const levelOptions = computed(() => [
+	{ label: '', value: '' },
+	{ label: __('Board of Directors / Commissioners'), value: 'Board of Directors / Commissioners' },
+	{ label: __('Top Management'), value: 'Top Management' },
+	{ label: __('Middle Management'), value: 'Middle Management' },
+	{ label: __('Supervisor'), value: 'Supervisor' },
+	{ label: __('Staff / Associate'), value: 'Staff / Associate' },
+	{ label: __('Intern / Trainee'), value: 'Intern / Trainee' },
+])
 </script>

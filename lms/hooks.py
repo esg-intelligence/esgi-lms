@@ -129,7 +129,7 @@ scheduler_events = {
 	],
 }
 
-fixtures = ["Custom Field", "Function", "Industry", "LMS Category"]
+fixtures = ["Custom Field", "Function", "Industry", "LMS Category", "LMS Sector", "LMS Sub Sector"]
 
 # Testing
 # -------

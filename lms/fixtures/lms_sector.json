@@ -1,0 +1,13 @@
+[
+ {"doctype": "LMS Sector", "name": "Consumer Goods", "sector": "Consumer Goods"},
+ {"doctype": "LMS Sector", "name": "Extractives & Minerals Processing", "sector": "Extractives & Minerals Processing"},
+ {"doctype": "LMS Sector", "name": "Financials", "sector": "Financials"},
+ {"doctype": "LMS Sector", "name": "Food & Beverage", "sector": "Food & Beverage"},
+ {"doctype": "LMS Sector", "name": "Health Care", "sector": "Health Care"},
+ {"doctype": "LMS Sector", "name": "Infrastructure", "sector": "Infrastructure"},
+ {"doctype": "LMS Sector", "name": "Renewable Resources & Alternative Energy", "sector": "Renewable Resources & Alternative Energy"},
+ {"doctype": "LMS Sector", "name": "Resource Transformation", "sector": "Resource Transformation"},
+ {"doctype": "LMS Sector", "name": "Services", "sector": "Services"},
+ {"doctype": "LMS Sector", "name": "Technology & Communications", "sector": "Technology & Communications"},
+ {"doctype": "LMS Sector", "name": "Transportation", "sector": "Transportation"}
+]
