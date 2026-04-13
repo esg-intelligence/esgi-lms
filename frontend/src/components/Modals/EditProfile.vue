@@ -66,13 +66,6 @@
 					</FormWrapper>
 					<FormWrapper class="mt-4" type="combobox">
 						<Link
-							:label="__('Industry')"
-							v-model="profile.industry"
-							doctype="Industry"
-						/>
-					</FormWrapper>
-					<FormWrapper class="mt-4" type="combobox">
-						<Link
 							:label="__('Sector')"
 							v-model="profile.sector"
 							doctype="LMS Sector"
@@ -81,7 +74,7 @@
 					<FormWrapper class="mt-4" type="combobox">
 						<Link
 							:key="profile.sector"
-							:label="__('Sub Sector')"
+							:label="__('Industry')"
 							v-model="profile.sub_sector"
 							doctype="LMS Sub Sector"
 							:filters="profile.sector ? { sector: profile.sector } : {}"
@@ -156,7 +149,6 @@ const profile = reactive({
 	headline: '',
 	bio: '',
 	image: '',
-	industry: '',
 	language: '',
 	company: '',
 	position: '',
@@ -255,7 +247,6 @@ watch(
 			profile.headline = newVal.headline
 			profile.language = newVal.language
 			profile.bio = newVal.bio
-			profile.industry = newVal.industry
 			profile.company = newVal.company || ''
 			profile.position = newVal.position || ''
 			profile.level = newVal.level || ''
