@@ -64,7 +64,8 @@ class LMSAssignmentSubmission(Document):
 				self.trigger_update_notification()
 
 			if status_changed and is_evaluator_action and self.lesson:
-				course = frappe.db.get_value("Course Lesson", self.lesson, "course")
+				chapter = frappe.db.get_value("Course Lesson", self.lesson, "chapter")
+				course = frappe.db.get_value("Course Chapter", chapter, "course") if chapter else None
 				if course:
 					if self.status == "Pass":
 						from lms.lms.doctype.course_lesson.course_lesson import save_progress

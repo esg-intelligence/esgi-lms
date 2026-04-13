@@ -24,7 +24,7 @@
 			</template>
 		</div>
 
-		<div class="flex flex-col">
+		<div class="flex flex-col overflow-y-auto h-[calc(100vh-3.2rem)]" :class="{ 'h-full': !showTitle }">
 			<div class="p-5">
 				<div class="flex items-center justify-between mb-4">
 					<div class="font-semibold text-ink-gray-9">
