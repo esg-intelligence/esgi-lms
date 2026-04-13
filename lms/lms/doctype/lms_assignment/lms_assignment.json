@@ -90,8 +90,8 @@
   {
    "fieldname": "industry",
    "fieldtype": "Link",
-   "label": "Industry",
-   "options": "Industry"
+   "label": "Sector",
+   "options": "LMS Sector"
   }
  ],
  "grid_page_length": 50,

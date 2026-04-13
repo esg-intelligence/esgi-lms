@@ -437,9 +437,9 @@ const renderEditor = (holder, content) => {
 		document.getElementById(holder).innerHTML = ''
 	const contentObj = JSON.parse(content)
 	let filteredBlocks = contentObj.blocks.filter(block => {
-		if (!user.data.industry) return true
+		if (!user.data.sector) return true
 		if (block.type == 'assignment') {
-			return block.industry == user.data.industry
+			return block.industry == user.data.sector
 		}
 		return true
 	})

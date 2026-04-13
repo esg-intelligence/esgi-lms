@@ -35,9 +35,9 @@
 					/> -->
 					<FormWrapper class="mt-4" type="combobox">
 						<Link
-							:label="__('Industry')"
+							:label="__('Sector')"
 							v-model="assignment.industry"
-							doctype="Industry"
+							doctype="LMS Sector"
 						/>
 					</FormWrapper>
 					<FormControl
