@@ -19,6 +19,20 @@ class LMSAssignmentSubmission(Document):
 
 	def on_update(self):
 		self.validate_private_attachments()
+		self.trigger_progress_update()
+
+	def trigger_progress_update(self):
+		action = getattr(self, "_progress_action", None)
+		course = getattr(self, "_progress_course", None)
+		if not action or not course:
+			return
+
+		if action == "pass":
+			from lms.lms.doctype.course_lesson.course_lesson import save_progress
+			save_progress(self.lesson, course, member_override=self.member)
+		elif action == "fail":
+			from lms.lms.doctype.course_lesson.course_lesson import reset_lesson_progress
+			reset_lesson_progress(self.lesson, self.member, course)
 
 	def handle_resubmission(self):
 		"""Reset status to Not Graded when a student re-submits after receiving a Fail.
@@ -68,12 +82,12 @@ class LMSAssignmentSubmission(Document):
 				course = frappe.db.get_value("Course Chapter", chapter, "course") if chapter else None
 				if course:
 					if self.status == "Pass":
-						from lms.lms.doctype.course_lesson.course_lesson import save_progress
-						save_progress(self.lesson, course, member_override=self.member)
+						self._progress_course = course
+						self._progress_action = "pass"
 					elif self.status == "Fail":
 						self.fail_count = (self.fail_count or 0) + 1
-						from lms.lms.doctype.course_lesson.course_lesson import reset_lesson_progress
-						reset_lesson_progress(self.lesson, self.member, course)
+						self._progress_course = course
+						self._progress_action = "fail"
 
 	def validate_private_attachments(self):
 		if self.type == "Text":
