@@ -456,7 +456,7 @@ const renderEditor = (holder, content) => {
 	contentObj['blocks'] = filteredBlocks
 	return new EditorJS({
 		holder: holder,
-		tools: getEditorTools(),
+		tools: getEditorTools(lesson.data?.name),
 		data: contentObj,
 		readOnly: true,
 		defaultBlock: 'embed',

@@ -202,6 +202,10 @@ const props = defineProps({
 		type: Boolean,
 		default: false,
 	},
+	lesson: {
+		type: String,
+		default: null,
+	},
 })
 
 onMounted(() => {
@@ -240,6 +244,7 @@ const newSubmission = createResource({
 			doctype: 'LMS Assignment Submission',
 			assignment: props.assignmentID,
 			member: user.data?.name,
+			lesson: props.lesson || null,
 		}
 		if (showUploader()) {
 			doc.assignment_attachment = submissionFile.value.file_url

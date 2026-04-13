@@ -11,6 +11,7 @@
 			:submissionName="submissionName"
 			:showTitle="!fromLesson"
 			:fromLesson="fromLesson"
+			:lesson="lesson"
 		/>
 	</div>
 </template>
@@ -22,6 +23,7 @@ import Assignment from '@/components/Assignment.vue'
 
 const user = inject('$user')
 const fromLesson = ref(false)
+const lesson = ref(null)
 const { brand } = sessionStore()
 
 const props = defineProps({
@@ -52,8 +54,13 @@ onMounted(() => {
 		window.location.href = '/login'
 	}
 
-	if (new URLSearchParams(window.location.search).get('fromLesson')) {
+	const searchParams = new URLSearchParams(window.location.search)
+	if (searchParams.get('fromLesson')) {
 		fromLesson.value = true
+	}
+	const lessonParam = searchParams.get('lesson')
+	if (lessonParam) {
+		lesson.value = lessonParam
 	}
 })
 

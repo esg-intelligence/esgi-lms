@@ -110,7 +110,7 @@ export function htmlToText(html) {
 	return div.textContent || div.innerText || ''
 }
 
-export function getEditorTools() {
+export function getEditorTools(lessonName = null) {
 	return {
 		header: {
 			class: Header,
@@ -130,7 +130,9 @@ export function getEditorTools() {
 			inlineToolbar: true,
 		},
 		quiz: Quiz,
-		assignment: Assignment,
+		assignment: lessonName
+			? { class: Assignment, config: { lessonName } }
+			: Assignment,
 		program: Program,
 		upload: Upload,
 		markdown: {

@@ -6,9 +6,10 @@ import { usersStore } from '@/stores/user'
 import { call } from 'frappe-ui'
 
 export class Assignment {
-	constructor({ data, api, readOnly }) {
+	constructor({ data, api, readOnly, config }) {
 		this.data = data
 		this.readOnly = readOnly
+		this.lessonName = config?.lessonName || null
 	}
 
 	static get toolbox() {
@@ -52,7 +53,8 @@ export class Assignment {
 				fieldname: ['name'],
 			}).then((data) => {
 				let submission = data.name || 'new'
-				this.wrapper.innerHTML = `<iframe src="/lms/assignment-submission/${assignment}/${submission}?fromLesson=1" class="w-full h-[500px]"></iframe>`
+				const lessonParam = this.lessonName ? `&lesson=${encodeURIComponent(this.lessonName)}` : ''
+				this.wrapper.innerHTML = `<iframe src="/lms/assignment-submission/${assignment}/${submission}?fromLesson=1${lessonParam}" class="w-full h-[500px]"></iframe>`
 			})
 			return
 		}
