@@ -138,20 +138,26 @@ const courses = createListResource({
 	cache: ['courses', user.data?.name],
 	pageLength: pageLength.value,
 	start: start.value,
-	onSuccess(data) {
-		setCategories(data)
-	},
 })
 
-const setCategories = (data) => {
-	let allCategories = data.map((course) => course.category)
-	allCategories = allCategories.filter(
-		(category, index) => allCategories.indexOf(category) === index && category,
-	)
-	if (categories.value.length <= allCategories.length) {
-		updateCategories(data)
-	}
-}
+const categoryResource = createListResource({
+	doctype: 'LMS Category',
+	fields: ['name', 'category'],
+	auto: true,
+})
+
+watch(
+	() => categoryResource.data,
+	(data) => {
+		if (!data) return
+		categories.value = [{ label: __('All Categories'), value: null }]
+		data.forEach((cat) => {
+			if (cat.category) {
+				categories.value.push({ label: cat.category, value: cat.category })
+			}
+		})
+	},
+)
 
 const isPersonaCaptured = async () => {
 	let persona = await call('frappe.client.get_single_value', {
@@ -288,18 +294,6 @@ const setQueryParams = () => {
 	history.replaceState({}, '', `${location.pathname}${queryString}`)
 }
 
-const updateCategories = (data) => {
-	data.forEach((course) => {
-		if (
-			course.category &&
-			!categories.value.find((category) => category.value === course.category)
-		)
-			categories.value.push({
-				label: course.category,
-				value: course.category,
-			})
-	})
-}
 
 watch([currentTab, currentCategory], () => {
 	updateCourses()
