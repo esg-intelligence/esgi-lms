@@ -322,36 +322,55 @@ watch(submissionFile, () => {
 
 const submitAssignment = () => {
 	if (props.submissionName != 'new') {
-		const isStudentResubmitting =
-			submissionResource.doc?.owner == user.data?.name &&
-			submissionResource.doc?.status == 'Fail'
-
-		let evaluator =
-			submissionResource.doc && submissionResource.doc.owner != user.data?.name
-				? user.data?.name
-				: null
-
-		submissionResource.setValue.submit(
-			{
-				...submissionResource.doc,
-				assignment_attachment: submissionFile.value?.file_url,
-				evaluator: evaluator,
-				comments: comments.value,
-				answer: answer.value,
-				score: score.value,
-			},
-			{
-				onSuccess(data) {
-					toast.success(__('Changes saved successfully'))
-					if (isStudentResubmitting) {
-						markLessonProgress()
-					}
-				},
-			}
-		)
+		if (canGradeSubmission.value) {
+			gradeSubmission()
+		} else {
+			resubmitAsStudent()
+		}
 	} else {
 		addNewSubmission()
 	}
+}
+
+const gradeSubmission = () => {
+	call(
+		'lms.lms.doctype.lms_assignment_submission.lms_assignment_submission.grade_submission',
+		{
+			name: props.submissionName,
+			status: submissionResource.doc.status,
+			score: score.value,
+			comments: comments.value,
+		}
+	).then(() => {
+		toast.success(__('Submission graded successfully'))
+		submissionResource.reload()
+	}).catch((err) => {
+		toast.error(err.messages?.[0] || err)
+	})
+}
+
+const resubmitAsStudent = () => {
+	const isStudentResubmitting =
+		submissionResource.doc?.owner == user.data?.name &&
+		submissionResource.doc?.status == 'Fail'
+
+	submissionResource.setValue.submit(
+		{
+			assignment_attachment: submissionFile.value?.file_url,
+			answer: answer.value,
+		},
+		{
+			onSuccess() {
+				toast.success(__('Changes saved successfully'))
+				if (isStudentResubmitting) {
+					markLessonProgress()
+				}
+			},
+			onError(err) {
+				toast.error(err.messages?.[0] || err)
+			},
+		}
+	)
 }
 
 const addNewSubmission = () => {

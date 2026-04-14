@@ -22,6 +22,8 @@ class LMSAssignmentSubmission(Document):
 		self.trigger_progress_update()
 
 	def trigger_progress_update(self):
+		if self.flags.get("skip_progress_update"):
+			return
 		action = getattr(self, "_progress_action", None)
 		course = getattr(self, "_progress_course", None)
 		if not action or not course:
@@ -75,7 +77,8 @@ class LMSAssignmentSubmission(Document):
 			is_evaluator_action = frappe.session.user != self.member
 
 			if (status_changed or comments_changed) and is_evaluator_action:
-				self.trigger_update_notification()
+				if not self.flags.get("skip_notification"):
+					self.trigger_update_notification()
 
 			if status_changed and is_evaluator_action and self.lesson:
 				chapter = frappe.db.get_value("Course Lesson", self.lesson, "chapter")
@@ -85,7 +88,8 @@ class LMSAssignmentSubmission(Document):
 						self._progress_course = course
 						self._progress_action = "pass"
 					elif self.status == "Fail":
-						self.fail_count = (self.fail_count or 0) + 1
+						if not self.flags.get("skip_fail_count"):
+							self.fail_count = (self.fail_count or 0) + 1
 						self._progress_course = course
 						self._progress_action = "fail"
 
@@ -205,6 +209,133 @@ def grade_assignment(name, result, comments):
 	doc.status = result
 	doc.comments = comments
 	doc.save(ignore_permissions=True)
+
+
+@frappe.whitelist()
+def grade_submission(name, status, score=None, comments=None):
+	"""
+	Dedicated grading endpoint. Saves only the grading fields and explicitly
+	triggers course progress updates after the DB write. Replaces the fragile
+	hook-based approach used by submissionResource.setValue in the frontend.
+	"""
+	doc = frappe.get_doc("LMS Assignment Submission", name)
+
+	from lms.lms.utils import has_evaluator_role, has_moderator_role
+
+	can_grade = (
+		has_moderator_role()
+		or has_evaluator_role()
+		or "Course Creator" in frappe.get_roles()
+	)
+	if not can_grade:
+		frappe.throw(_("You do not have permission to grade submissions."))
+
+	old_status = doc.status
+	status_changed = old_status != status
+
+	doc.status = status
+	doc.evaluator = frappe.session.user
+	if score is not None:
+		doc.score = frappe.utils.flt(score)
+	if comments is not None:
+		doc.comments = comments
+
+	if status == "Fail" and status_changed:
+		doc.fail_count = (doc.fail_count or 0) + 1
+
+	# Skip the hook-based side-effects so we can handle them explicitly below:
+	# - skip_progress_update: prevent trigger_progress_update() from running
+	# - skip_fail_count: prevent validate_status() from double-incrementing fail_count
+	# - skip_notification: prevent validate_status() from sending a duplicate notification
+	doc.flags.skip_progress_update = True
+	doc.flags.skip_fail_count = True
+	doc.flags.skip_notification = True
+	doc.save(ignore_permissions=True)
+
+	# Notify the student once (after save so the notification link is valid)
+	if status_changed or (comments is not None and comments != old_status):
+		doc.trigger_update_notification()
+
+	# Explicitly trigger progress after the DB write
+	if status_changed:
+		if doc.lesson:
+			_apply_progress_update(doc, status)
+		else:
+			lesson = _find_lesson_for_submission(doc)
+			if lesson:
+				frappe.db.set_value("LMS Assignment Submission", doc.name, "lesson", lesson)
+				doc.lesson = lesson
+				_apply_progress_update(doc, status)
+			else:
+				frappe.log_error(
+					f"grade_submission: no lesson found for submission {doc.name} "
+					f"(assignment={doc.assignment}, member={doc.member}) — progress not updated",
+					"Assignment Grading",
+				)
+
+	return doc.as_dict()
+
+
+def _apply_progress_update(doc, status):
+	"""Resolve course from lesson chain and call the appropriate progress function."""
+	chapter = frappe.db.get_value("Course Lesson", doc.lesson, "chapter")
+	if not chapter:
+		frappe.log_error(
+			f"grade_submission: lesson {doc.lesson} has no chapter — cannot update progress",
+			"Assignment Grading",
+		)
+		return
+	course = frappe.db.get_value("Course Chapter", chapter, "course")
+	if not course:
+		frappe.log_error(
+			f"grade_submission: chapter {chapter} has no course — cannot update progress",
+			"Assignment Grading",
+		)
+		return
+
+	from lms.lms.doctype.course_lesson.course_lesson import reset_lesson_progress, save_progress
+
+	if status == "Pass":
+		save_progress(doc.lesson, course, member_override=doc.member)
+	elif status == "Fail":
+		reset_lesson_progress(doc.lesson, doc.member, course)
+
+
+def _find_lesson_for_submission(doc):
+	"""
+	Fallback for old submissions without lesson set.
+	Searches lessons in courses the member is enrolled in for an assignment block
+	matching doc.assignment. Returns the first matching lesson name, or None.
+	"""
+	import json
+
+	enrolled_courses = frappe.get_all(
+		"LMS Enrollment",
+		filters={"member": doc.member},
+		pluck="course",
+	)
+	if not enrolled_courses:
+		return None
+
+	lessons = frappe.get_all(
+		"Course Lesson",
+		filters=[["course", "in", enrolled_courses]],
+		fields=["name", "content"],
+	)
+	for lesson in lessons:
+		if not lesson.content:
+			continue
+		try:
+			content = json.loads(lesson.content)
+			for block in content.get("blocks", []):
+				if (
+					block.get("type") == "assignment"
+					and block.get("data", {}).get("assignment") == doc.assignment
+				):
+					return lesson.name
+		except Exception:
+			continue
+	return None
 
 
 @frappe.whitelist()
