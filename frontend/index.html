@@ -204,6 +204,11 @@
 			media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
 		/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<script>
+			if (localStorage.getItem('lms_lesson_desktop_mode') === '1') {
+				document.querySelector('meta[name="viewport"]').content = 'width=1280';
+			}
+		</script>
 		<title>{{ title }}</title>
 		<meta name="title" content="{{ meta.title }}" />
 		<meta name="image" content="{{ meta.image }}" />

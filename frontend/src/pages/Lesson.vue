@@ -1,4 +1,24 @@
 <template>
+	<div
+		v-if="showMobileNotice"
+		class="sticky top-0 z-50 flex items-center justify-between bg-blue-50 border-b border-blue-200 px-4 py-2 text-sm text-blue-800 gap-2"
+	>
+		<span class="flex-1">
+			{{ __('This page is optimized for desktop. For the best experience, switch to desktop mode.') }}
+		</span>
+		<div class="flex items-center gap-2 shrink-0">
+			<Button size="sm" variant="solid" @click="enableDesktopMode">
+				{{ __('View in Desktop Mode') }}
+			</Button>
+			<button
+				class="ml-1 text-blue-600 hover:text-blue-900 font-semibold leading-none"
+				@click="mobileNoticeDismissed = true"
+				aria-label="Dismiss"
+			>
+				✕
+			</button>
+		</div>
+	</div>
 	<div v-if="!isSupportedBrowser" class="sticky top-0 z-40 flex items-center justify-center bg-yellow-50 border-b border-yellow-200 px-4 py-2 text-sm text-yellow-800">
 		<span>{{ __('Please use Google Chrome (Chrome based browsers) or Firefox for better experience') }}</span>
 	</div>
@@ -8,6 +28,14 @@
 				<CustomBreadcrumbs class="h-7" :items="breadcrumbs" />
 			</div>
 			<div class="flex items-center justify-center space-x-2 ml-auto">
+				<Button
+					v-if="isSmallDevice && desktopModeEnabled"
+					size="sm"
+					variant="outline"
+					@click="disableDesktopMode"
+				>
+					{{ __('Mobile View') }}
+				</Button>
 				<Button @click="sidebarMinimized = !sidebarMinimized">
 					<template #icon>
 						<PanelLeftClose v-if="!sidebarMinimized" class="w-4 h-4 stroke-1.5" />
@@ -303,6 +331,25 @@ const showInlineMenu = ref(false)
 const currentTab = ref('Notes')
 const featuredAudio = ref(null)
 const sidebarMinimized = ref(false)
+
+// Mobile notice
+const isSmallDevice = ref(window.screen.width < 768)
+const desktopModeEnabled = ref(localStorage.getItem('lms_lesson_desktop_mode') === '1')
+const mobileNoticeDismissed = ref(false)
+
+const showMobileNotice = computed(
+	() => isSmallDevice.value && !desktopModeEnabled.value && !mobileNoticeDismissed.value
+)
+
+const enableDesktopMode = () => {
+	localStorage.setItem('lms_lesson_desktop_mode', '1')
+	window.location.reload()
+}
+
+const disableDesktopMode = () => {
+	localStorage.removeItem('lms_lesson_desktop_mode')
+	window.location.reload()
+}
 
 let timerInterval
 
