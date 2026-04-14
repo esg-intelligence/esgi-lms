@@ -213,6 +213,8 @@ def get_assignment_progress(lesson, member=None):
 	if not member:
 		member = frappe.session.user
 
+	member_sector = frappe.db.get_value("User", member, "sector")
+
 	lesson_details = frappe.db.get_value("Course Lesson", lesson, ["body", "content"], as_dict=1)
 	assignments = []
 
@@ -221,7 +223,19 @@ def get_assignment_progress(lesson, member=None):
 
 		for block in content.get("blocks"):
 			if block.get("type") == "assignment":
-				assignments.append(block.get("data").get("assignment"))
+				assignment_name = block.get("data").get("assignment")
+
+				# Mirror the sector filter applied by Lesson.vue: renderEditor().
+				# If the member has a sector set, skip assignments tagged with a
+				# different sector — the student was never shown those blocks.
+				if member_sector:
+					assignment_industry = frappe.db.get_value(
+						"LMS Assignment", assignment_name, "industry"
+					)
+					if assignment_industry and assignment_industry != member_sector:
+						continue
+
+				assignments.append(assignment_name)
 
 	elif lesson_details.body:
 		macros = find_macros(lesson_details.body)
