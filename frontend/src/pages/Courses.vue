@@ -57,6 +57,10 @@
 						<Select v-if="categories.length" v-model="currentCategory" :options="categories"
 							:placeholder="__('All Categories')" @change="updateCourses()" variant="outline" size="lg" />
 					</div>
+					<div v-if="showLanguageFilter" class="w-full lg:min-w-0 lg:w-44">
+						<Select v-if="languages.length" v-model="currentLanguage" :options="languages"
+							:placeholder="__('All Languages')" @change="updateCourses()" variant="outline" size="lg" />
+					</div>
 				</div>
 
 				<!-- <FormControl v-model="certification" :label="__('Certification')" type="checkbox"
@@ -105,6 +109,7 @@ const start = ref(0)
 const pageLength = ref(30)
 const categories = ref([])
 const currentCategory = ref(null)
+const currentLanguage = ref(null)
 const title = ref('')
 const certification = ref(false)
 const filters = ref({})
@@ -125,10 +130,18 @@ onMounted(() => {
 	]
 })
 
+const showLanguageFilter = computed(
+	() =>
+		user.data?.is_system_manager ||
+		user.data?.is_moderator ||
+		user.data?.is_instructor,
+)
+
 const setFiltersFromQuery = () => {
 	let queries = new URLSearchParams(location.search)
 	title.value = queries.get('title') || ''
 	currentCategory.value = queries.get('category') || null
+	currentLanguage.value = queries.get('language') || null
 	certification.value = queries.get('certification') || false
 }
 
@@ -158,6 +171,24 @@ watch(
 		})
 	},
 )
+
+const languageResource = createListResource({
+	doctype: 'Language',
+	fields: ['language_code', 'language_name'],
+	filters: { enabled: 1 },
+	auto: true,
+})
+
+const languages = computed(() => {
+	if (!languageResource.data) return []
+	return [
+		{ label: __('All Languages'), value: null },
+		...languageResource.data.map((l) => ({
+			label: l.language_name,
+			value: l.language_code,
+		})),
+	]
+})
 
 const isPersonaCaptured = async () => {
 	let persona = await call('frappe.client.get_single_value', {
@@ -200,6 +231,7 @@ const updateCourses = () => {
 
 const updateFilters = () => {
 	updateCategoryFilter()
+	updateLanguageFilter()
 	updateTitleFilter()
 	updateCertificationFilter()
 	updateTabFilter()
@@ -212,6 +244,14 @@ const updateCategoryFilter = () => {
 		filters.value['category'] = currentCategory.value
 	} else {
 		delete filters.value['category']
+	}
+}
+
+const updateLanguageFilter = () => {
+	if (currentLanguage.value) {
+		filters.value['language'] = currentLanguage.value
+	} else {
+		delete filters.value['language']
 	}
 }
 
@@ -275,6 +315,7 @@ const setQueryParams = () => {
 	let filterKeys = {
 		title: title.value,
 		category: currentCategory.value,
+		language: currentLanguage.value,
 		certification: certification.value,
 	}
 
@@ -295,7 +336,7 @@ const setQueryParams = () => {
 }
 
 
-watch([currentTab, currentCategory], () => {
+watch([currentTab, currentCategory, currentLanguage], () => {
 	updateCourses()
 })
 

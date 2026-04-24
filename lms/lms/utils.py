@@ -1012,9 +1012,22 @@ def get_course_card_details(courses):
 	)
 	review_counts_map = {row[0]: row[1] for row in review_counts}
 
+	language_codes = list({c.language for c in courses if c.get("language")})
+	language_name_map = {}
+	if language_codes:
+		language_name_map = {
+			r.name: r.language_name
+			for r in frappe.get_all(
+				"Language",
+				filters={"name": ["in", language_codes]},
+				fields=["name", "language_name"],
+			)
+		}
+
 	for course in courses:
 		course.review_total = review_counts_map.get(course.name, 0)
 		course.instructors = get_instructors("LMS Course", course.name)
+		course.language_name = language_name_map.get(course.get("language"), "")
 
 		if course.paid_course and course.published == 1:
 			course.amount, course.currency = check_multicurrency(
@@ -1064,7 +1077,46 @@ def update_course_filters(filters):
 		or_filters.update({"paid_certificate": 1})
 		del filters["certification"]
 
+	_apply_language_filter(filters)
+
 	return filters, or_filters, show_featured
+
+
+_PRIVILEGED_ROLES = {"System Manager", "Moderator", "Course Creator"}
+
+
+def _apply_language_filter(filters):
+	explicit_language = filters.pop("language", None)
+
+	if explicit_language:
+		target_language = explicit_language
+	elif frappe.session.user == "Guest":
+		return
+	else:
+		user_roles = set(frappe.get_roles(frappe.session.user))
+		if user_roles & _PRIVILEGED_ROLES:
+			return
+		target_language = frappe.db.get_value("User", frappe.session.user, "language")
+		if not target_language:
+			return
+
+	lang_courses = frappe.get_all(
+		"LMS Course",
+		filters={"language": target_language},
+		pluck="name",
+	)
+	no_lang_courses = frappe.get_all(
+		"LMS Course",
+		filters=[["language", "is", "not set"]],
+		pluck="name",
+	)
+	matching = list(set(lang_courses + no_lang_courses))
+
+	if "name" in filters and isinstance(filters["name"], list):
+		existing = set(filters["name"][1])
+		filters["name"] = ["in", list(existing & set(matching))]
+	else:
+		filters["name"] = ["in", matching]
 
 
 def get_enrollment_details(courses):
@@ -1111,6 +1163,7 @@ def get_course_fields():
 		"disable_self_learning",
 		"published_on",
 		"category",
+		"language",
 		"status",
 		"paid_course",
 		"paid_certificate",
@@ -1144,6 +1197,7 @@ def get_course_details(course):
 			"disable_self_learning",
 			"published_on",
 			"category",
+			"language",
 			"status",
 			"paid_course",
 			"paid_certificate",

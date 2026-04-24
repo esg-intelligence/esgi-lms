@@ -80,6 +80,15 @@
 					</Tooltip>
 				</div>
 
+				<div v-if="course.language_name">
+					<Tooltip :text="__('Language')">
+						<div class="flex items-center">
+							<Globe class="h-4 w-4 stroke-1.5 mr-2" />
+							<span class="text-sm text-gray-600">{{ course.language_name }}</span>
+						</div>
+					</Tooltip>
+				</div>
+
 				<Tooltip v-if="course.featured" :text="__('Featured')">
 					<Award class="size-4 stroke-2 text-ink-amber-3" />
 				</Tooltip>
@@ -143,7 +152,7 @@
 	</div>
 </template>
 <script setup>
-import { Award, Star } from 'lucide-vue-next'
+import { Award, Globe, Star } from 'lucide-vue-next'
 import BookIcon from '@/components/Icons/BookIcon.vue'
 import PeopleIcon from '@/components/Icons/PeopleIcon.vue'
 import StarIcon from '@/components/Icons/StarIcon.vue'

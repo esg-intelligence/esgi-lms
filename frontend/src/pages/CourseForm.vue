@@ -28,7 +28,7 @@
 						<div class="text-lg font-semibold mb-4 text-ink-gray-9">
 							{{ __('Details') }}
 						</div>
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+						<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
 							<FormWrapper>
 								<FormControl
 									v-model="course.title"
@@ -44,6 +44,14 @@
 									:onCreate="
 										(value, close) => openSettings('Categories', close)
 									"
+								/>
+							</FormWrapper>
+							<FormWrapper type="combobox">
+								<Link
+									doctype="Language"
+									v-model="course.language"
+									:filters="{ enabled: 1 }"
+									:label="__('Language')"
 								/>
 							</FormWrapper>
 						</div>
@@ -446,6 +454,7 @@ const course = reactive({
 	card_gradient: '',
 	tags: '',
 	category: '',
+	language: '',
 	published: false,
 	published_on: '',
 	featured: false,

@@ -20,6 +20,7 @@
   "column_break_3",
   "instructors",
   "category",
+  "language",
   "status",
   "column_break_htgn",
   "image",
@@ -232,6 +233,12 @@
    "fieldtype": "Link",
    "label": "Category",
    "options": "LMS Category"
+  },
+  {
+   "fieldname": "language",
+   "fieldtype": "Link",
+   "label": "Language",
+   "options": "Language"
   },
   {
    "fieldname": "tab_4_tab",
