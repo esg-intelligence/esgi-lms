@@ -1090,6 +1090,196 @@ def delete_course(course):
 	frappe.delete_doc("LMS Course", course)
 
 
+# ---------------------------------------------------------------------------
+# Course Duplication
+# ---------------------------------------------------------------------------
+
+def _unique_quiz_title(base_title):
+	candidate = f"Copy of {base_title}"
+	counter = 2
+	while frappe.db.exists("LMS Quiz", candidate):
+		candidate = f"Copy of {base_title} ({counter})"
+		counter += 1
+	return candidate
+
+
+def _clone_quiz(original_quiz_name):
+	base_doc = frappe.get_doc("LMS Quiz", original_quiz_name)
+	new_doc = frappe.copy_doc(base_doc)
+	new_doc.title = _unique_quiz_title(base_doc.title)
+	new_doc.lesson = None
+	new_doc.course = None
+	new_doc.insert(ignore_permissions=True)
+	return new_doc.name
+
+
+def _remap_quizzes_in_content(content_json_str, quiz_name_map):
+	if not content_json_str or not quiz_name_map:
+		return content_json_str
+	content = json.loads(content_json_str)
+	for block in content.get("blocks", []):
+		if block.get("type") == "quiz":
+			old_name = block.get("data", {}).get("quiz")
+			if old_name and old_name in quiz_name_map:
+				block["data"]["quiz"] = quiz_name_map[old_name]
+	return json.dumps(content)
+
+
+def _copy_scorm_directory(old_chapter, new_course_name):
+	if not old_chapter.scorm_package_path:
+		return {}
+	site_public = frappe.get_site_path("public")
+	old_abs = os.path.normpath(os.path.join(site_public, old_chapter.scorm_package_path.lstrip("/")))
+	new_abs = os.path.join(site_public, "scorm", new_course_name, old_chapter.title)
+
+	if os.path.exists(old_abs):
+		shutil.copytree(old_abs, new_abs)
+
+	def repath(old_path):
+		if not old_path:
+			return old_path
+		return old_path.replace(f"/scorm/{old_chapter.course}/", f"/scorm/{new_course_name}/", 1)
+
+	return {
+		"scorm_package_path": repath(old_chapter.scorm_package_path),
+		"manifest_file": repath(old_chapter.manifest_file),
+		"launch_file": repath(old_chapter.launch_file),
+		# scorm_package (ZIP File link) intentionally not shared to avoid
+		# cascade delete from the original chapter wiping the shared record.
+	}
+
+
+@frappe.whitelist()
+def duplicate_course(course, new_title):
+	if not frappe.db.exists("LMS Course", course):
+		frappe.throw(_("Course not found"))
+
+	source = frappe.get_doc("LMS Course", course)
+	user = frappe.session.user
+	is_instructor = any(row.instructor == user for row in source.instructors)
+	is_moderator = "Moderator" in frappe.get_roles(user)
+	if not is_moderator and not is_instructor:
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
+
+	scorm_dirs_created = []
+	try:
+		# 1. Create new LMS Course (copies instructors, related_courses, etc.)
+		new_course = frappe.copy_doc(source)
+		new_course.title = new_title
+		new_course.published = 0
+		new_course.published_on = None
+		new_course.enrollments = 0
+		new_course.lessons = 0
+		new_course.rating = 0
+		new_course.chapters = []
+		new_course.insert(ignore_permissions=True)
+
+		# 2. Walk chapters in insertion order
+		chapter_refs = frappe.get_all(
+			"Chapter Reference",
+			filters={"parent": course},
+			fields=["chapter", "idx"],
+			order_by="idx asc",
+		)
+
+		for cr in chapter_refs:
+			old_chapter = frappe.get_doc("Course Chapter", cr.chapter)
+
+			# 3. Create new chapter
+			new_chapter = frappe.new_doc("Course Chapter")
+			new_chapter.title = old_chapter.title
+			new_chapter.course = new_course.name
+			new_chapter.is_scorm_package = old_chapter.is_scorm_package
+
+			if old_chapter.is_scorm_package:
+				scorm_paths = _copy_scorm_directory(old_chapter, new_course.name)
+				new_chapter.update(scorm_paths)
+				if scorm_paths.get("scorm_package_path"):
+					site_public = frappe.get_site_path("public")
+					scorm_dirs_created.append(
+						os.path.normpath(
+							os.path.join(site_public, scorm_paths["scorm_package_path"].lstrip("/"))
+						)
+					)
+
+			new_chapter.insert(ignore_permissions=True)
+
+			# 4. Walk lessons in insertion order
+			lesson_refs = frappe.get_all(
+				"Lesson Reference",
+				filters={"parent": old_chapter.name},
+				fields=["lesson", "idx"],
+				order_by="idx asc",
+			)
+
+			for lr in lesson_refs:
+				old_lesson = frappe.get_doc("Course Lesson", lr.lesson)
+
+				# 5. Clone quizzes referenced by this lesson
+				quiz_name_map = {}
+
+				if old_lesson.quiz_id and frappe.db.exists("LMS Quiz", old_lesson.quiz_id):
+					quiz_name_map[old_lesson.quiz_id] = _clone_quiz(old_lesson.quiz_id)
+
+				if old_lesson.content:
+					content_parsed = json.loads(old_lesson.content)
+					for block in content_parsed.get("blocks", []):
+						if block.get("type") == "quiz":
+							old_q = block.get("data", {}).get("quiz")
+							if old_q and old_q not in quiz_name_map and frappe.db.exists("LMS Quiz", old_q):
+								quiz_name_map[old_q] = _clone_quiz(old_q)
+
+				# 6. Create new lesson
+				new_lesson = frappe.new_doc("Course Lesson")
+				new_lesson.title = old_lesson.title
+				new_lesson.chapter = new_chapter.name
+				new_lesson.include_in_preview = old_lesson.include_in_preview
+				new_lesson.body = old_lesson.body
+				new_lesson.instructor_notes = old_lesson.instructor_notes
+				new_lesson.youtube = old_lesson.youtube
+				new_lesson.question = old_lesson.question
+				new_lesson.file_type = old_lesson.file_type
+				new_lesson.quiz_id = quiz_name_map.get(old_lesson.quiz_id) if old_lesson.quiz_id else None
+				new_lesson.content = _remap_quizzes_in_content(old_lesson.content, quiz_name_map)
+				new_lesson.instructor_content = _remap_quizzes_in_content(
+					old_lesson.instructor_content, quiz_name_map
+				)
+				new_lesson.insert(ignore_permissions=True)
+
+				# 7. Lesson Reference for new chapter
+				new_lr = frappe.new_doc("Lesson Reference")
+				new_lr.lesson = new_lesson.name
+				new_lr.idx = lr.idx
+				new_lr.parent = new_chapter.name
+				new_lr.parenttype = "Course Chapter"
+				new_lr.parentfield = "lessons"
+				new_lr.insert(ignore_permissions=True)
+
+			# 8. Chapter Reference for new course
+			new_cr = frappe.new_doc("Chapter Reference")
+			new_cr.chapter = new_chapter.name
+			new_cr.idx = cr.idx
+			new_cr.parent = new_course.name
+			new_cr.parenttype = "LMS Course"
+			new_cr.parentfield = "chapters"
+			new_cr.insert(ignore_permissions=True)
+
+		# 9. Sync lesson count
+		lesson_count = frappe.db.count("Course Lesson", {"course": new_course.name})
+		frappe.db.set_value("LMS Course", new_course.name, "lessons", lesson_count)
+
+		frappe.db.commit()
+		return new_course.name
+
+	except Exception:
+		frappe.db.rollback()
+		for scorm_dir in scorm_dirs_created:
+			if os.path.exists(scorm_dir):
+				shutil.rmtree(scorm_dir, ignore_errors=True)
+		frappe.log_error(frappe.get_traceback(), "duplicate_course failed")
+		raise
+
+
 @frappe.whitelist()
 def delete_batch(batch):
 	frappe.db.delete("LMS Batch Enrollment", {"batch": batch})

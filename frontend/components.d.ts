@@ -82,6 +82,7 @@ declare module 'vue' {
     Discussions: typeof import('./src/components/Discussions.vue')['default']
     DocumentTextIcon: typeof import('./src/components/Icons/DocumentTextIcon.vue')['default']
     DonutChart: typeof import('./src/components/DonutChart.vue')['default']
+    DuplicateCourse: typeof import('./src/components/Modals/DuplicateCourse.vue')['default']
     EditCoverImage: typeof import('./src/components/Modals/EditCoverImage.vue')['default']
     EditProfile: typeof import('./src/components/Modals/EditProfile.vue')['default']
     EmailTemplateModal: typeof import('./src/components/Modals/EmailTemplateModal.vue')['default']

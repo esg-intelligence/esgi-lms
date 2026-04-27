@@ -8,6 +8,15 @@
 					<CustomBreadcrumb class="h-7" :items="breadcrumbs" />
 					<div class="flex items-center sm:mt-0 ml-auto">
 						<Button
+							v-if="courseResource.data?.name"
+							@click="showDuplicateModal = true"
+							class="mr-1"
+						>
+							<template #icon>
+								<Copy class="w-4 h-4 stroke-1.5" />
+							</template>
+						</Button>
+						<Button
 							theme="red"
 							v-if="courseResource.data?.name"
 							@click="trashCourse()"
@@ -388,6 +397,7 @@
 				/>
 			</div>
 		</div>
+		<DuplicateCourse v-model="showDuplicateModal" :course="courseResource.data" />
 	</div>
 </template>
 <script setup>
@@ -409,7 +419,7 @@ import {
 	watch,
 	getCurrentInstance,
 } from 'vue'
-import { Image, Trash2, X } from 'lucide-vue-next'
+import { Copy, Image, Trash2, X } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { capture, startRecording, stopRecording } from '@/telemetry'
 import { useOnboarding } from 'frappe-ui/frappe'
@@ -423,6 +433,7 @@ import {
 } from '@/utils'
 import Link from '@/components/Controls/Link.vue'
 import CourseOutline from '@/components/CourseOutline.vue'
+import DuplicateCourse from '@/components/Modals/DuplicateCourse.vue'
 import MultiSelect from '@/components/Controls/MultiSelect.vue'
 import ColorSwatches from '@/components/Controls/ColorSwatches.vue'
 import CustomBreadcrumb from '@/components/ui/CustomBreadcrumb.vue'
@@ -431,6 +442,7 @@ import FormWrapper from '@/components/ui/FormWrapper.vue'
 
 const user = inject('$user')
 const newTag = ref('')
+const showDuplicateModal = ref(false)
 const { brand } = sessionStore()
 const router = useRouter()
 const instructors = ref([])
