@@ -15,8 +15,10 @@
 			<div class="bg-gray-300 rounded px-3 py-2">
 				<!-- Bot Response Text -->
 				<img v-if="botResponse === ''" :src="loadingChat" class="h-4 w-10" alt="Loading..." />
-				<div v-else v-html="DOMPurify.sanitize(props.botResponse)" ref="messageRef"
-					class="leading-loose text-sm" />
+				<div v-else class="leading-loose text-sm">
+					<div v-html="DOMPurify.sanitize(props.botResponse)" ref="messageRef" />
+					<span v-if="isStreaming" class="streaming-cursor" />
+				</div>
 
 				<details v-if="sources.length > 0" class="relative rounded-md mt-2 w-full">
 					<summary style="color: #135CA2"
@@ -87,6 +89,10 @@ const props = defineProps({
 		type: Boolean,
 		default: false,
 	},
+	isStreaming: {
+		type: Boolean,
+		default: false,
+	},
 	sources: {
 		type: Array,
 		default: [],
@@ -98,5 +104,18 @@ const messageRef = ref(null)
 <style>
 .alert-message p {
 	line-height: 1.2;
+}
+.streaming-cursor {
+	display: inline-block;
+	width: 2px;
+	height: 0.9em;
+	background-color: #6b7280;
+	margin-left: 1px;
+	vertical-align: text-bottom;
+	animation: blink 0.8s step-end infinite;
+}
+@keyframes blink {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0; }
 }
 </style>

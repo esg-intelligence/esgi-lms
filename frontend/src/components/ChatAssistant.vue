@@ -62,6 +62,7 @@
 							:userMessage="msg.userMessage"
 							:botResponse="msg.botResponse"
 							:isLast="index === messages.length - 1"
+							:isStreaming="(isSending || typewriterActive) && index === messages.length - 1"
 							:sources="msg.sources"
 						/>
 					</div>
@@ -120,7 +121,7 @@
 <script setup>
 import { TextInput } from 'frappe-ui'
 import { SendHorizonalIcon, ChevronDown, CircleX } from 'lucide-vue-next'
-import { ref, watch } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
 import MarkdownIt from 'markdown-it'
 import AssistantMessage from './AssistantMessage.vue'
 import chatSearching from '@/assets/images/search-loading.gif'
@@ -137,6 +138,43 @@ const chatAreaRef = ref(null)
 const isSending = ref(false)
 const bsid = ref(null)
 const bcid = ref(null)
+const targetMarkdown = ref('')
+const typewriterActive = ref(false)
+let typewriterFrame = null
+let charIndex = 0
+
+const cancelTypewriter = () => {
+	if (typewriterFrame !== null) {
+		cancelAnimationFrame(typewriterFrame)
+		typewriterFrame = null
+	}
+	typewriterActive.value = false
+}
+
+const tickTypewriter = () => {
+	const target = targetMarkdown.value
+	if (charIndex >= target.length) {
+		typewriterFrame = null
+		typewriterActive.value = false
+		return
+	}
+	charIndex = Math.min(charIndex + 8, target.length)
+	const html = `<div>${divWrapper(md.render(target.slice(0, charIndex)))}</div>`
+	if (messages.value.length > 0) {
+		messages.value[messages.value.length - 1].botResponse = html
+	}
+	typewriterFrame = requestAnimationFrame(tickTypewriter)
+}
+
+watch(targetMarkdown, () => {
+	if (typewriterFrame === null && charIndex < targetMarkdown.value.length) {
+		typewriterActive.value = true
+		typewriterFrame = requestAnimationFrame(tickTypewriter)
+	}
+})
+
+onUnmounted(cancelTypewriter)
+
 const md = new MarkdownIt()
 const divWrapper = (htmlContent) => {
 	// Regular Expression for finding tables
@@ -175,12 +213,17 @@ const sendMessage = async () => {
 	if (!newMessage) return
 	messageText.value = ''
 	isSending.value = true
+	cancelTypewriter()
+	targetMarkdown.value = ''
+	charIndex = 0
 	bsid.value = null
 	bcid.value = null
 	messages.value = [
 		...messages.value,
 		{ userMessage: newMessage, botResponse: '' },
 	]
+	const controller = new AbortController()
+	const timeoutId = setTimeout(() => controller.abort(), 90_000)
 	try {
 		const response = await fetch('/api/method/lms.lms.api.chat_llm', {
 			method: 'POST',
@@ -191,70 +234,55 @@ const sendMessage = async () => {
 				message: newMessage,
 				bsid: bsid.value,
 			}),
+			signal: controller.signal,
 		})
 		const reader = response.body?.getReader()
 		if (!reader) throw new Error('Response body is null')
-		let responseBuffer = ''
-		let isDone = false
-		while (!isDone) {
+		const decoder = new TextDecoder()
+		let lineBuffer = ''
+
+		while (true) {
 			const { done, value } = await reader.read()
-			isDone = done
-			if (isDone) continue
+			if (done) break
 
-			const chunk = new TextDecoder().decode(value)
-			responseBuffer += chunk // Accumulate the chunks into the buffer
+			lineBuffer += decoder.decode(value, { stream: true })
 
-			// Keep searching for the end of the JSON object (closing brace)
-			let startIndex = responseBuffer.lastIndexOf('{') // Find the start of a JSON object
-			let endIndex = responseBuffer.lastIndexOf('}') // Find the end of the JSON object
+			const lines = lineBuffer.split('\n')
+			lineBuffer = lines.pop() ?? ''
 
-			if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+			for (const line of lines) {
+				const trimmed = line.trim().replace(/^data:\s*/, '')
+				if (!trimmed) continue
+
+				let jsonResponse
 				try {
-					// Extract the valid JSON substring
-					const jsonString = responseBuffer.substring(startIndex, endIndex + 1)
-					const jsonResponse = JSON.parse(jsonString)
-					// Reset the buffer to handle any leftover data after the valid JSON object
-					responseBuffer = responseBuffer.slice(endIndex + 1)
-					const {
-						response: partialResponse,
-						tools,
-						bsid: newBsid,
-						bcid: newBcid,
-					} = jsonResponse
-
-					if (tools && tools.length > 0) {
-						const interimResult = tools[tools.length - 1]
-						messages.value.pop()
-						messages.value = [
-							...messages.value,
-							{
-								userMessage: newMessage,
-								botResponse: `<div class="text-sm font-bold flex items-center gap-x-2">
-								<img src="${chatSearching}" class="h-6 w-6" />
-								${md.render(interimResult)}
-							</div>`,
-							},
-						]
-					}
-
-					if (partialResponse) {
-						const processedHtml = divWrapper(md.render(partialResponse))
-						const finalResponse = `<div>${processedHtml}</div>`
-						messages.value.pop()
-						messages.value = [
-							...messages.value,
-							{
-								userMessage: newMessage,
-								botResponse: finalResponse,
-							},
-						]
-					}
-					// Save the new bsid and bcid correctly
-					if (newBsid) bsid.value = newBsid
-					if (newBcid) bcid.value = newBcid
-				} catch (e) {
-					console.error('Error parsing JSON:', e)
+					jsonResponse = JSON.parse(trimmed)
+				} catch {
+					continue
 				}
+
+				const {
+					response: partialResponse,
+					tools,
+					bsid: newBsid,
+					bcid: newBcid,
+				} = jsonResponse
+
+				if (tools && tools.length > 0) {
+					const interimResult = tools[tools.length - 1]
+					messages.value[messages.value.length - 1].botResponse =
+						`<div class="text-sm font-bold flex items-center gap-x-2">
+							<img src="${chatSearching}" class="h-6 w-6" />
+							${md.render(interimResult)}
+						</div>`
+				}
+
+				if (partialResponse) {
+					targetMarkdown.value = partialResponse
+				}
+
+				if (newBsid) bsid.value = newBsid
+				if (newBcid) bcid.value = newBcid
 			}
 		}
 	} catch (error) {
@@ -270,6 +298,7 @@ const sendMessage = async () => {
 			},
 		]
 	} finally {
+		clearTimeout(timeoutId)
 		isSending.value = false
 	}
 }

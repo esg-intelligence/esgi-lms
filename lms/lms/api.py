@@ -2085,18 +2085,19 @@ def chat_llm(message, bsid):
 	headers = {
 		'uid': user_email,
 	}
-	response = requests.post(url=f'{base_url}/general/chat', json=data, headers=headers, stream=True)
+	response = requests.post(url=f'{base_url}/general/chat', json=data, headers=headers, stream=True, timeout=60)
 	def generate():
 		try:
-			for chunk in response.iter_content():
-				yield chunk
+			for line in response.iter_lines():
+				if line:
+					yield line + b'\n'
 		finally:
 			response.close()
 	return Response(
 		generate(),
 		content_type=response.headers.get('content-type', 'application/octet-stream'),
-		status=response.status_code
-)
+		status=response.status_code,
+	)
 
 @frappe.whitelist()
 def llm_get_sources(bsid, bcid):
