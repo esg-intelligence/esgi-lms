@@ -2115,6 +2115,65 @@ def llm_get_sources(bsid, bcid):
 	return response.json()
 
 
+@frappe.whitelist()
+def suggest_assignment_score(submission):
+	from lms.lms.utils import has_evaluator_role, has_moderator_role
+
+	can_grade = (
+		has_moderator_role()
+		or has_evaluator_role()
+		or "Course Creator" in frappe.get_roles()
+	)
+	if not can_grade:
+		frappe.throw(_("You do not have permission to grade submissions."))
+
+	doc = frappe.get_doc("LMS Assignment Submission", submission)
+
+	question = frappe.db.get_value("LMS Assignment", doc.assignment, "question")
+	answer = doc.answer
+
+	if not question:
+		frappe.throw(_("Assignment question not found."))
+	if not answer:
+		frappe.throw(_("No answer found on this submission."))
+
+	base_url = frappe.local.conf.assistant_api
+	user_email = frappe.get_value("User", frappe.session.user, "email")
+
+	response = requests.post(
+		url=f"{base_url}/lms/suggest_score",
+		json={
+			"question": question,
+			"answer": answer,
+		},
+		headers={
+			"uid": user_email,
+		},
+		timeout=60,
+	)
+
+	if not response.ok:
+		frappe.throw(_(f"AI scoring service returned an error: {response.status_code}"))
+
+	result = response.json()
+	suggested_score = result.get("suggested_score")
+	suggested_score_reason = result.get("suggested_score_reason")
+
+	frappe.db.set_value(
+		"LMS Assignment Submission",
+		submission,
+		{
+			"suggested_score": suggested_score,
+			"suggested_score_reason": suggested_score_reason,
+		},
+	)
+
+	return {
+		"suggested_score": suggested_score,
+		"suggested_score_reason": suggested_score_reason,
+	}
+
+
 @frappe.whitelist(allow_guest=True)
 def get_rating_breakdown(course):
 	reviews = frappe.get_all("LMS Course Review", filters={"course": course}, fields=["rating"])

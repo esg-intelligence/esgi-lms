@@ -155,6 +155,19 @@
    "precision": "2"
   },
   {
+   "fieldname": "suggested_score",
+   "fieldtype": "Float",
+   "label": "AI Suggested Score",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "suggested_score_reason",
+   "fieldtype": "Small Text",
+   "label": "AI Suggested Score Reason",
+   "read_only": 1
+  },
+  {
    "default": "0",
    "fieldname": "fail_count",
    "fieldtype": "Int",

@@ -55,14 +55,16 @@
 					}}
 					{{ __('Feel free to make edits to your submission if needed.') }}
 				</div>
-				<div v-if="isAwaitingGrade" class="bg-surface-yellow-1 text-ink-yellow-3 p-3 rounded-md leading-5 text-sm mb-4">
+				<div v-if="isAwaitingGrade"
+					class="bg-surface-yellow-1 text-ink-yellow-3 p-3 rounded-md leading-5 text-sm mb-4">
 					{{ __("Your submission is awaiting review by the instructor.") }}
 					{{ __("You cannot proceed to the next lesson until it is graded.") }}
 				</div>
 				<div v-if="isFailed" class="bg-surface-red-1 text-ink-red-3 p-3 rounded-md leading-5 text-sm mb-4">
 					{{ __("Your submission was marked as Fail. Please review the feedback and re-submit.") }}
 				</div>
-				<div v-if="isMaxAttemptsReached" class="bg-surface-red-1 text-ink-red-3 p-3 rounded-md leading-5 text-sm mb-4">
+				<div v-if="isMaxAttemptsReached"
+					class="bg-surface-red-1 text-ink-red-3 p-3 rounded-md leading-5 text-sm mb-4">
 					<p>{{ __("You have reached the maximum number of attempts for this Post-Test.") }}</p>
 					<p class="mt-1">{{ __("You can re-learn the lesson and try again.") }}</p>
 					<Button class="mt-3" @click="resetAndRelearn()" :loading="isResetting">
@@ -142,6 +144,24 @@
 						{{ __('Score') }}
 					</div>
 					<FormControl v-model="score" type="number" />
+					<div v-if="canShowAiSuggestion">
+						<Button :loading="isFetchingSuggestion" @click="fetchAiSuggestion" variant="subtle">
+							<template #prefix>
+								<Sparkles class="size-4" />
+							</template>
+							{{ __('Get AI Suggestion') }}
+						</Button>
+						<div v-if="suggestedScore !== null" class="mt-3 p-3 bg-surface-blue-2 rounded-md space-y-2">
+							<div class="text-sm font-medium text-ink-gray-9">
+								{{ __('AI Suggested Score') }}:
+								<span class="font-bold">{{ suggestedScore }} / 100</span>
+							</div>
+							<div class="text-sm text-ink-gray-7 leading-5">{{ suggestedScoreReason }}</div>
+							<Button size="sm" variant="outline" theme="blue" @click="applyAiSuggestion">
+								{{ __('Apply Suggested Score') }}
+							</Button>
+						</div>
+					</div>
 					<div>
 						<div class="text-sm text-ink-gray-5 mb-1">
 							{{ __('Comments') }}
@@ -173,7 +193,7 @@ import {
 	toast,
 } from 'frappe-ui'
 import { computed, inject, onMounted, onBeforeUnmount, ref, watch } from 'vue'
-import { FileText, X } from 'lucide-vue-next'
+import { FileText, Sparkles, X } from 'lucide-vue-next'
 import { getFileSize } from '@/utils'
 import { useRouter } from 'vue-router'
 
@@ -181,6 +201,9 @@ const submissionFile = ref(null)
 const answer = ref(null)
 const score = ref(null)
 const comments = ref(null)
+const isFetchingSuggestion = ref(false)
+const suggestedScore = ref(null)
+const suggestedScoreReason = ref(null)
 const router = useRouter()
 const user = inject('$user')
 const isDirty = ref(false)
@@ -302,6 +325,12 @@ watch(submissionResource, () => {
 		} else {
 			score.value = null
 		}
+		if (submissionResource.doc.suggested_score) {
+			suggestedScore.value = submissionResource.doc.suggested_score
+		}
+		if (submissionResource.doc.suggested_score_reason) {
+			suggestedScoreReason.value = submissionResource.doc.suggested_score_reason
+		}
 		if (submissionResource.isDirty) {
 			isDirty.value = true
 		} else if (showUploader() && !submissionFile.value) {
@@ -329,6 +358,33 @@ const submitAssignment = () => {
 		}
 	} else {
 		addNewSubmission()
+	}
+}
+
+const canShowAiSuggestion = computed(() =>
+	canGradeSubmission.value && assignment.data?.type === 'Text'
+)
+
+const fetchAiSuggestion = async () => {
+	isFetchingSuggestion.value = true
+	suggestedScore.value = null
+	suggestedScoreReason.value = null
+	try {
+		const result = await call('lms.lms.api.suggest_assignment_score', {
+			submission: props.submissionName,
+		})
+		suggestedScore.value = result.suggested_score
+		suggestedScoreReason.value = result.suggested_score_reason
+	} catch (err) {
+		toast.error(err.messages?.[0] || __('Failed to get AI suggestion'))
+	} finally {
+		isFetchingSuggestion.value = false
+	}
+}
+
+const applyAiSuggestion = () => {
+	if (suggestedScore.value !== null) {
+		score.value = suggestedScore.value
 	}
 }
 
