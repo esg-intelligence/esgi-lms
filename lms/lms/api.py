@@ -345,6 +345,12 @@ def get_chart_details():
 		"LMS Enrollment", {"progress": 100}
 	)
 	details.certifications = get_growth_details("LMS Certificate", {"published": 1})
+	avg_time = frappe.db.sql("""
+		SELECT COALESCE(AVG(total_time_spent), 0)
+		FROM `tabLMS Enrollment`
+		WHERE progress = 100 AND total_time_spent > 0
+	""")[0][0]
+	details.avg_completion_time = {"seconds": int(avg_time)}
 	return details
 
 @frappe.whitelist()
@@ -358,6 +364,12 @@ def get_user_chart_details():
 		"LMS Enrollment", {"member": frappe.session.user, "progress": 100}
 	)
 	details.certifications = get_growth_details("LMS Certificate", {"member": frappe.session.user})
+	avg_completion_seconds = frappe.db.sql("""
+		SELECT COALESCE(AVG(total_time_spent), 0)
+		FROM `tabLMS Enrollment`
+		WHERE member = %s AND progress = 100 AND total_time_spent > 0
+	""", frappe.session.user)[0][0]
+	details.avg_completion_time = {"seconds": int(avg_completion_seconds)}
 	return details
 
 @frappe.whitelist()
@@ -2221,3 +2233,151 @@ def duplicate_quiz(title, base_name):
 	new_doc.lesson = None
 	new_doc.course = None
 	new_doc.insert()
+
+
+@frappe.whitelist(allow_guest=True)
+def get_learning_time_chart_data(from_date=None, to_date=None):
+	from frappe.utils import getdate, add_months
+	from datetime import timedelta
+
+	if not frappe.db.table_exists("LMS Course Session", cached=False):
+		return []
+
+	if not from_date:
+		from_date = add_months(getdate(), -1)
+	if not to_date:
+		to_date = getdate()
+
+	from_date = getdate(from_date)
+	to_date = getdate(to_date)
+
+	rows = frappe.db.sql("""
+		SELECT
+			DATE(started_at) AS date,
+			SUM(duration_seconds) AS total_seconds
+		FROM `tabLMS Course Session`
+		WHERE DATE(started_at) >= %s
+		  AND DATE(started_at) <= %s
+		GROUP BY DATE(started_at)
+		ORDER BY date ASC
+	""", (from_date.strftime("%Y-%m-%d"), to_date.strftime("%Y-%m-%d")), as_dict=True)
+
+	data_by_date = {str(row.date): int(row.total_seconds or 0) for row in rows}
+
+	result = []
+	current = from_date
+	while current <= to_date:
+		date_str = current.strftime("%Y-%m-%d")
+		result.append({"date": date_str, "count": data_by_date.get(date_str, 0)})
+		current += timedelta(days=1)
+
+	return result
+
+
+@frappe.whitelist(allow_guest=True)
+def get_certifications_chart_data(from_date=None, to_date=None):
+	from frappe.utils import getdate, add_months, get_datetime
+
+	if not from_date:
+		from_date = add_months(getdate(), -1)
+	if not to_date:
+		to_date = getdate()
+
+	from_date_str = get_datetime(from_date).strftime("%Y-%m-%d")
+	to_date_str = get_datetime(to_date).strftime("%Y-%m-%d")
+
+	rows = frappe.db.sql("""
+		SELECT
+			DATE(issue_date) AS date,
+			COUNT(*) AS count
+		FROM `tabLMS Certificate`
+		WHERE DATE(issue_date) >= %s
+		  AND DATE(issue_date) <= %s
+		GROUP BY DATE(issue_date)
+		ORDER BY date ASC
+	""", (from_date_str, to_date_str), as_dict=True)
+
+	return [{"date": str(row.date), "certifications": int(row.count or 0)} for row in rows]
+
+
+@frappe.whitelist()
+def start_course_session(course, lesson):
+	member = frappe.session.user
+	enrollment = frappe.db.get_value("LMS Enrollment", {"course": course, "member": member}, "name")
+	if not enrollment:
+		return None
+
+	now = frappe.utils.now_datetime()
+	doc = frappe.new_doc("LMS Course Session")
+	doc.member = member
+	doc.course = course
+	doc.enrollment = enrollment
+	doc.lesson = lesson
+	doc.started_at = now
+	doc.last_heartbeat_at = now
+	doc.duration_seconds = 0
+	doc.is_complete = 0
+	doc.save(ignore_permissions=True)
+	return doc.name
+
+
+@frappe.whitelist()
+def update_session_heartbeat(session_id):
+	IDLE_THRESHOLD_SECONDS = 300
+
+	session = frappe.db.get_value(
+		"LMS Course Session",
+		session_id,
+		["name", "member", "started_at", "last_heartbeat_at", "enrollment", "course", "lesson"],
+		as_dict=True,
+	)
+	if not session or session.member != frappe.session.user:
+		return None
+
+	now = frappe.utils.now_datetime()
+	last = session.last_heartbeat_at or session.started_at
+	gap = (now - last).total_seconds()
+
+	if gap > IDLE_THRESHOLD_SECONDS:
+		_finalize_session(session_id, session, last)
+		return start_course_session(session.course, session.lesson)
+
+	duration = int((now - session.started_at).total_seconds())
+	frappe.db.set_value("LMS Course Session", session_id, {
+		"last_heartbeat_at": now,
+		"duration_seconds": duration,
+	})
+	return session_id
+
+
+@frappe.whitelist()
+def end_course_session(session_id):
+	session = frappe.db.get_value(
+		"LMS Course Session",
+		session_id,
+		["name", "member", "started_at", "enrollment"],
+		as_dict=True,
+	)
+	if not session or session.member != frappe.session.user:
+		return
+
+	now = frappe.utils.now_datetime()
+	_finalize_session(session_id, session, now)
+
+
+def _finalize_session(session_id, session, end_time):
+	duration = int((end_time - session.started_at).total_seconds())
+	frappe.db.set_value("LMS Course Session", session_id, {
+		"ended_at": end_time,
+		"duration_seconds": max(duration, 0),
+		"is_complete": 1,
+	})
+	_recalculate_enrollment_time(session.enrollment)
+
+
+def _recalculate_enrollment_time(enrollment):
+	total = frappe.db.sql(
+		"SELECT COALESCE(SUM(duration_seconds), 0) FROM `tabLMS Course Session` WHERE enrollment = %s",
+		enrollment,
+	)[0][0]
+	frappe.db.set_value("LMS Enrollment", enrollment, "total_time_spent", int(total))

@@ -332,6 +332,10 @@ const currentTab = ref('Notes')
 const featuredAudio = ref(null)
 const sidebarMinimized = ref(false)
 
+const sessionId = ref(null)
+let heartbeatInterval = null
+const HEARTBEAT_MS = 60_000
+
 // Mobile notice
 const isSmallDevice = ref(window.screen.width < 768)
 const desktopModeEnabled = ref(localStorage.getItem('lms_lesson_desktop_mode') === '1')
@@ -379,6 +383,7 @@ onMounted(() => {
 	startTimer()
 	sidebarStore.isSidebarCollapsed = true
 	document.addEventListener('fullscreenchange', attachFullscreenEvent)
+	document.addEventListener('visibilitychange', onVisibilityChange)
 	socket.on('update_lesson_progress', (data) => {
 		if (data.course === props.courseName) {
 			lessonProgress.value = data.progress
@@ -403,7 +408,9 @@ const attachFullscreenEvent = () => {
 
 onBeforeUnmount(() => {
 	document.removeEventListener('fullscreenchange', attachFullscreenEvent)
+	document.removeEventListener('visibilitychange', onVisibilityChange)
 	sidebarStore.isSidebarCollapsed = false
+	endSession()
 	trackVideoWatchDuration()
 })
 
@@ -459,6 +466,7 @@ const setupLesson = (data) => {
 		checkIfDiscussionsAllowed()
 	})
 	checkQuiz()
+	startSession()
 }
 
 const checkQuiz = () => {
@@ -603,6 +611,7 @@ watch(
 )
 
 const resetLessonState = (newChapterNumber, newLessonNumber) => {
+	endSession()
 	editor.value = null
 	instructorEditor.value = null
 	allowDiscussions.value = false
@@ -750,6 +759,49 @@ const updateVideoTime = (video) => {
 	}
 }
 
+const startSession = async () => {
+	if (!user.data || !lesson.data?.membership || !lesson.data?.name || sessionId.value) return
+	const id = await call('lms.lms.api.start_course_session', {
+		course: props.courseName,
+		lesson: lesson.data.name,
+	})
+	if (!id) return
+	sessionId.value = id
+	startHeartbeat()
+}
+
+const startHeartbeat = () => {
+	stopHeartbeat()
+	if (document.visibilityState === 'hidden') return
+	heartbeatInterval = setInterval(async () => {
+		if (!sessionId.value) return
+		const newId = await call('lms.lms.api.update_session_heartbeat', {
+			session_id: sessionId.value,
+		})
+		if (newId && newId !== sessionId.value) sessionId.value = newId
+	}, HEARTBEAT_MS)
+}
+
+const stopHeartbeat = () => {
+	clearInterval(heartbeatInterval)
+	heartbeatInterval = null
+}
+
+const endSession = () => {
+	stopHeartbeat()
+	if (!sessionId.value) return
+	call('lms.lms.api.end_course_session', { session_id: sessionId.value })
+	sessionId.value = null
+}
+
+const onVisibilityChange = () => {
+	if (document.visibilityState === 'hidden') {
+		stopHeartbeat()
+	} else {
+		startHeartbeat()
+	}
+}
+
 const startTimer = () => {
 	let timerInterval = setInterval(() => {
 		timer.value++
@@ -763,6 +815,7 @@ const startTimer = () => {
 
 onBeforeUnmount(() => {
 	clearInterval(timerInterval)
+	stopHeartbeat()
 })
 
 const checkIfDiscussionsAllowed = () => {

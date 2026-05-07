@@ -75,7 +75,7 @@ import {
 	createResource,
 	usePageMeta,
 } from 'frappe-ui'
-import { computed, inject, onBeforeMount, onBeforeUnmount, ref } from 'vue'
+import { computed, inject, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { useSidebar } from '@/stores/sidebar'
@@ -94,6 +94,10 @@ const showAssistantModal = ref(true)
 const isSuccessfullyCompleted = ref(false)
 const lessonProgress = ref(0)
 const sidebarMinimized = ref(false)
+
+const sessionId = ref(null)
+let heartbeatInterval = null
+const HEARTBEAT_MS = 60_000
 
 // If courseRestartOnFailure is true, student has to restart the whole course if failed.
 // Otherwise, student could retake the final quiz portion.
@@ -115,6 +119,7 @@ onBeforeMount(() => {
 	sidebarStore.isSidebarCollapsed = true
 	progress.reload() // Fix reload scorm content after it was opened
 	setupSCORMAPI()
+	document.addEventListener('visibilitychange', onVisibilityChange)
 	socket.on('update_lesson_progress', (data) => {
 		if (data.course === props.courseName) {
 			lessonProgress.value = data.progress
@@ -123,7 +128,10 @@ onBeforeMount(() => {
 })
 
 onBeforeUnmount(() => {
+	document.removeEventListener('visibilitychange', onVisibilityChange)
 	sidebarStore.isSidebarCollapsed = false
+	endSession()
+	stopHeartbeat()
 })
 
 const chapter = createDocumentResource({
@@ -133,6 +141,7 @@ const chapter = createDocumentResource({
 	cache: ['chapter', props.chapterName],
 	onSuccess(data) {
 		progress.submit()
+		startSession()
 	},
 })
 
@@ -278,6 +287,49 @@ const enrollStudent = () => {
 			},
 		},
 	)
+}
+
+const startSession = async () => {
+	if (!user.data || !enrollment.data?.length || !chapter.doc?.lessons?.[0]?.lesson || sessionId.value) return
+	const id = await call('lms.lms.api.start_course_session', {
+		course: props.courseName,
+		lesson: chapter.doc.lessons[0].lesson,
+	})
+	if (!id) return
+	sessionId.value = id
+	startHeartbeat()
+}
+
+const startHeartbeat = () => {
+	stopHeartbeat()
+	if (document.visibilityState === 'hidden') return
+	heartbeatInterval = setInterval(async () => {
+		if (!sessionId.value) return
+		const newId = await call('lms.lms.api.update_session_heartbeat', {
+			session_id: sessionId.value,
+		})
+		if (newId && newId !== sessionId.value) sessionId.value = newId
+	}, HEARTBEAT_MS)
+}
+
+const stopHeartbeat = () => {
+	clearInterval(heartbeatInterval)
+	heartbeatInterval = null
+}
+
+const endSession = () => {
+	stopHeartbeat()
+	if (!sessionId.value) return
+	call('lms.lms.api.end_course_session', { session_id: sessionId.value })
+	sessionId.value = null
+}
+
+const onVisibilityChange = () => {
+	if (document.visibilityState === 'hidden') {
+		stopHeartbeat()
+	} else {
+		startHeartbeat()
+	}
 }
 
 const setupSCORMAPI = () => {

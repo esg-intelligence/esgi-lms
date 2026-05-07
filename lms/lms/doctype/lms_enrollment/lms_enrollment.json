@@ -8,6 +8,7 @@
  "field_order": [
   "course",
   "progress",
+  "total_time_spent",
   "payment",
   "current_lesson",
   "column_break_3",
@@ -99,6 +100,13 @@
    "fieldname": "progress",
    "fieldtype": "Float",
    "label": "Progress",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "total_time_spent",
+   "fieldtype": "Int",
+   "label": "Total Time Spent (Seconds)",
    "read_only": 1
   },
   {

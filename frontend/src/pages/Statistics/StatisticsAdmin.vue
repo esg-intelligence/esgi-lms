@@ -1,6 +1,6 @@
 <template>
 	<div v-if="chartDetails.data" class="p-5">
-		<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 gap-4">
+		<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-6 gap-4">
 			<Tooltip :text="__('Published Courses')">
 				<!-- <NumberChart class="border rounded-xl"
 						:config="{ title: 'Courses', value: chartDetails.data.courses.count }" /> -->
@@ -113,6 +113,20 @@
 					</div>
 				</div>
 			</Tooltip>
+			<Tooltip :text="__('Average time to complete a course (completions only)')">
+				<div class="border rounded-xl p-4 flex items-center gap-4">
+					<div class="bg-primary-50 w-12 h-12 rounded-full flex items-center justify-center">
+						<ClockIcon class="text-primary-500 w-6 h-6" />
+					</div>
+					<div class="flex-1">
+						<div class="text-xl text-gray-900 font-semibold">
+							{{ chartDetails.data.avg_completion_time?.seconds > 0 ?
+								formatDuration(chartDetails.data.avg_completion_time.seconds) : '—' }}
+						</div>
+						<div class="text-sm text-gray-700">{{ __('Avg Completion Time') }}</div>
+					</div>
+				</div>
+			</Tooltip>
 		</div>
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
 			<div class="border rounded-xl min-h-72">
@@ -155,6 +169,17 @@
 				</div>
 				<DonutChart v-if="courseCompletion.data" :data="courseCompletion.data" />
 			</div>
+			<div class="border rounded-xl min-h-72">
+				<div>
+					<div class="text-lg text-gray-900 font-medium px-5 py-3 border-b">
+						{{ __('Daily Active Learning Time') }}</div>
+				</div>
+				<div class="px-5 py-3">
+					<AreaChart v-if="learningTimeChart.data"
+						:data="(learningTimeChart.data || []).map(e => ({ x: e.date, y: Math.round(e.count / 60) }))"
+						:name="__('Minutes')" />
+				</div>
+			</div>
 		</div>
 	</div>
 </template>
@@ -166,7 +191,7 @@ import {
 	// DonutChart,
 	Tooltip,
 } from 'frappe-ui'
-import { ArrowUpIcon, ArrowDownIcon } from 'lucide-vue-next'
+import { ArrowUpIcon, ArrowDownIcon, Clock as ClockIcon } from 'lucide-vue-next'
 import BookIcon from '@/components/Icons/BookIcon.vue'
 import UserCircleAddIcon from '@/components/Icons/UserCircleAddIcon.vue'
 import ClipboardIcon from "@/components/Icons/ClipboardIcon.vue"
@@ -174,6 +199,7 @@ import TickCircleIcon from '@/components/Icons/TickCircleIcon.vue'
 import AwardIcon from '@/components/Icons/AwardIcon.vue'
 import AreaChart from '@/components/AreaChart.vue'
 import DonutChart from '@/components/DonutChart.vue'
+import { formatDuration } from '@/utils'
 
 const chartDetails = createResource({
 	url: 'lms.lms.api.get_chart_details',
@@ -215,17 +241,14 @@ const enrollmentChart = createResource({
 })
 
 const certification = createResource({
-	url: 'lms.lms.utils.get_chart_data',
+	url: 'lms.lms.api.get_certifications_chart_data',
 	cache: ['certifications'],
-	params: {
-		chart_name: 'Certification',
-	},
 	auto: true,
 	transform(data) {
 		return data.map((item) => {
 			return {
 				date: new Date(item.date),
-				certifications: item.count,
+				certifications: item.certifications,
 			}
 		})
 	},
@@ -235,5 +258,19 @@ const courseCompletion = createResource({
 	url: 'lms.lms.utils.get_course_completion_data',
 	auto: true,
 	cache: ['courseCompletion'],
+})
+
+const learningTimeChart = createResource({
+	url: 'lms.lms.api.get_learning_time_chart_data',
+	// cache: ['learningTime'],
+	auto: true,
+	transform(data) {
+		return data.map((item) => {
+			return {
+				date: new Date(item.date),
+				count: item.count,
+			}
+		})
+	},
 })
 </script>

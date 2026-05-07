@@ -1,7 +1,7 @@
 <template>
 	<div class="px-5 pt-5 pb-10">
 		<div v-if="chartDetails.data">
-			<div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+			<div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
 				<Tooltip :text="__('Courses in Enrolled')">
 					<div class="border rounded-xl p-4 flex items-center gap-4">
 						<div class="bg-primary-50 w-12 h-12 rounded-full flex items-center justify-center">
@@ -48,6 +48,19 @@
 							}}
 							</div>
 							<div class="text-sm text-gray-700">{{ __('Certificates') }}</div>
+						</div>
+					</div>
+				</Tooltip>
+				<Tooltip :text="__('Average time to complete a course')">
+					<div class="border rounded-xl p-4 flex items-center gap-4">
+						<div class="bg-primary-50 w-12 h-12 rounded-full flex items-center justify-center">
+							<ClockIcon class="text-primary-500 w-6 h-6" />
+						</div>
+						<div class="flex-1">
+							<div class="text-xl text-gray-900 font-semibold">
+								{{ chartDetails.data.avg_completion_time?.seconds > 0 ? formatDuration(chartDetails.data.avg_completion_time.seconds) : '—' }}
+							</div>
+							<div class="text-sm text-gray-700">{{ __('Avg Completion Time') }}</div>
 						</div>
 					</div>
 				</Tooltip>
@@ -102,12 +115,14 @@
 
 <script setup lang="ts">
 import { createResource, Tooltip } from 'frappe-ui'
+import { Clock as ClockIcon } from 'lucide-vue-next'
 import BookIcon from '@/components/Icons/BookIcon.vue'
 import TickCircleIcon from '@/components/Icons/TickCircleIcon.vue'
 import AwardIcon from '@/components/Icons/AwardIcon.vue'
 import GaugeChart from '@/components/GaugeChart.vue'
 import BarChart from '@/components/BarChart.vue'
 import DonutChart from '@/components/DonutChart.vue'
+import { formatDuration } from '@/utils'
 
 const props = defineProps<{
 	myLiveClasses: any

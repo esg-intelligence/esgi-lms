@@ -1,0 +1,17 @@
+[
+ {
+  "based_on": "started_at",
+  "chart_name": "Daily Active Learning Time",
+  "chart_type": "Sum",
+  "docstatus": 0,
+  "doctype": "Dashboard Chart",
+  "document_type": "LMS Course Session",
+  "filters_json": "[]",
+  "modified": "2026-05-07 00:00:00.000000",
+  "name": "Daily Active Learning Time",
+  "time_interval": "Daily",
+  "timespan": "Last Month",
+  "type": "Line",
+  "value_based_on": "duration_seconds"
+ }
+]
