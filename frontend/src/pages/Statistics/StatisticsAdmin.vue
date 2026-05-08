@@ -172,12 +172,12 @@
 			<div class="border rounded-xl min-h-72">
 				<div>
 					<div class="text-lg text-gray-900 font-medium px-5 py-3 border-b">
-						{{ __('Daily Active Learning Time') }}</div>
+						{{ __('Avg Daily Learning Time per Student') }}</div>
 				</div>
 				<div class="px-5 py-3">
 					<AreaChart v-if="learningTimeChart.data"
 						:data="(learningTimeChart.data || []).map(e => ({ x: e.date, y: Math.round(e.count / 60) }))"
-						:name="__('Minutes')" />
+						:name="__('Avg Minutes')" />
 				</div>
 			</div>
 		</div>

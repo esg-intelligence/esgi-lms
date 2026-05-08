@@ -2254,7 +2254,7 @@ def get_learning_time_chart_data(from_date=None, to_date=None):
 	rows = frappe.db.sql("""
 		SELECT
 			DATE(started_at) AS date,
-			SUM(duration_seconds) AS total_seconds
+			SUM(duration_seconds) / COUNT(DISTINCT member) AS avg_seconds
 		FROM `tabLMS Course Session`
 		WHERE DATE(started_at) >= %s
 		  AND DATE(started_at) <= %s
@@ -2262,7 +2262,7 @@ def get_learning_time_chart_data(from_date=None, to_date=None):
 		ORDER BY date ASC
 	""", (from_date.strftime("%Y-%m-%d"), to_date.strftime("%Y-%m-%d")), as_dict=True)
 
-	data_by_date = {str(row.date): int(row.total_seconds or 0) for row in rows}
+	data_by_date = {str(row.date): int(row.avg_seconds or 0) for row in rows}
 
 	result = []
 	current = from_date
