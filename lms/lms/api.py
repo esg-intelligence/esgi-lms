@@ -1981,20 +1981,30 @@ def track_new_watch_time(lesson, video):
 
 @frappe.whitelist()
 def get_course_progress_distribution(course):
-	all_progress = frappe.get_all(
+	all_enrollments = frappe.get_all(
 		"LMS Enrollment",
-		{
-			"course": course,
-		},
-		pluck="progress",
+		{"course": course},
+		["progress", "total_time_spent"],
 	)
 
-	average_progress = get_average_course_progress(all_progress)
-	progress_distribution = get_progress_distribution(all_progress)
+	progress_list = [e.progress for e in all_enrollments]
+	average_progress = get_average_course_progress(progress_list)
+	progress_distribution = get_progress_distribution(progress_list)
+
+	time_values = [e.total_time_spent for e in all_enrollments if (e.total_time_spent or 0) > 0]
+	avg_time_spent = int(sum(time_values) / len(time_values)) if time_values else 0
+
+	completion_times = [
+		e.total_time_spent for e in all_enrollments
+		if e.progress == 100 and (e.total_time_spent or 0) > 0
+	]
+	avg_completion_time = int(sum(completion_times) / len(completion_times)) if completion_times else 0
 
 	return {
 		"average_progress": average_progress,
 		"progress_distribution": progress_distribution,
+		"avg_time_spent": avg_time_spent,
+		"avg_completion_time": avg_completion_time,
 	}
 
 

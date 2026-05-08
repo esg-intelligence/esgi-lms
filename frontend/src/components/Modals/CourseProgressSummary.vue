@@ -70,7 +70,12 @@
 													</div>
 												</template>
 												<div>
-													{{ row[column.key].toString() }}
+													<template v-if="column.key === 'total_time_spent'">
+														{{ (row.total_time_spent || 0) > 0 ? formatDuration(row.total_time_spent) : '—' }}
+													</template>
+													<template v-else>
+														{{ row[column.key].toString() }}
+													</template>
 												</div>
 											</ListRowItem>
 										</template>
@@ -104,6 +109,28 @@
 							:config="{
 								title: __('Average Progress %'),
 								value: chartDetails.data?.average_progress || 0,
+							}"
+						/>
+					</div>
+					<div
+						class="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4"
+					>
+						<NumberChart
+							class="border rounded-md w-full"
+							:config="{
+								title: __('Avg Time Spent'),
+								value: (chartDetails.data?.avg_time_spent || 0) > 0
+									? formatDuration(chartDetails.data.avg_time_spent)
+									: '—',
+							}"
+						/>
+						<NumberChart
+							class="border rounded-md w-full"
+							:config="{
+								title: __('Avg Completion Time'),
+								value: (chartDetails.data?.avg_completion_time || 0) > 0
+									? formatDuration(chartDetails.data.avg_completion_time)
+									: '—',
 							}"
 						/>
 					</div>
@@ -147,6 +174,7 @@ import {
 } from 'frappe-ui'
 import { computed, ref, watch } from 'vue'
 import { theme } from '@/utils/theme'
+import { formatDuration } from '@/utils'
 
 const show = defineModel<boolean>({ default: false })
 const searchFilter = ref<string | null>(null)
@@ -183,6 +211,7 @@ const progressList = createListResource({
 		'member_image',
 		'member_username',
 		'progress',
+		'total_time_spent',
 	],
 	pageLength: 50,
 	auto: true,
@@ -217,7 +246,7 @@ const progressColumns = computed(() => {
 		{
 			label: __('Member'),
 			key: 'member_name',
-			width: '60%',
+			width: '50%',
 			icon: 'user',
 		},
 		{
@@ -225,6 +254,12 @@ const progressColumns = computed(() => {
 			key: 'progress',
 			align: 'right',
 			icon: 'trending-up',
+		},
+		{
+			label: __('Time Spent'),
+			key: 'total_time_spent',
+			align: 'right',
+			icon: 'clock',
 		},
 	]
 })
