@@ -1162,9 +1162,20 @@ def _copy_scorm_directory(old_chapter, new_course_name):
 
 
 @frappe.whitelist()
-def duplicate_course(course, new_title):
+def check_course_name_available(name):
+	return not frappe.db.exists("LMS Course", name)
+
+
+@frappe.whitelist()
+def duplicate_course(course, new_title, new_name):
 	if not frappe.db.exists("LMS Course", course):
 		frappe.throw(_("Course not found"))
+
+	new_name = (new_name or "").strip()
+	if not new_name:
+		frappe.throw(_("Course ID is required"))
+	if frappe.db.exists("LMS Course", new_name):
+		frappe.throw(_("Course ID '{0}' is already in use").format(new_name))
 
 	source = frappe.get_doc("LMS Course", course)
 	user = frappe.session.user
@@ -1177,6 +1188,7 @@ def duplicate_course(course, new_title):
 	try:
 		# 1. Create new LMS Course (copies instructors, related_courses, etc.)
 		new_course = frappe.copy_doc(source)
+		new_course.name = new_name  # override copy_doc's preserved name so autoname() skips it
 		new_course.title = new_title
 		new_course.published = 0
 		new_course.published_on = None
