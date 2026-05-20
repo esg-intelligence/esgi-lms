@@ -261,6 +261,11 @@ const routes = [
 		component: () => import('@/pages/DataImport.vue'),
 		props: true,
 	},
+	{
+		path: '/profile-setup',
+		name: 'ProfileSetup',
+		component: () => import('@/pages/ProfileSetup.vue'),
+	},
 ]
 
 let router = createRouter({
@@ -279,6 +284,17 @@ router.beforeEach(async (to, from, next) => {
 		}
 	} catch (error) {
 		isLoggedIn = false
+	}
+
+	if (
+		isLoggedIn &&
+		to.name !== 'ProfileSetup' &&
+		(!userResource.data?.sector || !userResource.data?.sub_sector)
+	) {
+		return next({
+			name: 'ProfileSetup',
+			query: { redirect: to.fullPath },
+		})
 	}
 
 	if (!isLoggedIn) {

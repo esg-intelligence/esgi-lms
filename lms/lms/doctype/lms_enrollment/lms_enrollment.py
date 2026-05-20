@@ -129,6 +129,15 @@ def validate_course_enrollment_eligibility(course, member):
 		if not payment:
 			frappe.throw(_("You need to complete the payment for this course before enrolling."))
 
+	if member == frappe.session.user:
+		member_sector = frappe.db.get_value("User", member, "sector")
+		if not member_sector:
+			frappe.throw(
+				_(
+					"Please complete your profile by selecting your Sector and Industry before enrolling in this course."
+				)
+			)
+
 
 @frappe.whitelist()
 def update_current_membership(batch, course, member):
