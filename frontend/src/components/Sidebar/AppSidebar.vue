@@ -306,6 +306,21 @@ const addAssignments = () => {
 	})
 }
 
+const addUsers = () => {
+	const data = userResource.data
+	if (!data) return
+	if (!data.is_moderator && !data.is_instructor && !data.is_evaluator && !data.is_system_manager) return
+	if (sidebarLinks.value.some((link) => link.label === 'Users')) return
+	const assignmentsIdx = sidebarLinks.value.findIndex((link) => link.label === 'Assignments')
+	const insertAt = assignmentsIdx >= 0 ? assignmentsIdx + 1 : sidebarLinks.value.length
+	sidebarLinks.value.splice(insertAt, 0, {
+		label: 'Users',
+		icon: 'Users',
+		to: 'UserList',
+		activeFor: ['UserList'],
+	})
+}
+
 const addProgrammingExercises = () => {
 	if (!isInstructor.value && !isModerator.value) return
 	const programmingExercisesLinkExists = sidebarLinks.value.some(
@@ -721,6 +736,7 @@ watch(userResource, () => {
 		addStatistics()
 		addQuizzes()
 		addAssignments()
+		addUsers()
 	}
 	setUpOnboarding()
 })

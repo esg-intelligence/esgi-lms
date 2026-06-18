@@ -107,6 +107,17 @@ const routes = [
 		],
 	},
 	{
+		path: '/users',
+		name: 'UserList',
+		component: () => import('@/pages/UserList.vue'),
+	},
+	{
+		path: '/user-progress/:username',
+		name: 'UserCourseProgress',
+		component: () => import('@/pages/UserCourseProgress.vue'),
+		props: true,
+	},
+	{
 		path: '/job-openings',
 		name: 'Jobs',
 		component: () => import('@/pages/Jobs.vue'),

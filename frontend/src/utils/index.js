@@ -417,6 +417,7 @@ export function getSidebarLinks() {
 				'Lesson',
 				'CourseForm',
 				'LessonForm',
+				'UserCourseProgress',
 			],
 		},
 		{

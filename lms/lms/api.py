@@ -2397,6 +2397,150 @@ def _finalize_session(session_id, session, end_time):
 	_recalculate_enrollment_time(session.enrollment)
 
 
+@frappe.whitelist()
+def get_user_course_progress(username, start=0, page_length=10, search=""):
+	user = frappe.session.user
+	if not ("Moderator" in frappe.get_roles(user) or "Instructor" in frappe.get_roles(user)):
+		frappe.throw("Not permitted", frappe.PermissionError)
+
+	member = frappe.db.get_value("User", {"username": username}, "name")
+	if not member:
+		frappe.throw(f"User '{username}' not found")
+
+	user_info = frappe.db.get_value(
+		"User", member, ["full_name", "user_image", "name"], as_dict=True
+	)
+	user_info["username"] = username
+
+	start = int(start)
+	page_length = int(page_length)
+
+	filters = {"member": member}
+	if search:
+		matching_courses = frappe.get_all(
+			"LMS Course",
+			filters={"title": ["like", f"%{search}%"]},
+			pluck="name",
+		)
+		if not matching_courses:
+			return {"user": user_info, "enrollments": [], "total": 0}
+		filters["course"] = ["in", matching_courses]
+
+	total = frappe.db.count("LMS Enrollment", filters)
+
+	enrollments = frappe.get_all(
+		"LMS Enrollment",
+		filters=filters,
+		fields=["course", "progress", "total_time_spent", "current_lesson"],
+		order_by="progress desc, creation desc",
+		start=start,
+		page_length=page_length,
+	)
+
+	# Collect all lesson IDs for the current page to scope the progress query
+	page_lessons = []
+	for enrollment in enrollments:
+		for cr in frappe.get_all("Chapter Reference", filters={"parent": enrollment.course}, fields=["chapter"]):
+			for lr in frappe.get_all("Lesson Reference", filters={"parent": cr.chapter}, fields=["lesson"]):
+				page_lessons.append(lr.lesson)
+
+	progress_records = frappe.get_all(
+		"LMS Course Progress",
+		filters={"member": member, "lesson": ["in", page_lessons]},
+		fields=["lesson", "status"],
+	) if page_lessons else []
+	progress_map = {r.lesson: r.status for r in progress_records}
+
+	for enrollment in enrollments:
+		course = enrollment.course
+		enrollment["course_title"] = frappe.db.get_value("LMS Course", course, "title")
+
+		chapters_raw = frappe.get_all(
+			"Chapter Reference",
+			filters={"parent": course},
+			fields=["chapter", "idx"],
+			order_by="idx",
+		)
+
+		chapters = []
+		for cr in chapters_raw:
+			chapter_title = frappe.db.get_value("Course Chapter", cr.chapter, "title")
+			lessons_raw = frappe.get_all(
+				"Lesson Reference",
+				filters={"parent": cr.chapter},
+				fields=["lesson", "idx"],
+				order_by="idx",
+			)
+			lessons = []
+			for lr in lessons_raw:
+				lesson_title = frappe.db.get_value("Course Lesson", lr.lesson, "title")
+				status = progress_map.get(lr.lesson)
+				if status == "Complete":
+					display_status = "Complete"
+				elif status == "Partially Complete":
+					display_status = "Partially Complete"
+				else:
+					display_status = "Not Started"
+				lessons.append({
+					"lesson": lr.lesson,
+					"title": lesson_title,
+					"idx": lr.idx,
+					"status": display_status,
+				})
+			chapters.append({
+				"chapter": cr.chapter,
+				"title": chapter_title,
+				"idx": cr.idx,
+				"lessons": lessons,
+			})
+
+		enrollment["chapters"] = chapters
+
+	return {"user": user_info, "enrollments": enrollments, "total": total}
+
+
+@frappe.whitelist()
+def get_user_list(start=0, page_length=20, search="", order_by="full_name asc"):
+	PRIVILEGED_ROLES = {"Moderator", "Course Creator", "Batch Evaluator", "System Manager"}
+	if not PRIVILEGED_ROLES.intersection(frappe.get_roles(frappe.session.user)):
+		frappe.throw("Not permitted", frappe.PermissionError)
+
+	start = int(start)
+	page_length = int(page_length)
+
+	ALLOWED_FIELDS = {"full_name", "name", "last_active"}
+	ALLOWED_DIRS = {"asc", "desc"}
+	parts = str(order_by).split()
+	safe_order_by = order_by if (
+		len(parts) == 2 and parts[0] in ALLOWED_FIELDS and parts[1] in ALLOWED_DIRS
+	) else "full_name asc"
+
+	filters = {"enabled": 1, "name": ["not in", ["Administrator", "Guest"]]}
+	or_filters = {}
+	if search:
+		or_filters["full_name"] = ["like", f"%{search}%"]
+		or_filters["name"] = ["like", f"%{search}%"]
+
+	total = len(frappe.get_all(
+		"User",
+		filters=filters,
+		or_filters=or_filters,
+		pluck="name",
+	))
+
+	users = frappe.get_all(
+		"User",
+		filters=filters,
+		or_filters=or_filters,
+		fields=["name", "full_name", "user_image", "username", "last_active"],
+		order_by=safe_order_by,
+		start=start,
+		page_length=page_length,
+	)
+
+	return {"users": users, "total": total}
+
+
 def _recalculate_enrollment_time(enrollment):
 	total = frappe.db.sql(
 		"SELECT COALESCE(SUM(duration_seconds), 0) FROM `tabLMS Course Session` WHERE enrollment = %s",

@@ -40,6 +40,15 @@
 									{{ profile.data.headline || 'Learning Enthusiast' }}
 								</p>
 							</div>
+							<router-link
+								v-if="$user.data?.is_moderator && !isSessionUser()"
+								:to="{ name: 'UserCourseProgress', params: { username: props.username } }"
+								class="mt-3 sm:mt-0 flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+								:title="__('View course progress')"
+							>
+								<BarChart2 class="h-4 w-4" />
+								<span>{{ __('Course Progress') }}</span>
+							</router-link>
 						</div>
 					</div>
 				</div>
@@ -97,7 +106,7 @@
 import { Button, call, createResource, usePageMeta, Avatar } from 'frappe-ui'
 import { inject, watch, ref, onMounted, watchEffect } from 'vue'
 import { sessionStore } from '@/stores/session'
-import { Edit } from 'lucide-vue-next'
+import { Edit, BarChart2 } from 'lucide-vue-next'
 import { useRoute, useRouter } from 'vue-router'
 import { convertToTitleCase } from '@/utils'
 import UserAvatar from '@/components/UserAvatar.vue'

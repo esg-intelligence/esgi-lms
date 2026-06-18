@@ -47,12 +47,7 @@
 								</ListHeaderItem>
 							</ListHeader>
 							<ListRows v-for="row in progressList.data">
-								<router-link
-									:to="{
-										name: 'Profile',
-										params: { username: row.member_username },
-									}"
-								>
+								<div>
 									<ListRow :row="row">
 										<template #default="{ column, item }">
 											<ListRowItem
@@ -73,6 +68,22 @@
 													<template v-if="column.key === 'total_time_spent'">
 														{{ (row.total_time_spent || 0) > 0 ? formatDuration(row.total_time_spent) : '—' }}
 													</template>
+													<template v-else-if="column.key === 'actions'">
+														<div class="flex items-center gap-3">
+															<router-link
+																:to="{ name: 'UserCourseProgress', params: { username: row.member_username } }"
+																title="View course progress"
+															>
+																<FeatherIcon name="bar-chart-2" class="h-4 w-4 text-ink-gray-5 hover:text-ink-gray-9" />
+															</router-link>
+															<router-link
+																:to="{ name: 'Profile', params: { username: row.member_username } }"
+																title="View profile"
+															>
+																<FeatherIcon name="user" class="h-4 w-4 text-ink-gray-5 hover:text-ink-gray-9" />
+															</router-link>
+														</div>
+													</template>
 													<template v-else>
 														{{ row[column.key].toString() }}
 													</template>
@@ -80,7 +91,7 @@
 											</ListRowItem>
 										</template>
 									</ListRow>
-								</router-link>
+								</div>
 							</ListRows>
 						</ListView>
 						<div
@@ -260,6 +271,12 @@ const progressColumns = computed(() => {
 			key: 'total_time_spent',
 			align: 'right',
 			icon: 'clock',
+		},
+		{
+			label: '',
+			key: 'actions',
+			align: 'right',
+			width: '80px',
 		},
 	]
 })
