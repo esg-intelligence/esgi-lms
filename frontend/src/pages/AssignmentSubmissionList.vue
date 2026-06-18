@@ -20,7 +20,7 @@
 			/>
 		</div>
 
-		<template v-if="submissions.loading || submissions.data?.length">
+		<template v-if="submissionsLoading || submissionsData.length">
 			<div class="flex items-center justify-end gap-2 mb-3 text-sm text-ink-gray-5">
 				<span>{{ __('Rows per page:') }}</span>
 				<FormControl
@@ -66,7 +66,7 @@
 				</TableHeader>
 				<TableBody>
 					<TableRow
-						v-for="row in submissions.data"
+						v-for="row in submissionsData"
 						:key="row.name"
 						class="cursor-pointer hover:bg-surface-gray-1"
 						@click="goToSubmission(row)"
@@ -117,7 +117,6 @@ import {
 	Badge,
 	Breadcrumbs,
 	call,
-	createListResource,
 	FormControl,
 	usePageMeta,
 } from 'frappe-ui'
@@ -149,6 +148,8 @@ const sortDirection = ref('desc')
 const pageLength = ref(50)
 const currentPage = ref(1)
 const totalCount = ref(0)
+const submissionsData = ref([])
+const submissionsLoading = ref(false)
 
 const orderBy = computed(() => `${sortField.value} ${sortDirection.value}`)
 const totalPages = computed(() => Math.ceil(totalCount.value / pageLength.value) || 1)
@@ -180,19 +181,6 @@ const getAssignmentFilters = () => {
 	return filters
 }
 
-const submissions = createListResource({
-	doctype: 'LMS Assignment Submission',
-	fields: ['name', 'assignment', 'assignment_title', 'member_name', 'creation', 'status'],
-	orderBy: orderBy.value,
-	pageLength: pageLength.value,
-	start: 0,
-	transform(data) {
-		return data.map((row) => ({
-			...row,
-			creation: dayjs(row.creation).fromNow(),
-		}))
-	},
-})
 
 watch([assignmentID, member, status], () => {
 	currentPage.value = 1
@@ -212,13 +200,24 @@ watch(pageLength, () => {
 })
 
 const reloadSubmissions = () => {
-	submissions.update({
+	submissionsLoading.value = true
+	call('frappe.client.get_list', {
+		doctype: 'LMS Assignment Submission',
+		fields: ['name', 'assignment', 'assignment_title', 'member_name', 'creation', 'status'],
 		filters: getAssignmentFilters(),
-		orderBy: orderBy.value,
-		pageLength: parseInt(pageLength.value),
-		start: start.value,
+		order_by: orderBy.value,
+		limit_start: start.value,
+		limit_page_length: parseInt(pageLength.value),
 	})
-	submissions.reload()
+		.then((data) => {
+			submissionsData.value = data.map((row) => ({
+				...row,
+				creation: dayjs(row.creation).fromNow(),
+			}))
+		})
+		.finally(() => {
+			submissionsLoading.value = false
+		})
 	fetchCount()
 }
 
