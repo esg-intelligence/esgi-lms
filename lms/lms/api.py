@@ -1109,7 +1109,7 @@ def delete_course(course):
 def _unique_quiz_title(base_title):
 	candidate = f"Copy of {base_title}"
 	counter = 2
-	while frappe.db.exists("LMS Quiz", candidate):
+	while frappe.db.exists("LMS Quiz", {"title": candidate}):
 		candidate = f"Copy of {base_title} ({counter})"
 		counter += 1
 	return candidate
